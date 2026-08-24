@@ -1,4 +1,3 @@
-
 try:
     import cupy as cp
 
