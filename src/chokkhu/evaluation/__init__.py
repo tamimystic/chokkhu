@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .engine import evaluate
+from .engine import EvaluationResult, evaluate
 from .metrics import (
     accuracy_score,
     confusion_matrix,
@@ -16,6 +16,7 @@ from .metrics import (
 
 __all__ = [
     "evaluate",
+    "EvaluationResult",
     "accuracy_score",
     "confusion_matrix",
     "precision_recall_f1",

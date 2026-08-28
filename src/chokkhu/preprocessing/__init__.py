@@ -44,8 +44,13 @@ class PreprocessorState:
         self.num_cols = []
         self.cat_cols = []
 
-    def transform(self, data: pd.DataFrame) -> pd.DataFrame:
-        df = data.copy()
+    def transform(self, data: pd.DataFrame | str) -> pd.DataFrame:
+        if isinstance(data, str):
+            from chokkhu.io import load
+
+            df = load(data)
+        else:
+            df = data.copy()
         for col, enc in self.encoders.items():
             if col not in df.columns:
                 continue
@@ -66,7 +71,7 @@ class PreprocessorState:
 
 
 def preprocess(
-    data: pd.DataFrame,
+    data: pd.DataFrame | str,
     target: str = None,
     scale: str = None,
     encode: str = None,
@@ -76,7 +81,12 @@ def preprocess(
     report_dir: str = None,
     verbose: bool = True,
 ) -> Tuple[pd.DataFrame, PreprocessorState]:
-    df = data.copy()
+    if isinstance(data, str):
+        from chokkhu.io import load
+
+        df = load(data)
+    else:
+        df = data.copy()
     state = PreprocessorState()
     state.target_col = target
 
@@ -157,8 +167,9 @@ def preprocess(
     if target_series is not None and target is not None:
         features_df[target] = target_series
 
+    initial_shape = df.shape
     if verbose:
-        Logger.info(f"Preprocessed features: {data.shape} -> {features_df.shape}")
+        Logger.info(f"Preprocessed features: {initial_shape} -> {features_df.shape}")
 
     return features_df, state
 

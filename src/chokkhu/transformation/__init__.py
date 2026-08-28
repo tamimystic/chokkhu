@@ -24,7 +24,7 @@ LDA = LinearDiscriminantAnalysis
 
 
 def transform(
-    data: pd.DataFrame | dict[str, Any],
+    data: pd.DataFrame | str | dict[str, Any],
     target: str | None = None,
     pca: int | None = None,
     pca_variance: float | None = None,
@@ -77,6 +77,11 @@ def transform(
                 )
             return res_dict
         return data
+
+    if isinstance(data, str):
+        from chokkhu.io import load
+
+        data = load(data)
 
     if not isinstance(data, pd.DataFrame):
         raise TypeError("Data must be a pandas DataFrame or image dictionary.")

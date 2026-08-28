@@ -11,7 +11,7 @@ from .outliers import handle_outliers
 
 
 def clean(
-    data: pd.DataFrame,
+    data: pd.DataFrame | str,
     missing: str = "median",
     missing_threshold: float = 0.5,
     fill_value: object = 0,
@@ -37,7 +37,12 @@ def clean(
     save_report: bool = False,
     report_dir: str = "./chokkhu_reports/",
 ) -> pd.DataFrame:
-    df = data if inplace else data.copy()
+    if isinstance(data, str):
+        from chokkhu.io import load
+
+        df = load(data)
+    else:
+        df = data if inplace else data.copy()
     initial_shape = df.shape
     if fix_data_types:
         df = fix_dtypes(

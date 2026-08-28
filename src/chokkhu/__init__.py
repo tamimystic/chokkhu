@@ -29,6 +29,7 @@ from .transformation import (
 )
 from .models import NeuralNetwork, train
 from .evaluation import (
+    EvaluationResult,
     evaluate,
     accuracy_score,
     log_loss,
@@ -86,6 +87,7 @@ __all__ = [
     "PolynomialFeatures",
     "train",
     "evaluate",
+    "EvaluationResult",
     "explain",
     "ExplanationResult",
     "pipeline",
