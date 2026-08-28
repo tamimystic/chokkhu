@@ -1108,7 +1108,7 @@ def polynomial_features(X, degree=2):
 
 ---
 
-## PHASE 6: DATA SPLITTING � chokkhu.split()
+## PHASE 6: DATA SPLITTING — chokkhu.split()
 
 ### Purpose
 Split data into train/test/validation sets with optional stratification and cross-validation support.
@@ -1198,7 +1198,7 @@ def time_series_split(X, y, n_splits=5):
 
 ---
 
-## PHASE 7: MODELING (ML) � chokkhu.train()
+## PHASE 7: MODELING (ML) — chokkhu.train()
 
 ### Purpose
 Train any classical ML model with a single function call. Every model is implemented FROM SCRATCH using only NumPy/SciPy.
@@ -1368,7 +1368,7 @@ def predict(X_train, y_train, X_test, k=5, weights="uniform", metric="euclidean"
 
 ---
 
-### 7.4 Decision Tree � CART (FROM SCRATCH)
+### 7.4 Decision Tree — CART (FROM SCRATCH)
 
 **All Hyperparameters:**
 ```python
@@ -1571,7 +1571,7 @@ Uses Sequential Minimal Optimization to find optimal Lagrange multipliers (alpha
 
 ---
 
-### 7.8 Naive Bayes � Gaussian (FROM SCRATCH)
+### 7.8 Naive Bayes — Gaussian (FROM SCRATCH)
 
 **All Hyperparameters:**
 ```python
@@ -1699,14 +1699,14 @@ def fit_dbscan(X, eps=0.5, min_samples=5):
 
 ---
 
-## PHASE 8: MODELING (DL) � Deep Learning FROM SCRATCH
+## PHASE 8: MODELING (DL) — Deep Learning FROM SCRATCH
 
 ### Purpose
 Build and train neural networks (Dense, CNN) using ONLY NumPy. No TensorFlow. No PyTorch. Pure math.
 
 ### Module: chokkhu/models/dl/
 
-### API � Dense Network
+### API — Dense Network
 ```python
 model = chokkhu.train(
     model="neural_network",
@@ -1731,7 +1731,7 @@ model = chokkhu.train(
 )
 ```
 
-### API � CNN
+### API — CNN
 ```python
 model = chokkhu.train(
     model="cnn",
@@ -1952,7 +1952,7 @@ class NeuralNetwork:
 
 ---
 
-## PHASE 9: EVALUATION � chokkhu.evaluate()
+## PHASE 9: EVALUATION — chokkhu.evaluate()
 
 ### Purpose
 Comprehensive model evaluation with all standard metrics, auto-generated visualizations, and HTML reports. All metrics are implemented FROM SCRATCH.
@@ -2073,7 +2073,7 @@ def roc_auc(y_true, y_scores):
 
 ---
 
-## PHASE 10: EXPLAINABLE AI � chokkhu.explain()
+## PHASE 10: EXPLAINABLE AI — chokkhu.explain()
 
 ### Purpose
 Make any model interpretable. Understand WHY the model made each prediction. All methods FROM SCRATCH.
@@ -2088,14 +2088,14 @@ explanation = chokkhu.explain(
     y: np.ndarray = None,
     method: str = "feature_importance",
     # Options:
-    #   "feature_importance"    � Permutation-based feature importance
-    #   "shap"                  � KernelSHAP (model-agnostic Shapley values)
-    #   "lime"                  � Local Interpretable Model-agnostic Explanations
-    #   "pdp"                   � Partial Dependence Plots
-    #   "ice"                   � Individual Conditional Expectation
-    #   "gradcam"               � GradCAM (for CNN/DL models only)
-    #   "gradcam++"             � GradCAM++ (for CNN/DL models only)
-    #   "all"                   � Run all applicable methods
+    #   "feature_importance"    — Permutation-based feature importance
+    #   "shap"                  — KernelSHAP (model-agnostic Shapley values)
+    #   "lime"                  — Local Interpretable Model-agnostic Explanations
+    #   "pdp"                   — Partial Dependence Plots
+    #   "ice"                   — Individual Conditional Expectation
+    #   "gradcam"               — GradCAM (for CNN/DL models only)
+    #   "gradcam++"             — GradCAM++ (for CNN/DL models only)
+    #   "all"                   — Run all applicable methods
 
     # Feature Importance Parameters
     n_repeats: int = 10,
@@ -2145,7 +2145,7 @@ def permutation_importance(model, X, y, scoring_fn, n_repeats=10):
 **Plot:** Horizontal bar chart sorted by importance with error bars.
 
 ### 10.2 KernelSHAP (FROM SCRATCH)
-**What it does:** Approximates Shapley values � the fair contribution of each feature to the prediction.
+**What it does:** Approximates Shapley values — the fair contribution of each feature to the prediction.
 ```python
 def kernel_shap(model, x_explain, X_background, n_samples=100):
     M = x_explain.shape[0]
@@ -2232,83 +2232,119 @@ def gradcam(model, image, target_class, conv_layer_idx=-1):
 
 ---
 
-## PHASE 11: FULL PIPELINE � chokkhu.pipeline()
+## PHASE 11: FULL PIPELINE — chokkhu.pipeline()
 
 ### Purpose
-THE ULTIMATE ONE-LINER. A single function that runs the entire ML pipeline from raw data to explained predictions.
+THE ULTIMATE ONE-LINER. A single function that runs the entire ML pipeline from raw data to validated predictions with **ZERO DATA LEAKAGE**.
+
+### Zero Data Leakage Architecture (CRITICAL)
+In traditional flawed ML pipelines, preprocessing (standardization, encoding, PCA, SMOTE) is mistakenly run across the entire dataset before train/test splitting, causing test-set distribution statistics and synthetic samples to leak into training data.
+
+**Chokkhu Pipeline enforces strict Zero Data Leakage execution order:**
+```
+Raw Data
+   │
+   ▼
+[1. Load & Sanitation]  ──> Basic type fixes & duplicate removal
+   │
+   ▼
+[2. Split BEFORE Processing] ──> X_train, X_test (and X_val) strictly isolated
+   │
+   ├────────────────────────────────────────┐
+   │ (Train Pipeline)                       │ (Test / Inference Pipeline)
+   ▼                                        ▼
+[3. Preprocess (Fit & Transform)]     [Transform Only] ──> Uses fitted PreprocessorState
+   │                                        │
+   ▼                                        ▼
+[4. Feature Transforms (PCA/LDA)]     [Transform Only] ──> Uses fitted TransformationState
+   │                                        │
+   ▼                                        │ (NEVER resample Test/Val!)
+[5. Resample (SMOTE/ADASYN)]                │
+   │                                        │
+   ▼                                        │
+[6. Model Training / Auto Selection]        │
+   │                                        │
+   ▼                                        ▼
+[7. Final Evaluation on Untouched Test Set] ◄┘
+```
 
 ### API Signature
 ```python
 results = chokkhu.pipeline(
     data: str | pd.DataFrame,           # Path to data file OR DataFrame
     target: str,                        # Target column name
-    eda: bool = True,                   # Run EDA first?
-    clean: str | dict = "auto",         # Cleaning config
-    preprocess: str | dict = "auto",    # Preprocessing config
-    transform: str | dict = None,       # Transformation config
-    model: str | list = "auto",         # Model name(s). "auto" = try all and pick best
+    clean: bool | str | dict = "auto",  # Cleaning config (missing, outliers, duplicates)
+    preprocess: bool | str | dict = "auto",  # Preprocessing config (scale, encode, select)
+    transform: dict = None,             # Transformation config (pca, lda, polynomial)
+    resample: str = None,               # Resampling (smote, adasyn, oversample, undersample)
+    resample_ratio: float = 1.0,        # Minority class target ratio
+    smote_k: int = 5,                   # Number of neighbors for SMOTE
+    model: str | list = "auto",         # Model name(s). "auto" = evaluate candidates and pick best
     task: str = "auto",                 # "classification", "regression", "auto"
-    auto_models: list = None,           # Models to try when model="auto"
-    auto_metric: str = "auto",          # Metric to select best model
-    auto_cv: int = 5,                   # CV folds for model selection
-    evaluate: bool = True,
-    explain: str | list = "feature_importance",
-    test_size: float = 0.2,
-    val_size: float = None,
-    stratify: bool = True,
-    random_state: int = 42,
-    save_reports: bool = True,
-    report_dir: str = "./chokkhu_reports/",
+    test_size: float = 0.2,             # Test set fraction (split BEFORE processing)
+    val_size: float = None,             # Optional validation set fraction
+    stratify: bool = True,              # Stratified split for classification
+    random_state: int = 42,             # Reproducibility seed
+    evaluate: bool = True,              # Run evaluation metrics on untouched test set
+    save_reports: bool = False,         # Save evaluation charts to disk
+    save_dir: str = "chokkhu_reports",  # Reports output folder
     verbose: bool = True,
-    **kwargs
+    **kwargs                            # Model-specific hyperparameters
 ) -> PipelineResult
 ```
 
 ### PipelineResult Object
 ```python
 class PipelineResult:
-    data_raw: pd.DataFrame          # Original data
-    data_cleaned: pd.DataFrame      # After cleaning
-    data_processed: pd.DataFrame    # After preprocessing
-    model: ChokkhuModel             # Best trained model
-    model_name: str                 # Name of best model
-    evaluation: dict                # All evaluation metrics
-    explanation: dict               # XAI results
-    splits: dict                    # Train/test/val splits
-    report_path: str                # Path to generated HTML report
+    data_raw: pd.DataFrame              # Original data
+    data_cleaned: pd.DataFrame          # After cleaning
+    splits: dict                        # Train/test/val array splits
+    preprocessor_state: PreprocessorState  # Fitted scalers, encoders, selectors
+    transformation_state: TransformationState  # Fitted PCA/LDA/Polynomial transformers
+    model: ChokkhuModel                 # Best trained model
+    model_name: str                     # Name of best model
+    task: str                           # "classification" or "regression"
+    target_col: str                     # Target column name
+    evaluation: dict                    # All evaluation metrics on untouched test set
+    cv_scores: dict                     # Candidate model scores during auto-selection
+    feature_names: list[str]            # Final feature column names
     
     def predict(self, new_data) -> np.ndarray:
-        """Predict on new data (auto-applies same preprocessing)."""
+        """Predict on new data (auto-applies fitted preprocessor + transformation pipeline)."""
+    def predict_proba(self, new_data) -> np.ndarray:
+        """Predict probabilities on new data if classification model."""
     def summary(self) -> str:
-        """Print a human-readable summary of everything."""
-    def save_model(self, path) -> None:
-        """Save model + preprocessor state to disk."""
-    def load_model(self, path) -> None:
-        """Load a saved model."""
+        """Print a human-readable summary of the entire pipeline."""
+    def save(self, path: str) -> str:
+        """Save complete pipeline artifact to disk."""
+    @classmethod
+    def load(cls, path: str) -> PipelineResult:
+        """Load a saved pipeline from disk."""
 ```
 
-### Example � ONE LINE does EVERYTHING:
+### Example — ONE LINE does EVERYTHING (Leak-Free):
 ```python
 import chokkhu
 
+# Execute complete pipeline
 result = chokkhu.pipeline("house_prices.csv", target="price", model="auto", save_reports=True)
 
 # Behind the scenes:
-# 1. Loads CSV
-# 2. Runs full EDA
-# 3. Cleans data (missing, outliers, duplicates)
-# 4. Preprocesses (scaling, encoding)
-# 5. Splits into train/test
-# 6. Tries multiple models (Linear, KNN, DT, RF, GB, SVM, NB)
-# 7. Selects best model via cross-validation
-# 8. Evaluates with all metrics
-# 9. Runs feature importance
-# 10. Generates comprehensive HTML report
+# 1. Loads dataset
+# 2. Sanitizes & cleans data
+# 3. Splits into train/test BEFORE feature engineering (Zero Data Leakage)
+# 4. Fits encoders, scalers, and selectors STRICTLY on train set
+# 5. Transforms train and test sets using fitted state
+# 6. Tries multiple models (Linear, Ridge, RF, DT, KNN, GB)
+# 7. Selects best model via validation score
+# 8. Evaluates on untouched test set
+# 9. Ready for inference!
 
 print(result.summary())
 print(f"Best Model: {result.model_name}")
-print(f"Accuracy: {result.evaluation['accuracy']}")
-result.predict(new_data)
+
+# Predict on brand-new raw input (automatically scaled & encoded)
+predictions = result.predict(new_raw_df)
 ```
 
 ---
@@ -2319,14 +2355,14 @@ result.predict(new_data)
 ### Extended: Full dashboard-style report
 
 ### Report Sections (for each pipeline stage):
-1. Data Overview � Shape, types, memory, sample rows
-2. EDA Summary � Key statistics, distributions, correlations
-3. Cleaning Log � What was cleaned, how many rows/values affected
-4. Preprocessing Log � What was scaled, encoded, selected
-5. Model Training � Architecture, hyperparameters, training curves (loss/accuracy per epoch)
-6. Evaluation Dashboard � All metrics, confusion matrix, ROC, PR curves
-7. Explainability � Feature importance, SHAP plots, PDP
-8. Executive Summary � Auto-generated one-paragraph summary of key findings
+1. Data Overview — Shape, types, memory, sample rows
+2. EDA Summary — Key statistics, distributions, correlations
+3. Cleaning Log — What was cleaned, how many rows/values affected
+4. Preprocessing Log — What was scaled, encoded, selected
+5. Model Training — Architecture, hyperparameters, training curves (loss/accuracy per epoch)
+6. Evaluation Dashboard — All metrics, confusion matrix, ROC, PR curves
+7. Explainability — Feature importance, SHAP plots, PDP
+8. Executive Summary — Auto-generated one-paragraph summary of key findings
 
 ### Tech Stack:
 - Pure HTML + CSS (no JavaScript frameworks)
@@ -2366,4 +2402,4 @@ chokkhu will be the ONLY Python package where:
 - Every step generates BEAUTIFUL, PUBLICATION-READY reports
 - The ENTIRE ML pipeline (Load -> EDA -> Clean -> Process -> Train -> Evaluate -> Explain) can be done with a SINGLE FUNCTION CALL
 
-"Give it your data. Get back everything." � That is chokkhu.
+"Give it your data. Get back everything." — That is chokkhu.

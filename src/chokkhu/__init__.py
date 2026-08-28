@@ -21,6 +21,7 @@ from .transformation import (
 )
 from .models import train
 from .evaluation import evaluate
+from .pipeline import PipelineResult, TransformationState, pipeline
 
 
 class EDAWrapper:
@@ -69,4 +70,7 @@ __all__ = [
     "PolynomialFeatures",
     "train",
     "evaluate",
+    "pipeline",
+    "PipelineResult",
+    "TransformationState",
 ]
