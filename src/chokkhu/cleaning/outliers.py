@@ -5,7 +5,6 @@ import pandas as pd
 
 
 class _ITree:
-
     def __init__(self, X, current_height=0, max_height=10):
         self.size = len(X)
         self.split_feat = None
@@ -25,38 +24,42 @@ class _ITree:
         self.right = _ITree(X[~left_mask], current_height + 1, max_height)
 
 
-def _path_length(tree, x, current_depth=0):
+def _c_factor(n: int) -> float:
+    """Average path length of unsuccessful searches in a Binary Search Tree (BST)."""
+    if n <= 1:
+        return 1.0
+    if n == 2:
+        return 1.0
+    return float(2.0 * (np.log(n - 1) + 0.5772156649) - (2.0 * (n - 1) / n))
+
+
+def _path_length(tree: _ITree, x: np.ndarray, current_depth: int = 0) -> float:
     if tree.left is None or tree.right is None:
-        return current_depth + (
-            2.0 * (np.log(max(1, tree.size - 1)) + 0.5772156649)
-            - 2.0 * (tree.size - 1) / max(1, tree.size)
-            if tree.size > 1
-            else 0
-        )
-    if x[tree.split_feat] < tree.split_val:
-        return _path_length(tree.left, x, current_depth + 1)
-    return _path_length(tree.right, x, current_depth + 1)
+        return current_depth + _c_factor(tree.size)
+    if tree.split_feat is not None and tree.split_val is not None:
+        if x[tree.split_feat] < tree.split_val:
+            return _path_length(tree.left, x, current_depth + 1)
+        return _path_length(tree.right, x, current_depth + 1)
+    return float(current_depth)
 
 
-def _isolation_scores(X, n_trees=50):
-    max_height = int(np.ceil(np.log2(max(2, len(X)))))
+def _isolation_scores(X: np.ndarray, n_trees: int = 50) -> np.ndarray:
+    n_samples = len(X)
+    subsample_size = min(256, n_samples)
+    max_height = int(np.ceil(np.log2(max(2, subsample_size))))
     trees = [
         _ITree(
-            X[np.random.choice(len(X), min(256, len(X)), replace=False)],
+            X[np.random.choice(n_samples, subsample_size, replace=False)],
             max_height=max_height,
         )
         for _ in range(n_trees)
     ]
-    scores = np.zeros(len(X))
-    c_n = (
-        2.0 * (np.log(max(1, len(X) - 1)) + 0.5772156649)
-        - 2.0 * (len(X) - 1) / max(1, len(X))
-        if len(X) > 1
-        else 1.0
-    )
-    for i in range(len(X)):
-        avg_path = np.mean([_path_length(t, X[i]) for t in trees])
-        scores[i] = 2.0 ** (-avg_path / c_n)
+    scores = np.zeros(n_samples)
+    # Use subsample size for c_factor normalization (Liu et al. 2008)
+    c_psi = _c_factor(subsample_size)
+    for i in range(n_samples):
+        avg_path = float(np.mean([_path_length(t, X[i]) for t in trees]))
+        scores[i] = 2.0 ** (-avg_path / c_psi)
     return scores
 
 
@@ -81,7 +84,7 @@ def handle_outliers(
     if method == "log_transform":
         for col in num_cols:
             min_val = df[col].min()
-            shift = abs(min_val) + 1.0 if min_val <= 0 else 0.0
+            shift = abs(min_val) if min_val < 0 else 0.0
             df[col] = np.log1p(df[col] + shift)
         return df
     if method == "isolation":

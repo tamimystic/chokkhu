@@ -8,7 +8,6 @@ import pandas as pd
 
 
 class PolynomialFeatures:
-
     def __init__(
         self,
         degree: int = 2,
@@ -64,7 +63,6 @@ class PolynomialFeatures:
 
 
 class LogTransformer:
-
     def __init__(self, columns: list[str] | None = None, base: str = "e") -> None:
         self.columns = columns
         self.base = base
@@ -78,19 +76,19 @@ class LogTransformer:
         for c in target_cols:
             if c in res.columns and pd.api.types.is_numeric_dtype(res[c]):
                 min_val = float(res[c].min())
-                shift = (abs(min_val) + 1.0) if min_val <= 0 else 0.0
+                # Shift only negative numbers to zero, avoiding double-shift
+                shift = abs(min_val) if min_val < 0 else 0.0
                 vals = res[c].to_numpy(dtype=np.float64) + shift
                 if self.base == "10":
-                    res[c] = np.log10(np.maximum(vals, 1e-10))
+                    res[c] = np.log10(vals + 1.0)
                 elif self.base == "2":
-                    res[c] = np.log2(np.maximum(vals, 1e-10))
+                    res[c] = np.log2(vals + 1.0)
                 else:
-                    res[c] = np.log1p(np.maximum(vals - 1.0 + shift, 0.0))
+                    res[c] = np.log1p(vals)
         return res
 
 
 class BinningTransformer:
-
     def __init__(
         self,
         n_bins: int = 5,

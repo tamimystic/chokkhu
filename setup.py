@@ -57,5 +57,10 @@ setuptools.setup(
             "black>=23.3",
             "isort>=5.12"
         ]
+    },
+    entry_points={
+        "console_scripts": [
+            "chokkhu=chokkhu.cli:main",
+        ]
     }
 )

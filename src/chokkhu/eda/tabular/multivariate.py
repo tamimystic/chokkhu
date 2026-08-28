@@ -46,15 +46,12 @@ class MultivariateAnalyzer:
             exp_counts = expected.value_counts(normalize=True)
             act_counts = actual.value_counts(normalize=True)
         psi = 0.0
-        for idx in exp_counts.index:
-            e_val = exp_counts.get(idx, 0.0001)
-            a_val = act_counts.get(idx, 0.0001)
-            if e_val == 0:
-                e_val = 0.0001
-            if a_val == 0:
-                a_val = 0.0001
-            psi += (e_val - a_val) * np.log(e_val / a_val)
-        return psi
+        all_bins = set(exp_counts.index).union(set(act_counts.index))
+        for idx in all_bins:
+            e_val = max(1e-4, float(exp_counts.get(idx, 1e-4)))
+            a_val = max(1e-4, float(act_counts.get(idx, 1e-4)))
+            psi += (a_val - e_val) * np.log(a_val / e_val)
+        return float(psi)
 
     @staticmethod
     def analyze(df: pd.DataFrame, target_col: str = None) -> Dict[str, Any]:

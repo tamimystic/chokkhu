@@ -30,9 +30,14 @@ class UnivariateAnalyzer:
                     types["numerical"]["discrete"].append(col)
                 else:
                     types["numerical"]["continuous"].append(col)
-            elif n_unique <= 20:
+            elif isinstance(dtype, pd.CategoricalDtype) and dtype.ordered:
                 types["categorical"]["ordinal"].append(col)
-            elif 20 < n_unique <= 100:
+            elif any(
+                k in str(col).lower()
+                for k in ["rank", "grade", "rating", "stage", "tier", "level"]
+            ):
+                types["categorical"]["ordinal"].append(col)
+            elif n_unique <= 100:
                 types["categorical"]["nominal"].append(col)
             else:
                 mean_len = series.dropna().astype(str).str.len().mean()

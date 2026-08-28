@@ -55,11 +55,13 @@ class GradientBoosting(ChokkhuModel):
                 self.trees.append(tree)
 
         elif self.task == "classification":
-            self.initial_prediction = 0.0
+            # Optimal log-odds initialization: ln(p / (1-p))
+            p_mean = np.clip(float(np.mean(y)), 1e-5, 1.0 - 1e-5)
+            self.initial_prediction = float(np.log(p_mean / (1.0 - p_mean)))
             y_pred = np.full(np.shape(y), self.initial_prediction)
 
             for _ in iterator:
-                p = 1 / (1 + np.exp(-y_pred))
+                p = 1.0 / (1.0 + np.exp(-np.clip(y_pred, -20.0, 20.0)))
                 residuals = y - p
 
                 tree = DecisionTree(task="regression", max_depth=self.max_depth)
@@ -71,6 +73,19 @@ class GradientBoosting(ChokkhuModel):
 
         return self
 
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        if not self.trees:
+            raise ValueError("Model is not fitted yet.")
+        if self.task != "classification":
+            raise ValueError("predict_proba is only available for classification.")
+
+        y_pred = np.full(X.shape[0], self.initial_prediction)
+        for tree in self.trees:
+            y_pred += self.learning_rate * tree.predict(X)
+
+        p = 1.0 / (1.0 + np.exp(-np.clip(y_pred, -20.0, 20.0)))
+        return np.column_stack([1.0 - p, p])
+
     def predict(self, X: np.ndarray) -> np.ndarray:
         if not self.trees:
             raise ValueError("Model is not fitted yet.")
@@ -80,7 +95,7 @@ class GradientBoosting(ChokkhuModel):
             y_pred += self.learning_rate * tree.predict(X)
 
         if self.task == "classification":
-            p = 1 / (1 + np.exp(-y_pred))
+            p = 1.0 / (1.0 + np.exp(-np.clip(y_pred, -20.0, 20.0)))
             return np.where(p >= 0.5, 1, 0)
 
         return y_pred
