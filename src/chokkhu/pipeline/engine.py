@@ -192,13 +192,21 @@ class PipelineResult:
         self.cv_scores = cv_scores or {}
         self.feature_names = feature_names or []
 
+    @property
+    def metrics(self) -> Dict[str, Any]:
+        return self.evaluation
+
     def predict(
-        self, new_data: Union[pd.DataFrame, np.ndarray, dict, list]
+        self, new_data: Union[pd.DataFrame, np.ndarray, dict, list, str]
     ) -> np.ndarray:
         """Runs the fitted preprocessing and transformation pipeline and returns model predictions
         on unseen data with ZERO data leakage.
         """
-        if isinstance(new_data, dict):
+        if isinstance(new_data, str):
+            from chokkhu.io import load
+
+            df = load(new_data)
+        elif isinstance(new_data, dict):
             df = pd.DataFrame([new_data])
         elif isinstance(new_data, list):
             df = pd.DataFrame(new_data)
@@ -208,7 +216,7 @@ class PipelineResult:
             df = new_data.copy()
         else:
             raise TypeError(
-                "Unsupported data type for inference. Must be DataFrame, dict, list, or ndarray."
+                "Unsupported data type for inference. Must be DataFrame, dict, list, ndarray, or file path."
             )
 
         if self.target_col in df.columns:
@@ -555,6 +563,31 @@ def pipeline(
     else:
         chosen_model_name = model
 
+    pipeline_param_names = {
+        "clean_missing",
+        "clean_outliers",
+        "clean_duplicates",
+        "clean_dtypes",
+        "scale",
+        "encode",
+        "select_features",
+        "select_k",
+        "pca",
+        "lda",
+        "svd",
+        "tsne",
+        "resample",
+        "resample_ratio",
+        "polynomial",
+        "test_size",
+        "val_size",
+        "stratify",
+        "evaluate",
+        "save_reports",
+        "report_dir",
+    }
+    model_kwargs = {k: v for k, v in kwargs.items() if k not in pipeline_param_names}
+
     fitted_model = train_fn(
         model=chosen_model_name,
         X_train=X_train_final,
@@ -562,7 +595,7 @@ def pipeline(
         task=task,
         random_state=random_state,
         verbose=verbose,
-        **kwargs,
+        **model_kwargs,
     )
 
     eval_results: Dict[str, Any] = {}

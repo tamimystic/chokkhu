@@ -4,33 +4,33 @@
 
 # Chokkhu
 
-**An End-to-End, Research-Grade ML and Data Science Pipeline Toolkit for Tabular and Computer Vision Datasets.**
+**An End-to-End, Production-Grade ML & Data Science Pipeline Toolkit for Tabular and Computer Vision Datasets.**
 
 [![PyPI version](https://img.shields.io/pypi/v/chokkhu.svg?color=blue&style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/chokkhu/)
 [![Python versions](https://img.shields.io/pypi/pyversions/chokkhu.svg?style=for-the-badge&logo=python&logoColor=white)](https://pypi.org/project/chokkhu/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/tamimystic/chokkhu/ci.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/tamimystic/chokkhu/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/tamimystic/chokkhu/blob/main/LICENSE)
 
-> "Minimalistic Code. Maximum Output. Zero Heavy Dependencies."
+> "Minimalistic Code. Maximum Output. Zero Heavy Dependencies. Zero Data Leakage."
 
 </div>
 
 ---
 
-## Overview
+## Highlights & Core Philosophy
 
-Chokkhu is a high-performance Python toolkit designed to streamline the complete Machine Learning lifecycle including raw data loading, statistical Exploratory Data Analysis, advanced data cleaning, preprocessing, feature transformation, and stratified data splitting.
-
-### Core Philosophy and Design Principles
-1. **Zero Heavy Dependencies**: Built from the ground up using pure NumPy, Pandas, SciPy, Matplotlib, Seaborn, and OpenCV-headless. No Torch, TensorFlow, Scikit-Learn, or imbalanced-learn dependencies required.
-2. **Unified Minimalist API**: Powerful operations encapsulated in intuitive, one-line functions (load, eda, clean, preprocess, transform, split).
-3. **Cross-Platform Compatibility**: Tested and verified across 10 environments (Python 3.8 to 3.12 on Linux Ubuntu and Windows).
+1. **Zero Heavy Dependencies**: Built from scratch using pure NumPy, Pandas, SciPy, Matplotlib, Seaborn, and OpenCV-headless. No Scikit-Learn, PyTorch, TensorFlow, or imbalanced-learn required.
+2. **Guaranteed Zero Data Leakage**: The automated `chokkhu.pipeline()` engine guarantees strict isolation between training and validation/test folds during preprocessing, scaling, encoding, and resampling.
+3. **Explainable AI (XAI)**: Native model interpretability with KernelSHAP (Shapley value estimation), Permutation Feature Importance, and Partial Dependence Plots (PDP).
+4. **Deep Learning from Scratch**: Built-in autograd tensor engine and Multi-Layer Perceptron (`NeuralNetwork`) with classification and regression support.
+5. **Hyperparameter Tuning**: Automatic cross-validated grid search and tuning directly inside `chokkhu.train(..., tune=True)`.
+6. **Command Line Interface (CLI)**: Run EDA, dataset cleaning, or complete pipelines straight from your terminal (`chokkhu pipeline ...`).
 
 ---
 
 ## Installation
 
-Install Chokkhu directly from PyPI via pip:
+Install Chokkhu directly from PyPI:
 
 ```bash
 pip install --upgrade chokkhu
@@ -38,102 +38,62 @@ pip install --upgrade chokkhu
 
 ---
 
-## Complete End-to-End Pipeline in One Workflow
+## Quickstart: Leak-Free End-to-End Pipeline in 3 Lines
 
 ```python
 import chokkhu as ck
 
-df = ck.load("dataset.csv")
+# Load data and execute complete leak-free ML pipeline
+res = ck.pipeline(data="dataset.csv", target="price", model="random_forest", task="regression")
 
-ck.eda.tabular("dataset.csv", target_col="price", save_reports=True)
+# Inspect comprehensive metrics and export fitted pipeline
+print(res.summary())
+res.save("trained_pipeline.pkl")
 
-df_clean = ck.clean(
-    df,
-    missing="knn",
-    outliers="isolation_forest",
-    duplicates=True,
-    fix_data_types=True
-)
-
-df_proc, state = ck.preprocess(
-    df_clean,
-    target="price",
-    scale="standard",
-    encode="onehot",
-    select_features="correlation"
-)
-
-df_trans = ck.transform(
-    df_proc,
-    target="price",
-    resample="smote",
-    pca=10
-)
-
-X_tr, X_val, X_te, y_tr, y_val, y_te = ck.split(
-    df_trans,
-    target="price",
-    test_size=0.2,
-    val_size=0.1,
-    stratify=True,
-    random_state=42
-)
+# Predict on new unseen raw data
+new_preds = res.predict("unseen_data.csv")
 ```
 
 ---
 
-## Detailed API Reference
+## Complete Feature Walkthrough
 
-### 1. Data Loading (`chokkhu.load`)
-Auto-detects file format and loads tabular or image datasets seamlessly:
-
+### 1. Data Ingestion (`chokkhu.load` / `chokkhu.save`)
+Auto-detects format from extension:
 ```python
 import chokkhu as ck
 
-df = ck.load("data.csv")
+# Tabular (CSV, TSV, JSON, Parquet, Excel, Feather)
+df = ck.load("dataset.parquet")
 
-images_data = ck.load("images_folder/", data_type="image", target_size=(128, 128))
+# Image directory loading
+img_data = ck.load("image_folder/", type="image", img_size=(128, 128))
+
+# Save anything
+ck.save(df, "clean_dataset.parquet")
 ```
 
 ---
 
 ### 2. Exploratory Data Analysis (`chokkhu.eda`)
-
-#### Tabular EDA
-Generates univariate, bivariate, and multivariate statistical reports with interactive visualizations:
-
+Generate statistical analysis and responsive HTML reports:
 ```python
-ck.eda.tabular(
-    dataset_path="data.csv",
-    target_col="target",
-    save_reports=True,
-    save_dir="./eda_reports"
-)
-```
+# Tabular EDA (Univariate, Bivariate, Correlation, VIF, Mahalanobis, Drift PSI)
+ck.eda.tabular("data.csv", target_col="target", save_reports=True)
 
-#### Image EDA
-Analyzes resolution distributions, color spaces, blur scores (Laplacian variance), pure NumPy Shannon entropy, SNR, edge intensity, and perceptual duplicates:
-
-```python
-ck.eda.image(
-    dataset_path="dataset_images/",
-    save_reports=True,
-    save_dir="./image_reports"
-)
+# Image EDA (Resolution distribution, blur score, entropy, SNR, duplicates)
+ck.eda.image("image_folder/", save_reports=True)
 ```
 
 ---
 
 ### 3. Data Cleaning (`chokkhu.clean`)
-All-in-one data sanitation function:
-
+Automated missing value handling, outlier detection, and duplicate removal:
 ```python
 df_cleaned = ck.clean(
-    data=df,
-    missing="knn",
-    missing_threshold=0.5,
-    outliers="iqr",
-    outlier_action="remove",
+    data="raw_data.csv",
+    missing="knn",            # 'mean', 'median', 'mode', 'knn', 'iterative', 'drop'
+    outliers="isolation",      # 'iqr', 'zscore', 'modified_zscore', 'isolation', 'winsorize'
     duplicates=True,
     fix_data_types=True
 )
@@ -141,155 +101,136 @@ df_cleaned = ck.clean(
 
 ---
 
-### 4. Data Preprocessing (`chokkhu.preprocess`)
-Stateful feature scalers, encoders, and feature selection:
-
+### 4. Preprocessing & Feature Selection (`chokkhu.preprocess`)
+Leak-free, stateful transformations:
 ```python
-df_processed, preprocessor_state = ck.preprocess(
+df_processed, state = ck.preprocess(
     data=df_cleaned,
-    target="target_column",
-    scale="standard",
-    encode="onehot",
-    select_features="mutual_info",
-    top_k_features=15
+    target="target",
+    scale="standard",          # 'standard', 'minmax', 'robust', 'power', 'quantile'
+    encode="onehot",           # 'onehot', 'label', 'binary', 'ordinal', 'target'
+    select_features="rfe",     # 'variance', 'correlation', 'mutual_info', 'anova', 'rfe'
+    select_k=10
 )
 ```
 
 ---
 
-### 5. Data Transformation (`chokkhu.transform`)
-Dimensionality reduction, class imbalance resampling, polynomial feature engineering, and image augmentations:
-
+### 5. Feature Engineering & Resampling (`chokkhu.transform`)
 ```python
-df_transformed = ck.transform(
+df_trans = ck.transform(
     data=df_processed,
-    target="target_column",
+    target="target",
     pca=5,
-    lda=2,
-    tsne=2,
-    resample="smote",
-    polynomial=2,
-    log_features=["skewed_col"]
-)
-
-aug_images_dict = ck.transform(
-    data=images_data,
-    augment=True,
-    augment_techniques=["horizontal_flip", "rotate", "brightness", "contrast", "noise", "crop", "blur", "cutout"],
-    augment_factor=3
+    resample="smote",          # 'smote', 'adasyn', 'random_oversample', 'random_undersample', 'smote_tomek'
+    polynomial=2
 )
 ```
 
 ---
 
 ### 6. Data Splitting (`chokkhu.split`)
-Multi-way stratified partitioning and cross-validation generators:
-
 ```python
-X_train, X_test, y_train, y_test = ck.split(
-    df_transformed,
-    target="target_column",
-    test_size=0.2,
-    stratify=True,
-    random_state=42
-)
+# 2-way split
+X_train, X_test, y_train, y_test = ck.split(df_trans, target="target", test_size=0.2, stratify=True)
 
-X_train, X_val, X_test, y_train, y_val, y_test = ck.split(
-    df_transformed,
-    target="target_column",
-    test_size=0.2,
-    val_size=0.1,
-    stratify=True,
-    random_state=42
-)
-
-for fold, (train_df, val_df) in enumerate(ck.split(df, method="kfold", n_splits=5)):
-    print(f"Fold {fold}: Train shape={train_df.shape}, Val shape={val_df.shape}")
+# 3-way split (Train / Val / Test)
+X_train, X_val, X_test, y_train, y_val, y_test = ck.split(df_trans, target="target", test_size=0.2, val_size=0.1)
 ```
 
 ---
 
+### 7. Model Training & Auto-Tuning (`chokkhu.train`)
 
-### 7. Model Training (`chokkhu.train`)
-
-Chokkhu provides a unified, single-function API `chokkhu.train()` to train any machine learning or reinforcement learning model. All models are implemented completely from scratch using pure NumPy and SciPy.
-
-**Dynamic Hyperparameters:** You can pass *any* hyperparameter dynamically as `**kwargs` directly into the `train()` function to override the defaults.
-
-#### Supervised Learning
-*   **Models:** `linear_regression`, `ridge`, `lasso`, `elastic_net`, `logistic_regression`, `knn`, `naive_bayes`, `svm`, `decision_tree`, `random_forest`, `gradient_boosting`
 ```python
-# Train a Random Forest with default parameters
-model = ck.train(model="random_forest", X_train=X_train, y_train=y_train)
-
-# Override hyperparameters dynamically!
+# Train Random Forest with automatic hyperparameter tuning
 model = ck.train(
     model="random_forest",
     X_train=X_train,
     y_train=y_train,
-    n_estimators=500,
-    max_depth=15,
-    min_samples_split=5
+    tune=True,
+    cv=3,
+    random_state=42
 )
-```
+print("Best parameters found:", model.best_params_)
 
-#### Unsupervised Learning
-*   **Models:** `kmeans`, `dbscan`, `hierarchical`
-```python
-# Train DBSCAN clustering
-model = ck.train(
-    model="dbscan",
+# Train Deep Learning Neural Network (MLP) from scratch
+dl_model = ck.train(
+    model="neural_network",
     X_train=X_train,
-    eps=1.5,
-    min_samples=10
+    y_train=y_train,
+    task="classification",
+    layers=[64, 32],
+    epochs=50,
+    learning_rate=0.01
 )
 ```
 
-#### Reinforcement Learning (RL)
-*   **Models:** `q_learning` (more coming soon!)
-*   **Environments:** Comes with built-in lightweight environments (like `GridWorld`), or you can pass your own custom OpenAI Gym environment!
-```python
-# Using default built-in GridWorld environment
-model = ck.train(model="q_learning", episodes=1000)
+---
 
-# Using your own custom environment
-model = ck.train(
-    model="q_learning",
-    env=my_custom_gym_env,
-    episodes=5000,
-    learning_rate=0.01,
-    epsilon_decay=0.99
-)
+### 8. Model Evaluation (`chokkhu.evaluate`)
+
+```python
+results = ck.evaluate(model, X_test, y_test, task="classification", save_reports=True)
+print("Accuracy:", results["accuracy"])
+print("ROC-AUC:", results.get("roc_auc"))
+```
+
+---
+
+### 9. Explainable AI (`chokkhu.explain`)
+
+```python
+# 1. Permutation Feature Importance
+exp_pfi = ck.explain(model, X_test, y_test, method="feature_importance")
+print(exp_pfi.summary())
+
+# 2. KernelSHAP Feature Attribution
+exp_shap = ck.explain(model, X_test, method="shap", n_samples=50)
+print(exp_shap.to_dataframe().head())
+
+# 3. Partial Dependence Plot (PDP)
+exp_pdp = ck.explain(model, X_test, method="pdp", pdp_feature=0)
+```
+
+---
+
+### 10. Command Line Interface (CLI)
+
+Run operations directly from your terminal:
+
+```bash
+# Automated EDA
+chokkhu eda --data dataset.csv --target price --save-reports
+
+# Clean dataset
+chokkhu clean --data raw.csv --missing median --outliers iqr --output clean.csv
+
+# Execute full ML pipeline
+chokkhu pipeline --data dataset.csv --target price --model random_forest --save model_pipe.pkl
 ```
 
 ---
 
 ## Feature Matrix Summary
 
-| Category | Modules & Algorithms Available |
-| :--- | :--- |
-| **I/O** | CSV, TSV, JSON, Excel (.xlsx), Parquet, NumPy (.npy, .npz), Image Folders |
-| **EDA** | Univariate, Bivariate, Multivariate Correlation, Interactive HTML Reports, Image Quality & Blur Metrics, GLCM Texture, Perceptual Duplicates |
-| **Cleaning** | KNN Imputer, MICE (Iterative), Tukey IQR, Isolation Forest, Z-Score, Winsorization, Auto Dtype Fixer |
-| **Preprocessing** | Standard, MinMax, Robust, Power, Quantile Scalers; One-Hot, Target, Binary, Frequency Encoders; Variance, Correlation, Mutual Info, RFE Selectors |
-| **Transformation** | PCA, SVD, LDA, t-SNE, SMOTE, ADASYN, Tomek Links, Image Augmentation (Flip, Rotation, Brightness, Noise, Crop, Blur, Cutout, Mixup), Polynomial Features |
-| **ML Models** | Linear/Logistic Regression, KNN, Naive Bayes, SVM, Decision Tree, Random Forest, GBM, K-Means, DBSCAN, Hierarchical, Q-Learning (RL) |
-| **Splitting** | Train/Test, Train/Val/Test (3-way), Stratified Splitting, K-Fold, Stratified K-Fold, TimeSeriesSplit |
-
----
-
-## Contributing
-
-We welcome community contributions! Feel free to submit issues or pull requests to help expand Chokkhu:
-
-1. Fork the Repository
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+| Phase | Capabilities | Available Implementations |
+| :--- | :--- | :--- |
+| **I/O** | Multi-Format Ingestion | CSV, TSV, JSON, Parquet, Excel, Feather, NumPy (.npy, .npz), Image Directories |
+| **EDA** | Statistical & Visual Insights | Univariate, Bivariate, Multivariate (VIF, Mahalanobis, Cramér's V, PSI), GLCM, Image Quality |
+| **Cleaning** | Data Sanitation | KNN, MICE Iterative, Mode/Median/Mean, Tukey IQR, Isolation Forest, Z-Score, Winsorization, Auto Dtype |
+| **Preprocessing**| Scalers, Encoders, Selectors | Standard, MinMax, Robust, Power (Yeo-Johnson), Quantile; One-Hot, Binary, Target, Ordinal; ANOVA, RFE |
+| **Transformation**| Embeddings & Balancing | PCA, SVD, LDA, t-SNE, SMOTE, ADASYN, Tomek Links, Polynomial Features, Image Augmenter |
+| **Splitting** | Leak-Free Partitioning | Train/Test, Train/Val/Test, Stratified, K-Fold, TimeSeriesSplit |
+| **Models** | Machine & Deep Learning | Linear/Logistic Regression, Ridge, Lasso, ElasticNet, KNN, NaiveBayes, SVM, DecisionTree, RandomForest, GBM, NeuralNetwork (MLP), KMeans, DBSCAN, Hierarchical, Q-Learning |
+| **Tuning** | Automated Optimization | K-Fold Cross-Validated Hyperparameter Search (`tune=True`) |
+| **Evaluation** | Research-Grade Metrics | Accuracy, Precision, Recall, F1-Score, Confusion Matrix, MSE, RMSE, MAE, R2-Score, ROC-AUC, PR-AUC, Log-Loss |
+| **Explainability**| Model Interpretability | KernelSHAP, Permutation Feature Importance, Partial Dependence Plots (PDP) |
+| **Pipeline** | Unified Architecture | Leak-free `pipeline()` engine with `TransformationState`, `PipelineResult`, and serialization |
+| **CLI** | Terminal Automation | `chokkhu eda`, `chokkhu clean`, `chokkhu pipeline`, `chokkhu --version` |
 
 ---
 
 ## License
 
-Distributed under the **MIT License**. See [`LICENSE`](file:///i:/Inception%20BD/chokkhu/LICENSE) for more details.
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

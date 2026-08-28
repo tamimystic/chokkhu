@@ -79,6 +79,34 @@ class RandomForest(ChokkhuModel):
 
         return predictions
 
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        if not self.trees:
+            raise ValueError("Model is not fitted yet.")
+        if self.task != "classification":
+            raise ValueError("predict_proba is only available for classification.")
+
+        predictions = np.array([tree.predict(X) for tree in self.trees])
+        tree_preds = np.swapaxes(predictions, 0, 1)
+
+        classes = np.unique(predictions)
+        if len(classes) == 1:
+            classes = np.array([0, 1])
+
+        n_classes = len(classes)
+        n_samples = X.shape[0]
+        proba = np.zeros((n_samples, n_classes), dtype=np.float64)
+        class_to_idx = {c: i for i, c in enumerate(classes)}
+
+        for i, sample_preds in enumerate(tree_preds):
+            for p in sample_preds:
+                if p in class_to_idx:
+                    proba[i, class_to_idx[p]] += 1.0
+            total: float = float(np.sum(proba[i]))
+            if total > 0:
+                proba[i] /= total
+
+        return proba
+
     def _most_common_label(self, y: np.ndarray) -> Any:
         unique_labels, counts = np.unique(y, return_counts=True)
         return unique_labels[np.argmax(counts)]
