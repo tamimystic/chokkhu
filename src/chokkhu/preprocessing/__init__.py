@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Tuple
+from typing import Any, Tuple
 
 import numpy as np
 import pandas as pd
@@ -19,12 +19,15 @@ from .feature_selection import (
     ANOVASelector,
     CorrelationFilterSelector,
     MutualInfoSelector,
+    RFESelector,
     VarianceThresholdSelector,
 )
 from .scaling import (
     L2Scaler,
     MaxAbsScaler,
     MinMaxScaler,
+    PowerScaler,
+    QuantileScaler,
     RobustScaler,
     StandardScaler,
     get_scaler,
@@ -32,7 +35,6 @@ from .scaling import (
 
 
 class PreprocessorState:
-
     def __init__(self):
         self.scalers = {}
         self.encoders = {}
@@ -67,104 +69,98 @@ def preprocess(
     data: pd.DataFrame,
     target: str = None,
     scale: str = None,
-    scale_columns: list = None,
-    feature_range: tuple = (0, 1),
     encode: str = None,
-    encode_columns: list = None,
-    onehot_drop: str = "first",
-    onehot_max_categories: int = 20,
-    ordinal_order: dict = None,
     select_features: str = None,
     select_k: int = None,
-    variance_threshold: float = 0.01,
-    correlation_threshold: float = 0.95,
-    verbose: bool = True,
     save_report: bool = False,
-    report_dir: str = "./chokkhu_reports/",
+    report_dir: str = None,
+    verbose: bool = True,
 ) -> Tuple[pd.DataFrame, PreprocessorState]:
     df = data.copy()
     state = PreprocessorState()
     state.target_col = target
+
     target_series = df[target] if target is not None and target in df.columns else None
     if target is not None and target in df.columns:
         features_df = df.drop(columns=[target])
     else:
         features_df = df
+
     state.num_cols = features_df.select_dtypes(include=[np.number]).columns.tolist()
-    state.cat_cols = features_df.select_dtypes(exclude=[np.number]).columns.tolist()
-    cols_to_encode = encode_columns if encode_columns else state.cat_cols
-    if encode is not None and cols_to_encode:
-        for col in cols_to_encode:
-            if col not in features_df.columns:
-                continue
+    state.cat_cols = features_df.select_dtypes(
+        include=["object", "category"]
+    ).columns.tolist()
+
+    if encode is not None:
+        for col in state.cat_cols:
             if encode == "label":
-                enc = LabelEncoder().fit(features_df[col])
-                features_df[col] = enc.transform(features_df[col])
+                enc: Any = LabelEncoder()
+                features_df[col] = enc.fit_transform(features_df[col])
                 state.encoders[col] = enc
             elif encode == "onehot":
-                enc = OneHotEncoder(
-                    drop_first=onehot_drop == "first",
-                    max_categories=onehot_max_categories,
-                ).fit(features_df[col])
-                encoded_df = enc.transform(features_df[col], prefix=col)
+                enc = OneHotEncoder()
+                encoded_df = enc.fit_transform(features_df[col], prefix=col)
                 features_df = pd.concat(
                     [features_df.drop(columns=[col]), encoded_df], axis=1
                 )
                 state.encoders[col] = enc
-            elif encode == "target" and target_series is not None:
-                enc = TargetEncoder().fit(features_df[col], target_series)
-                features_df[col] = enc.transform(features_df[col])
-                state.encoders[col] = enc
-            elif encode == "frequency":
-                enc = FrequencyEncoder().fit(features_df[col])
-                features_df[col] = enc.transform(features_df[col])
-                state.encoders[col] = enc
             elif encode == "binary":
-                enc = BinaryEncoder().fit(features_df[col])
-                encoded_df = enc.transform(features_df[col], prefix=col)
+                enc = BinaryEncoder()
+                encoded_df = enc.fit_transform(features_df[col], prefix=col)
                 features_df = pd.concat(
                     [features_df.drop(columns=[col]), encoded_df], axis=1
                 )
                 state.encoders[col] = enc
             elif encode == "ordinal":
-                enc = OrdinalEncoder(order_dict=ordinal_order).fit(features_df[col])
-                features_df[col] = enc.transform(features_df[col])
+                enc = OrdinalEncoder()
+                features_df[col] = enc.fit_transform(features_df[col])
                 state.encoders[col] = enc
-    cols_to_scale = scale_columns if scale_columns else state.num_cols
-    if scale is not None and cols_to_scale:
+            elif encode == "frequency":
+                enc = FrequencyEncoder()
+                features_df[col] = enc.fit_transform(features_df[col])
+                state.encoders[col] = enc
+            elif encode == "target" and target_series is not None:
+                enc = TargetEncoder()
+                features_df[col] = enc.fit_transform(features_df[col], target_series)
+                state.encoders[col] = enc
+
+    if scale is not None:
+        cols_to_scale = features_df.select_dtypes(include=[np.number]).columns.tolist()
         for col in cols_to_scale:
-            if col not in features_df.columns:
-                continue
-            sc = get_scaler(scale, feature_range=feature_range)
-            features_df[col] = sc.fit_transform(features_df[[col]].values).flatten()
-            state.scalers[col] = sc
+            scaler = get_scaler(scale)
+            features_df[col] = scaler.fit_transform(features_df[[col]].values).flatten()
+            state.scalers[col] = scaler
+
     if select_features is not None:
+        k = select_k if select_k is not None else 10
         if select_features == "variance":
-            selector = VarianceThresholdSelector(threshold=variance_threshold).fit(
-                features_df
-            )
+            fs: Any = VarianceThresholdSelector()
+            features_df = fs.fit_transform(features_df)
+            state.feature_selector = fs
         elif select_features == "correlation":
-            selector = CorrelationFilterSelector(threshold=correlation_threshold).fit(
-                features_df, target=target_series
-            )
+            fs = CorrelationFilterSelector()
+            features_df = fs.fit_transform(features_df, target_series)
+            state.feature_selector = fs
         elif select_features == "mutual_info" and target_series is not None:
-            selector = MutualInfoSelector(k=select_k or 10).fit(
-                features_df, target=target_series
-            )
+            fs = MutualInfoSelector(k=k)
+            features_df = fs.fit_transform(features_df, target_series)
+            state.feature_selector = fs
         elif select_features == "anova" and target_series is not None:
-            selector = ANOVASelector(k=select_k or 10).fit(
-                features_df, target=target_series
-            )
-        else:
-            selector = None
-        if selector is not None:
-            features_df = selector.transform(features_df)
-            state.feature_selector = selector
-    if target_series is not None:
+            fs = ANOVASelector(k=k)
+            features_df = fs.fit_transform(features_df, target_series)
+            state.feature_selector = fs
+        elif select_features == "rfe" and target_series is not None:
+            fs = RFESelector(k=k)
+            features_df = fs.fit_transform(features_df, target_series)
+            state.feature_selector = fs
+
+    if target_series is not None and target is not None:
         features_df[target] = target_series
+
     if verbose:
         Logger.info(f"Preprocessed features: {data.shape} -> {features_df.shape}")
-    return (features_df, state)
+
+    return features_df, state
 
 
 __all__ = [
@@ -175,14 +171,18 @@ __all__ = [
     "RobustScaler",
     "MaxAbsScaler",
     "L2Scaler",
+    "PowerScaler",
+    "QuantileScaler",
+    "get_scaler",
     "LabelEncoder",
     "OneHotEncoder",
-    "TargetEncoder",
-    "FrequencyEncoder",
     "BinaryEncoder",
     "OrdinalEncoder",
+    "FrequencyEncoder",
+    "TargetEncoder",
     "VarianceThresholdSelector",
     "CorrelationFilterSelector",
     "MutualInfoSelector",
     "ANOVASelector",
+    "RFESelector",
 ]

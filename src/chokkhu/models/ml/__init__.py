@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .dbscan import DBSCAN
 from .decision_tree import DecisionTree
 from .gradient_boosting import GradientBoosting
@@ -9,6 +11,7 @@ from .logistic_regression import LogisticRegression
 from .naive_bayes import NaiveBayes
 from .random_forest import RandomForest
 from .svm import SVM
+from .neural_network import NeuralNetwork
 
 __all__ = [
     "LinearRegression",
@@ -16,10 +19,11 @@ __all__ = [
     "KNN",
     "NaiveBayes",
     "KMeans",
-    "DBSCAN",
-    "DecisionTree",
-    "GradientBoosting",
-    "HierarchicalClustering",
-    "RandomForest",
     "SVM",
+    "DecisionTree",
+    "RandomForest",
+    "GradientBoosting",
+    "DBSCAN",
+    "HierarchicalClustering",
+    "NeuralNetwork",
 ]

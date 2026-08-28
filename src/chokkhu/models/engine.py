@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import numpy as np
-
+import pandas as pd
 from chokkhu.core.logger import Logger
-
 from .base import ChokkhuModel
 from .ml import (
     DBSCAN,
@@ -17,6 +16,7 @@ from .ml import (
     LogisticRegression,
     NaiveBayes,
     RandomForest,
+    NeuralNetwork,
 )
 from .rl import QLearning
 
@@ -79,19 +79,22 @@ def train(
             random_state=random_state,
             **kwargs,
         )
+    elif model in ("neural_network", "mlp", "dense"):
+        model_obj = NeuralNetwork(
+            task=task,
+            random_state=random_state,
+            **kwargs,
+        )
     elif model == "q_learning":
         model_obj = QLearning(random_state=random_state, **kwargs)
     else:
         raise ValueError(f"Model {model} is not supported yet.")
-
-    import pandas as pd
 
     if isinstance(X_train, (pd.DataFrame, pd.Series)):
         X_train = X_train.values
     if y_train is not None and isinstance(y_train, (pd.DataFrame, pd.Series)):
         y_train = y_train.values
 
-    # Ensure they are numpy arrays if they are lists
     if X_train is not None and not isinstance(X_train, np.ndarray):
         X_train = np.array(X_train)
     if y_train is not None and not isinstance(y_train, np.ndarray):

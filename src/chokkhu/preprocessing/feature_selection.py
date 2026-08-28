@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from typing import Any
 from scipy import stats
 
 
 class VarianceThresholdSelector:
-
     def __init__(self, threshold=0.01):
         self.threshold = threshold
-        self.selected_columns = []
+        self.selected_columns: list[str] = []
 
     def fit(self, df: pd.DataFrame):
         num_df = df.select_dtypes(include=[np.number])
@@ -28,10 +28,9 @@ class VarianceThresholdSelector:
 
 
 class CorrelationFilterSelector:
-
     def __init__(self, threshold=0.95):
         self.threshold = threshold
-        self.dropped_columns = []
+        self.dropped_columns: list[str] = []
 
     def fit(self, df: pd.DataFrame, target: pd.Series = None):
         num_df = df.select_dtypes(include=[np.number])
@@ -67,10 +66,9 @@ class CorrelationFilterSelector:
 
 
 class MutualInfoSelector:
-
     def __init__(self, k=10):
         self.k = k
-        self.selected_columns = []
+        self.selected_columns: list[str] = []
 
     def _calc_mi(self, x: pd.Series, y: pd.Series):
         if pd.api.types.is_numeric_dtype(x) and x.nunique() > 10:
@@ -111,10 +109,9 @@ class MutualInfoSelector:
 
 
 class ANOVASelector:
-
     def __init__(self, k=10):
         self.k = k
-        self.selected_columns = []
+        self.selected_columns: list[str] = []
 
     def fit(self, df: pd.DataFrame, target: pd.Series):
         num_cols = df.select_dtypes(include=[np.number]).columns
@@ -133,6 +130,57 @@ class ANOVASelector:
                 scores[col] = 0.0
         sorted_cols = sorted(scores, key=scores.get, reverse=True)
         self.selected_columns = sorted_cols[: min(self.k, len(sorted_cols))]
+        return self
+
+    def transform(self, df: pd.DataFrame):
+        cat_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
+        keep = [c for c in self.selected_columns if c in df.columns] + cat_cols
+        return df[keep]
+
+    def fit_transform(self, df: pd.DataFrame, target: pd.Series):
+        return self.fit(df, target).transform(df)
+
+
+class RFESelector:
+    """Recursive Feature Elimination (RFE) from scratch."""
+
+    def __init__(self, k: int = 5, step: int = 1):
+        self.k = k
+        self.step = step
+        self.selected_columns: list[str] = []
+
+    def fit(self, df: pd.DataFrame, target: pd.Series):
+        from chokkhu.models.ml.linear_regression import LinearRegression
+        from chokkhu.models.ml.logistic_regression import LogisticRegression
+
+        num_cols = list(df.select_dtypes(include=[np.number]).columns)
+        if len(num_cols) <= self.k:
+            self.selected_columns = num_cols
+            return self
+
+        current_cols = list(num_cols)
+        y_arr = target.to_numpy()
+        is_class = not np.issubdtype(y_arr.dtype, np.floating)
+
+        while len(current_cols) > self.k:
+            X_curr = df[current_cols].to_numpy(dtype=np.float64)
+            if is_class:
+                model: Any = LogisticRegression(epochs=100, learning_rate=0.01)
+                model.fit(X_curr, y_arr)
+                weights = np.abs(model.weights)
+            else:
+                model = LinearRegression(method="normal_equation")
+                model.fit(X_curr, y_arr)
+                weights = np.abs(model.weights)
+
+            # Find feature with minimum weight
+            n_to_remove = min(self.step, len(current_cols) - self.k)
+            worst_indices = np.argsort(weights)[:n_to_remove]
+            current_cols = [
+                c for i, c in enumerate(current_cols) if i not in worst_indices
+            ]
+
+        self.selected_columns = current_cols
         return self
 
     def transform(self, df: pd.DataFrame):
