@@ -1,13 +1,34 @@
 from __future__ import annotations
 
 from typing import Any
-
 import numpy as np
 import pandas as pd
 
 
-class RandomOverSampler:
+def _pairwise_distances_batched(
+    X: np.ndarray, Y: np.ndarray | None = None, batch_size: int = 500
+) -> np.ndarray:
+    """Computes pairwise Euclidean distance matrix in batches to avoid MemoryError on large datasets."""
+    n_x = len(X)
+    if Y is None:
+        Y = X
+    n_y = len(Y)
 
+    dists: np.ndarray = np.empty((n_x, n_y), dtype=np.float64)
+    Y_sq = np.sum(Y**2, axis=1)
+
+    for i in range(0, n_x, batch_size):
+        end_i = min(i + batch_size, n_x)
+        X_batch = X[i:end_i]
+        X_sq = np.sum(X_batch**2, axis=1)[:, np.newaxis]
+        dot = np.dot(X_batch, Y.T)
+        d_sq = np.maximum(X_sq + Y_sq[np.newaxis, :] - 2.0 * dot, 0.0)
+        dists[i:end_i] = np.sqrt(d_sq)
+
+    return dists
+
+
+class RandomOverSampler:
     def __init__(self, ratio: float = 1.0, random_state: int | None = None) -> None:
         self.ratio = ratio
         self.random_state = random_state
@@ -15,13 +36,14 @@ class RandomOverSampler:
     def fit_resample(
         self, X: Any, y: Any
     ) -> tuple[np.ndarray | pd.DataFrame, np.ndarray | pd.Series]:
-        is_df = isinstance(X, pd.DataFrame)
-        is_series = isinstance(y, pd.Series)
-        X_arr = np.asarray(X)
-        y_arr = np.asarray(y)
-
         if self.random_state is not None:
             np.random.seed(self.random_state)
+
+        is_df = isinstance(X, pd.DataFrame)
+        is_series = isinstance(y, pd.Series)
+
+        X_arr = np.asarray(X)
+        y_arr = np.asarray(y)
 
         classes, counts = np.unique(y_arr, return_counts=True)
         max_count = int(np.max(counts))
@@ -31,12 +53,13 @@ class RandomOverSampler:
         y_res = list(y_arr)
 
         for c, count in zip(classes, counts):
-            if count < target_count:
-                n_needed = target_count - count
-                idx_c = np.where(y_arr == c)[0]
-                sampled_idx = np.random.choice(idx_c, size=n_needed, replace=True)
-                X_res.extend(X_arr[sampled_idx])
-                y_res.extend(y_arr[sampled_idx])
+            if count >= target_count:
+                continue
+            n_samples = target_count - count
+            c_indices = np.where(y_arr == c)[0]
+            sampled_idx = np.random.choice(c_indices, size=n_samples, replace=True)
+            X_res.extend(X_arr[sampled_idx])
+            y_res.extend(y_arr[sampled_idx])
 
         X_res_arr = np.array(X_res)
         y_res_arr = np.array(y_res)
@@ -55,7 +78,6 @@ class RandomOverSampler:
 
 
 class RandomUnderSampler:
-
     def __init__(self, ratio: float = 1.0, random_state: int | None = None) -> None:
         self.ratio = ratio
         self.random_state = random_state
@@ -63,30 +85,35 @@ class RandomUnderSampler:
     def fit_resample(
         self, X: Any, y: Any
     ) -> tuple[np.ndarray | pd.DataFrame, np.ndarray | pd.Series]:
-        is_df = isinstance(X, pd.DataFrame)
-        is_series = isinstance(y, pd.Series)
-        X_arr = np.asarray(X)
-        y_arr = np.asarray(y)
-
         if self.random_state is not None:
             np.random.seed(self.random_state)
 
+        is_df = isinstance(X, pd.DataFrame)
+        is_series = isinstance(y, pd.Series)
+
+        X_arr = np.asarray(X)
+        y_arr = np.asarray(y)
+
         classes, counts = np.unique(y_arr, return_counts=True)
         min_count = int(np.min(counts))
-        target_count = max(int(min_count / self.ratio), min_count)
+        target_count = max(1, int(min_count / self.ratio))
 
-        selected_indices: list = []
-        for c in classes:
-            idx_c = np.where(y_arr == c)[0]
-            if len(idx_c) > target_count:
-                chosen = np.random.choice(idx_c, size=target_count, replace=False)
+        X_res = []
+        y_res = []
+
+        for c, count in zip(classes, counts):
+            c_indices = np.where(y_arr == c)[0]
+            if count > target_count:
+                sampled_idx = np.random.choice(
+                    c_indices, size=target_count, replace=False
+                )
             else:
-                chosen = idx_c
-            selected_indices.extend(chosen)
+                sampled_idx = c_indices
+            X_res.extend(X_arr[sampled_idx])
+            y_res.extend(y_arr[sampled_idx])
 
-        selected_indices = np.array(selected_indices)
-        X_res_arr = X_arr[selected_indices]
-        y_res_arr = y_arr[selected_indices]
+        X_res_arr = np.array(X_res)
+        y_res_arr = np.array(y_res)
 
         if is_df:
             X_out = pd.DataFrame(X_res_arr, columns=X.columns)
@@ -102,7 +129,6 @@ class RandomUnderSampler:
 
 
 class SMOTE:
-
     def __init__(
         self, k_neighbors: int = 5, ratio: float = 1.0, random_state: int | None = None
     ) -> None:
@@ -113,13 +139,14 @@ class SMOTE:
     def fit_resample(
         self, X: Any, y: Any
     ) -> tuple[np.ndarray | pd.DataFrame, np.ndarray | pd.Series]:
-        is_df = isinstance(X, pd.DataFrame)
-        is_series = isinstance(y, pd.Series)
-        X_arr = np.asarray(X, dtype=np.float64)
-        y_arr = np.asarray(y)
-
         if self.random_state is not None:
             np.random.seed(self.random_state)
+
+        is_df = isinstance(X, pd.DataFrame)
+        is_series = isinstance(y, pd.Series)
+
+        X_arr = np.asarray(X, dtype=np.float64)
+        y_arr = np.asarray(y)
 
         classes, counts = np.unique(y_arr, return_counts=True)
         max_count = int(np.max(counts))
@@ -139,8 +166,8 @@ class SMOTE:
 
             k = min(self.k_neighbors, n_min - 1)
 
-            diff = X_minority[:, np.newaxis, :] - X_minority[np.newaxis, :, :]
-            dists = np.sqrt(np.sum(diff**2, axis=-1))
+            # Memory-efficient distance matrix (O(N^2) 2D matrix without 3D tensors)
+            dists = _pairwise_distances_batched(X_minority)
             np.fill_diagonal(dists, np.inf)
 
             nearest_indices = np.argsort(dists, axis=1)[:, :k]
@@ -172,7 +199,6 @@ class SMOTE:
 
 
 class ADASYN:
-
     def __init__(
         self, k_neighbors: int = 5, ratio: float = 1.0, random_state: int | None = None
     ) -> None:
@@ -183,17 +209,19 @@ class ADASYN:
     def fit_resample(
         self, X: Any, y: Any
     ) -> tuple[np.ndarray | pd.DataFrame, np.ndarray | pd.Series]:
-        is_df = isinstance(X, pd.DataFrame)
-        is_series = isinstance(y, pd.Series)
-        X_arr = np.asarray(X, dtype=np.float64)
-        y_arr = np.asarray(y)
-
         if self.random_state is not None:
             np.random.seed(self.random_state)
 
+        is_df = isinstance(X, pd.DataFrame)
+        is_series = isinstance(y, pd.Series)
+
+        X_arr = np.asarray(X, dtype=np.float64)
+        y_arr = np.asarray(y)
+
         classes, counts = np.unique(y_arr, return_counts=True)
-        majority_class = classes[np.argmax(counts)]
-        max_count = int(np.max(counts))
+        majority_idx = int(np.argmax(counts))
+        majority_class = classes[majority_idx]
+        max_count = int(counts[majority_idx])
 
         X_res = list(X_arr)
         y_res = list(y_arr)
@@ -211,8 +239,8 @@ class ADASYN:
 
             k = min(self.k_neighbors, len(X_arr) - 1)
 
-            diff_all = X_minority[:, np.newaxis, :] - X_arr[np.newaxis, :, :]
-            dists_all = np.sqrt(np.sum(diff_all**2, axis=-1))
+            # Memory-efficient batched distances
+            dists_all = _pairwise_distances_batched(X_minority, X_arr)
 
             r = np.zeros(len(X_minority))
             for i in range(len(X_minority)):
@@ -228,8 +256,7 @@ class ADASYN:
 
             g_samples = np.random.multinomial(G, r_norm)
 
-            diff_min = X_minority[:, np.newaxis, :] - X_minority[np.newaxis, :, :]
-            dists_min = np.sqrt(np.sum(diff_min**2, axis=-1))
+            dists_min = _pairwise_distances_batched(X_minority)
             np.fill_diagonal(dists_min, np.inf)
             k_min = min(self.k_neighbors, len(X_minority) - 1)
             nearest_min = np.argsort(dists_min, axis=1)[:, :k_min]
@@ -261,7 +288,6 @@ class ADASYN:
 
 
 class SMOTETomek:
-
     def __init__(
         self, k_neighbors: int = 5, ratio: float = 1.0, random_state: int | None = None
     ) -> None:
@@ -283,8 +309,7 @@ class SMOTETomek:
         if n < 2:
             return X_sm, y_sm
 
-        diff = X_arr[:, np.newaxis, :] - X_arr[np.newaxis, :, :]
-        dists = np.sqrt(np.sum(diff**2, axis=-1))
+        dists = _pairwise_distances_batched(X_arr)
         np.fill_diagonal(dists, np.inf)
 
         nearest_1 = np.argmin(dists, axis=1)

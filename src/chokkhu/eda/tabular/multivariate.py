@@ -75,11 +75,12 @@ class MultivariateAnalyzer:
                 except np.linalg.LinAlgError:
                     results["vif"] = {}
                 try:
-                    df_c = num_df - num_df.mean()
-                    cov = np.cov(num_df.T)
-                    inv_cov = np.linalg.inv(cov)
+                    df_c = (num_df - num_df.mean()).to_numpy(dtype=np.float64)
+                    cov = np.cov(num_df.to_numpy(dtype=np.float64).T)
+                    inv_cov = np.linalg.pinv(cov)
                     left = np.dot(df_c, inv_cov)
-                    mahal = np.dot(left, df_c.T).diagonal()
+                    # Memory-optimized row-wise dot product (O(N*D) instead of O(N^2) memory)
+                    mahal = np.sum(left * df_c, axis=1)
                     threshold = stats.chi2.ppf(0.99, df=len(numerical))
                     outliers_idx = np.where(mahal > threshold)[0]
                     results["mahalanobis_outliers"] = {

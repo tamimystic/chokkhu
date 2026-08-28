@@ -73,7 +73,14 @@ class BivariatePlotter(BasePlotter):
             ordinal_cols = list(univ.get("ordinal_stats", {}).keys())
             if ordinal_cols:
                 hue_col = ordinal_cols[0]
-        for pair_name, data in num_vs_num.items():
+        # Sort pairs by absolute correlation and plot top-10 to prevent O(N^2) plot explosion
+        sorted_pairs = sorted(
+            num_vs_num.items(),
+            key=lambda item: abs(item[1].get("pearson", 0.0) or 0.0),
+            reverse=True,
+        )
+        max_biv_plots = min(10, len(sorted_pairs))
+        for pair_name, data in sorted_pairs[:max_biv_plots]:
             n1 = data["n1"]
             n2 = data["n2"]
             if hue_col and hue_col not in [n1, n2]:
