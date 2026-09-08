@@ -204,9 +204,9 @@ class GroupedQueryAttention(Module):
         scores = np.matmul(q, k.swapaxes(-2, -1)) * scale
 
         if is_causal:
-            causal_mask: np.ndarray = np.tril(
-                np.ones((seq_len, seq_len), dtype=bool)
-            )[np.newaxis, np.newaxis, :, :]
+            causal_mask: np.ndarray = np.tril(np.ones((seq_len, seq_len), dtype=bool))[
+                np.newaxis, np.newaxis, :, :
+            ]
             scores = np.where(causal_mask, scores, -1e9)
 
         if mask is not None:

@@ -1,3 +1,11 @@
+from .losses import (
+    CIoULoss,
+    DIoULoss,
+    DiceLoss,
+    FocalLoss,
+    GIoULoss,
+    TverskyLoss,
+)
 from .conv_layers import (
     AvgPool2D,
     ChannelShuffle,
@@ -79,6 +87,12 @@ __all__ = [
     "compute_iou",
     "non_maximum_suppression",
     "GradCAM",
+    "FocalLoss",
+    "DiceLoss",
+    "TverskyLoss",
+    "GIoULoss",
+    "DIoULoss",
+    "CIoULoss",
     "LeNet5",
     "AlexNet",
     "ZFNet",
