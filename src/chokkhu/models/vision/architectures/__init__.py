@@ -1,3 +1,5 @@
+from .swin import SwinBase, SwinSmall, SwinT, SwinTransformer
+from .deit import DeiT, DeiTBase, DeiTSmall, DeiTTiny
 from .lenet import LeNet5
 from .alexnet import AlexNet, ZFNet
 from .vgg import VGG11, VGG13, VGG16, VGG19
@@ -70,4 +72,12 @@ __all__ = [
     "ViT",
     "ViTTiny",
     "ViTBase",
+    "SwinTransformer",
+    "SwinT",
+    "SwinSmall",
+    "SwinBase",
+    "DeiT",
+    "DeiTTiny",
+    "DeiTSmall",
+    "DeiTBase",
 ]

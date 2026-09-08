@@ -249,6 +249,14 @@ def _create_model_instance(
         from .vision import VisionTransformer
 
         return VisionTransformer(in_channels=in_c, num_classes=num_c)
+    elif model in ("swin", "swin_transformer", "swin_t", "swint"):
+        from .vision.architectures.swin import SwinTransformer
+
+        return SwinTransformer(in_channels=in_c, num_classes=num_c)
+    elif model in ("deit", "deit_tiny", "deittiny"):
+        from .vision.architectures.deit import DeiT
+
+        return DeiT(in_channels=in_c, num_classes=num_c)
     # --- NLP & Sovereign Transformer Universe ---
     elif model in ("bert", "bert_classification", "bert_classifier"):
         from .nlp import BertForSequenceClassification
