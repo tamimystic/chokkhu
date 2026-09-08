@@ -1,3 +1,9 @@
+from .detection_models import (
+    RetinaNetHead,
+    SSDHead,
+    YOLOHead,
+    generate_anchor_grid,
+)
 from .fpn import FeaturePyramidNetwork, PANet
 from .advanced_conv import AtrousConv2D, DilatedConv2D
 from .losses import (
@@ -95,6 +101,10 @@ __all__ = [
     "GIoULoss",
     "DIoULoss",
     "CIoULoss",
+    "YOLOHead",
+    "SSDHead",
+    "RetinaNetHead",
+    "generate_anchor_grid",
     "FeaturePyramidNetwork",
     "FPNPyramid",
     "PANet",
