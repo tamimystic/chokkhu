@@ -9,6 +9,7 @@ from chokkhu.models.base import ChokkhuModel
 from .importance import permutation_feature_importance
 from .shap import kernel_shap
 from .pdp import partial_dependence
+from .neural import IntegratedGradients, SmoothGrad, DeepLIFT
 
 
 class ExplanationResult:
@@ -163,6 +164,45 @@ def explain(
                 "grid_values": grid_vals,
                 "average_predictions": avg_preds,
             },
+        )
+    elif method in ("integrated_gradients", "ig"):
+        ig = IntegratedGradients(model=model, steps=n_samples)
+        attributions = np.zeros_like(X_arr)
+        for i in range(len(X_arr)):
+            attributions[i] = ig.attribute(X_arr[i])
+        mean_attr = np.mean(np.abs(attributions), axis=0)
+        return ExplanationResult(
+            method="integrated_gradients",
+            feature_names=feature_names,
+            importances=mean_attr,
+            importance_std=np.std(attributions, axis=0),
+            shap_values=attributions,
+        )
+    elif method in ("smoothgrad", "smooth_grad"):
+        sg = SmoothGrad(model=model, num_samples=n_samples, random_state=random_state)
+        attributions = np.zeros_like(X_arr)
+        for i in range(len(X_arr)):
+            attributions[i] = sg.attribute(X_arr[i])
+        mean_attr = np.mean(np.abs(attributions), axis=0)
+        return ExplanationResult(
+            method="smoothgrad",
+            feature_names=feature_names,
+            importances=mean_attr,
+            importance_std=np.std(attributions, axis=0),
+            shap_values=attributions,
+        )
+    elif method in ("deeplift", "deep_lift"):
+        dl = DeepLIFT(model=model)
+        attributions = np.zeros_like(X_arr)
+        for i in range(len(X_arr)):
+            attributions[i] = dl.attribute(X_arr[i])
+        mean_attr = np.mean(np.abs(attributions), axis=0)
+        return ExplanationResult(
+            method="deeplift",
+            feature_names=feature_names,
+            importances=mean_attr,
+            importance_std=np.std(attributions, axis=0),
+            shap_values=attributions,
         )
     else:
         raise ValueError(

@@ -4,6 +4,11 @@ from .engine import ExplanationResult, explain
 from .importance import permutation_feature_importance
 from .pdp import partial_dependence
 from .shap import kernel_shap
+from .neural import (
+    IntegratedGradients,
+    SmoothGrad,
+    DeepLIFT,
+)
 
 __all__ = [
     "explain",
@@ -11,4 +16,7 @@ __all__ = [
     "permutation_feature_importance",
     "kernel_shap",
     "partial_dependence",
+    "IntegratedGradients",
+    "SmoothGrad",
+    "DeepLIFT",
 ]
