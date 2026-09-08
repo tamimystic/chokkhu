@@ -145,22 +145,23 @@ def evaluate(
             md_text += f"- **ROC-AUC**: {results['roc_auc']:.4f}\n"
         PlotVisualizer.display_markdown(md_text)
 
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.heatmap(
-            cm,
-            annot=True,
-            fmt="d",
-            cmap="Blues",
-            xticklabels=classes,
-            yticklabels=classes,
-            ax=ax,
-        )
-        ax.set_title("Confusion Matrix")
-        ax.set_xlabel("Predicted Label")
-        ax.set_ylabel("True Label")
-        PlotVisualizer.save_and_show(
-            fig, "confusion_matrix.png", save_dir, save_reports
-        )
+        if cm.size > 0 and len(classes) > 0:
+            fig, ax = plt.subplots(figsize=(8, 6))
+            sns.heatmap(
+                cm,
+                annot=True,
+                fmt="d",
+                cmap="Blues",
+                xticklabels=classes,
+                yticklabels=classes,
+                ax=ax,
+            )
+            ax.set_title("Confusion Matrix")
+            ax.set_xlabel("Predicted Label")
+            ax.set_ylabel("True Label")
+            PlotVisualizer.save_and_show(
+                fig, "confusion_matrix.png", save_dir, save_reports
+            )
 
     elif task == "regression":
         mse = mean_squared_error(y, y_pred)

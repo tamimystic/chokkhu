@@ -31,9 +31,15 @@ def train_test_split(
             if shuffle:
                 np.random.shuffle(c_idx)
             n_c = len(c_idx)
-            n_test = int(n_c * test_size)
+            if test_size > 0 and n_c >= 2:
+                n_test = min(n_c - 1, max(1, int(n_c * test_size)))
+            else:
+                n_test = int(n_c * test_size)
             if val_size is not None:
-                n_val = int(n_c * val_size)
+                if val_size > 0 and (n_c - n_test) >= 2:
+                    n_val = min(n_c - n_test - 1, max(1, int(n_c * val_size)))
+                else:
+                    n_val = int(n_c * val_size)
                 test_list.extend(c_idx[:n_test])
                 val_list.extend(c_idx[n_test : n_test + n_val])
                 train_list.extend(c_idx[n_test + n_val :])
@@ -47,9 +53,15 @@ def train_test_split(
         indices = np.arange(n)
         if shuffle:
             np.random.shuffle(indices)
-        n_test = int(n * test_size)
+        if test_size > 0 and n >= 2:
+            n_test = min(n - 1, max(1, int(n * test_size)))
+        else:
+            n_test = int(n * test_size)
         if val_size is not None:
-            n_val = int(n * val_size)
+            if val_size > 0 and (n - n_test) >= 2:
+                n_val = min(n - n_test - 1, max(1, int(n * val_size)))
+            else:
+                n_val = int(n * val_size)
             test_idx = indices[:n_test]
             val_idx = indices[n_test : n_test + n_val]
             train_idx = indices[n_test + n_val :]
@@ -57,6 +69,7 @@ def train_test_split(
             test_idx = indices[:n_test]
             train_idx = indices[n_test:]
             val_idx = None
+
     if is_df:
         X_train, X_test = (X.iloc[train_idx], X.iloc[test_idx])
         X_val = X.iloc[val_idx] if val_idx is not None else None

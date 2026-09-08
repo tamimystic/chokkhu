@@ -512,6 +512,16 @@ def train(
     if verbose:
         Logger.info(f"Training model: {model} (task: {task})")
 
+    if X_train is None and "X" in kwargs:
+        X_train = kwargs.pop("X")
+    elif "X" in kwargs:
+        kwargs.pop("X")
+
+    if y_train is None and "y" in kwargs:
+        y_train = kwargs.pop("y")
+    elif "y" in kwargs:
+        kwargs.pop("y")
+
     if isinstance(X_train, (pd.DataFrame, pd.Series)):
         X_train = X_train.values
     if y_train is not None and isinstance(y_train, (pd.DataFrame, pd.Series)):

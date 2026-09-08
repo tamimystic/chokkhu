@@ -193,7 +193,14 @@ from .evaluation import (
     roc_auc_score,
     pr_auc_score,
 )
-from .explainability import ExplanationResult, explain
+from .explainability import (
+    ExplanationResult,
+    explain,
+    IntegratedGradients,
+    SmoothGrad,
+    DeepLIFT,
+)
+
 from .pipeline import PipelineResult, TransformationState, pipeline
 
 
@@ -431,8 +438,10 @@ __all__ = [
     "Seq2SeqTransformer",
     "T5",
     "GenerationConfig",
-    "TextGenerator",
     # Preprocessing & Metrics
+    "StandardScaler",
+    "MinMaxScaler",
+    "RobustScaler",
     "PowerScaler",
     "QuantileScaler",
     "RFESelector",
@@ -442,4 +451,23 @@ __all__ = [
     "log_loss",
     "mean_squared_error",
     "r2_score",
+    # GNN
+    "GCN",
+    "GAT",
+    "GraphSAGE",
+    "GIN",
+    "normalize_adjacency",
+    # Time Series
+    "ARIMA",
+    "ExponentialSmoothing",
+    "NBEATS",
+    "NHITS",
+    "PatchTST",
+    "decompose_series",
+    # AutoML
+    "AutoTrainer",
+    "AutoMLResult",
+    "auto_train",
+    "BayesianOptimization",
+    "Hyperband",
 ]

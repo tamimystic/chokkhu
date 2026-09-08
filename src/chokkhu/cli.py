@@ -65,6 +65,41 @@ def main(args: list[str] | None = None) -> int:
         "--save", "-s", default=None, help="Save pipeline to disk (.pkl)"
     )
 
+    # Command: train
+    train_parser = subparsers.add_parser("train", help="Train a model on dataset")
+    train_parser.add_argument("--data", "-d", required=True, help="Path to dataset")
+    train_parser.add_argument(
+        "--target", "-t", required=True, help="Target column name"
+    )
+    train_parser.add_argument(
+        "--model", "-m", default="random_forest", help="Model name or architecture"
+    )
+    train_parser.add_argument(
+        "--task", default="auto", choices=["auto", "classification", "regression"]
+    )
+    train_parser.add_argument(
+        "--epochs", "-e", type=int, default=10, help="Training epochs"
+    )
+    train_parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
+
+    # Command: automl
+    automl_parser = subparsers.add_parser(
+        "automl", help="Run automated model search & tuning"
+    )
+    automl_parser.add_argument("--data", "-d", required=True, help="Path to dataset")
+    automl_parser.add_argument(
+        "--target", "-t", required=True, help="Target column name"
+    )
+    automl_parser.add_argument(
+        "--task", default="auto", choices=["auto", "classification", "regression"]
+    )
+    automl_parser.add_argument(
+        "--time-budget", type=int, default=60, help="Time budget in seconds"
+    )
+    automl_parser.add_argument(
+        "--tuner", default="hyperband", choices=["hyperband", "bayesian"]
+    )
+
     parsed_args = parser.parse_args(args)
 
     if not parsed_args.command:
@@ -100,6 +135,33 @@ def main(args: list[str] | None = None) -> int:
         print(result.summary())
         if parsed_args.save:
             result.save(parsed_args.save)
+    elif parsed_args.command == "train":
+        df = ck.load(parsed_args.data)
+        X = df.drop(columns=[parsed_args.target]).to_numpy()
+        y = df[parsed_args.target].to_numpy()
+        trained_model = ck.train(
+            model=parsed_args.model,
+            X=X,
+            y=y,
+            task=parsed_args.task,
+            epochs=parsed_args.epochs,
+            lr=parsed_args.lr,
+        )
+        print(f"Successfully trained {parsed_args.model}: {trained_model}")
+    elif parsed_args.command == "automl":
+        df = ck.load(parsed_args.data)
+        X = df.drop(columns=[parsed_args.target]).to_numpy()
+        y = df[parsed_args.target].to_numpy()
+        res = ck.auto_train(
+            X=X,
+            y=y,
+            task=parsed_args.task,
+            time_budget=parsed_args.time_budget,
+            tuner=parsed_args.tuner,
+        )
+        print(
+            f"AutoML Completed! Best model: {res.best_model_name} with score {res.best_score:.4f}"
+        )
 
     return 0
 

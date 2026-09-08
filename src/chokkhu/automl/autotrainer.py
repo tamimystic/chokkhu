@@ -208,12 +208,22 @@ def auto_train(
     X: Union[np.ndarray, pd.DataFrame],
     y: Union[np.ndarray, pd.Series],
     task: str = "auto",
+    time_budget_secs: int = 60,
+    time_budget: Optional[int] = None,
     candidate_models: Optional[List[str]] = None,
+    tune: bool = True,
     cv: int = 3,
     verbose: bool = True,
+    **kwargs: Any,
 ) -> AutoMLResult:
     """Convenience top-level API for sovereign AutoML."""
+    budget = time_budget if time_budget is not None else time_budget_secs
     trainer = AutoTrainer(
-        task=task, candidate_models=candidate_models, cv=cv, verbose=verbose
+        task=task,
+        time_budget_secs=budget,
+        candidate_models=candidate_models,
+        tune=tune,
+        cv=cv,
+        verbose=verbose,
     )
     return trainer.fit(X, y)

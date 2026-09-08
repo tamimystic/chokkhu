@@ -7,6 +7,8 @@ from .detection_models import (
     generate_anchor_grid,
 )
 from .fpn import FeaturePyramidNetwork, PANet
+
+FPNPyramid = FeaturePyramidNetwork
 from .advanced_conv import AtrousConv2D, DilatedConv2D
 from .losses import (
     CIoULoss,
