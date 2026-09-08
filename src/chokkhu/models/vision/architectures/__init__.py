@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .swin import SwinBase, SwinSmall, SwinT, SwinTransformer
 from .deit import DeiT, DeiTBase, DeiTSmall, DeiTTiny
 from .lenet import LeNet5

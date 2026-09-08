@@ -1,5 +1,6 @@
 """Unit tests for NLP tokenizers, embeddings, recurrent models, attention, transformer blocks, architectures, and generation."""
 
+from __future__ import annotations
 import os
 import tempfile
 import numpy as np

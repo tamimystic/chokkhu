@@ -1,5 +1,6 @@
 """Time Series & Forecasting Subsystem from First Principles."""
 
+from __future__ import annotations
 from .transforms import (
     decompose_series,
     create_lag_matrix,

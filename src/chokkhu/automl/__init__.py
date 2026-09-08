@@ -1,5 +1,6 @@
 """Zero-Dependency Automated Machine Learning (AutoML) Subsystem."""
 
+from __future__ import annotations
 from .surrogate import (
     GaussianProcessSurrogate,
     expected_improvement,

@@ -1,5 +1,6 @@
 """Unit tests for Audio Processing Universe (STFT, ISTFT, MelSpectrogram, MFCC, Conformer, AST, Wav2Vec2)."""
 
+from __future__ import annotations
 import numpy as np
 
 from chokkhu.core.tensor import Tensor

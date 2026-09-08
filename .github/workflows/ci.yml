@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -29,27 +30,29 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r requirements_dev.txt
           python -m pip install -e .
 
       - name: Run Code Formatting Checks (Black)
         run: |
-          python -m black --check src
+          python -m black --check src tests
 
       - name: Run Linting (flake8)
-        run: python -m flake8 src tests
+        run: |
+          python -m flake8 src tests
 
       - name: Run Type Checking (mypy)
-        run: python -m mypy src --follow-imports=skip
+        run: |
+          python -m mypy src --follow-imports=skip
 
       - name: Run Unit & Integration Tests (pytest)
-        run: python -m pytest tests/ -v -s
+        run: |
+          python -m pytest tests/ -v
 
-  publish:
-    name: Publish to PyPI
+  build-wheel:
+    name: Build Distribution Packages
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -63,11 +66,39 @@ jobs:
 
       - name: Install build tools
         run: |
-          python -m pip install --upgrade pip
-          pip install build twine
+          python -m pip install --upgrade pip build twine
 
       - name: Build package
-        run: python -m build
+        run: |
+          python -m build
+
+      - name: Check wheel package size and metadata
+        run: |
+          python -m twine check dist/*
+          ls -lh dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: [test, build-wheel]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip build
+
+      - name: Build package
+        run: |
+          python -m build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

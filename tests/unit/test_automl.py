@@ -1,5 +1,6 @@
 """Unit tests for Sovereign AutoML Subsystem (GP Surrogate, Bayesian Optimization, Hyperband, AutoTrainer)."""
 
+from __future__ import annotations
 import numpy as np
 
 from chokkhu.automl import (

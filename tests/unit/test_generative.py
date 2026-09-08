@@ -1,5 +1,6 @@
 """Unit tests for Generative AI Universe (VAE, VQ-VAE, DDPM, DCGAN, WGAN-GP)."""
 
+from __future__ import annotations
 import numpy as np
 
 from chokkhu.core.tensor import Tensor

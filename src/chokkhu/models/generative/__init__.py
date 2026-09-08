@@ -1,5 +1,6 @@
 """Generative AI, Autoencoders, Diffusion Models, and GANs for Chokkhu."""
 
+from __future__ import annotations
 from .autoencoders import (
     VAE,
     VQVAE,

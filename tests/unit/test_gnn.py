@@ -1,5 +1,6 @@
 """Unit tests for Graph Neural Networks (GNN) Universe (GCN, GAT, GraphSAGE, GIN)."""
 
+from __future__ import annotations
 import numpy as np
 
 from chokkhu.core.tensor import Tensor

@@ -1,5 +1,6 @@
 """Unit tests for Object Detection Heads (YOLO, SSD, RetinaNet) and Anchor Grid Generator."""
 
+from __future__ import annotations
 import numpy as np
 
 from chokkhu.core.tensor import Tensor

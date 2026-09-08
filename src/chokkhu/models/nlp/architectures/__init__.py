@@ -1,5 +1,6 @@
 """NLP Architectures for Chokkhu."""
 
+from __future__ import annotations
 from .bert import BERT, BertForMaskedLM, BertForSequenceClassification
 from .roberta import RoBERTa, RobertaForMaskedLM, RobertaForSequenceClassification
 from .deberta import DeBERTa, DebertaForSequenceClassification

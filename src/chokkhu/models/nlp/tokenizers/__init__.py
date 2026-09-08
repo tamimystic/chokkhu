@@ -1,5 +1,6 @@
 """Tokenizers for Chokkhu Natural Language Processing."""
 
+from __future__ import annotations
 from .base import BaseTokenizer
 from .char_tokenizer import CharacterTokenizer
 from .word_tokenizer import WordTokenizer, WhitespaceTokenizer

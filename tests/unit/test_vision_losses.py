@@ -1,5 +1,6 @@
 """Unit tests for Computer Vision specialized loss functions."""
 
+from __future__ import annotations
 import numpy as np
 
 from chokkhu.models.vision import (

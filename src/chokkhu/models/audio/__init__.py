@@ -1,5 +1,6 @@
 """Audio Signal Processing, Speech Transformers, and Spectrogram Models for Chokkhu."""
 
+from __future__ import annotations
 from .transforms import (
     get_window,
     stft,

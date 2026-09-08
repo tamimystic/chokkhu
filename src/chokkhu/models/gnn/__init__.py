@@ -1,5 +1,6 @@
 """Graph Neural Networks (GNNs) Subsystem from First Principles."""
 
+from __future__ import annotations
 from .utils import (
     normalize_adjacency,
     dense_to_edge_index,

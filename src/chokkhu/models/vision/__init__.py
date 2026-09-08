@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .detection_models import (
     RetinaNetHead,
     SSDHead,
