@@ -169,9 +169,7 @@ def generate_anchor_grid(
     stride_y = img_h / feat_h
     stride_x = img_w / feat_w
 
-    coords: Any = np.meshgrid(
-        np.arange(feat_h), np.arange(feat_w), indexing="ij"
-    )
+    coords: Any = np.meshgrid(np.arange(feat_h), np.arange(feat_w), indexing="ij")
     grid_y: np.ndarray = np.asarray(coords[0], dtype=np.float64)
     grid_x: np.ndarray = np.asarray(coords[1], dtype=np.float64)
     centers_x = (grid_x + 0.5) * stride_x

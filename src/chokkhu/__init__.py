@@ -31,6 +31,15 @@ from .transformation import (
 )
 from .core.tensor import Tensor
 from .models import (
+    GemmaForCausalLM,
+    Gemma,
+    MistralForCausalLM,
+    Mistral,
+    DebertaForSequenceClassification,
+    DeBERTa,
+    RobertaForMaskedLM,
+    RobertaForSequenceClassification,
+    RoBERTa,
     MoE,
     MixtureOfExperts,
     TopKRouter,
@@ -189,6 +198,15 @@ class EDAWrapper:
 eda = EDAWrapper()
 
 __all__ = [
+    "GemmaForCausalLM",
+    "Gemma",
+    "MistralForCausalLM",
+    "Mistral",
+    "DebertaForSequenceClassification",
+    "DeBERTa",
+    "RobertaForMaskedLM",
+    "RobertaForSequenceClassification",
+    "RoBERTa",
     "MoE",
     "MixtureOfExperts",
     "TopKRouter",

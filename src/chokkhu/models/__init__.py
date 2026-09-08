@@ -114,6 +114,15 @@ from .vision import (
     non_maximum_suppression,
 )
 from .nlp import (
+    GemmaForCausalLM,
+    Gemma,
+    MistralForCausalLM,
+    Mistral,
+    DebertaForSequenceClassification,
+    DeBERTa,
+    RobertaForMaskedLM,
+    RobertaForSequenceClassification,
+    RoBERTa,
     MoE,
     MixtureOfExperts,
     TopKRouter,
@@ -162,6 +171,15 @@ from .nlp import (
 )
 
 __all__ = [
+    "GemmaForCausalLM",
+    "Gemma",
+    "MistralForCausalLM",
+    "Mistral",
+    "DebertaForSequenceClassification",
+    "DeBERTa",
+    "RobertaForMaskedLM",
+    "RobertaForSequenceClassification",
+    "RoBERTa",
     "MoE",
     "MixtureOfExperts",
     "TopKRouter",

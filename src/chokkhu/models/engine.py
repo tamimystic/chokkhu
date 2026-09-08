@@ -276,11 +276,42 @@ def _create_model_instance(
 
         vocab_s = kwargs.pop("vocab_size", 50257)
         return GPTForCausalLM(vocab_size=vocab_s, **kwargs)
-    elif model in ("llama", "llama2", "llama3", "mistral"):
+    elif model in ("llama", "llama2", "llama3"):
         from .nlp import LLaMA
 
         vocab_s = kwargs.pop("vocab_size", 32000)
         return LLaMA(vocab_size=vocab_s, **kwargs)
+    elif model in ("roberta", "roberta_classification"):
+        from .nlp import RobertaForSequenceClassification
+
+        vocab_s = kwargs.pop("vocab_size", 50265)
+        n_c = kwargs.pop("num_classes", num_c)
+        return RobertaForSequenceClassification(
+            vocab_size=vocab_s, num_classes=n_c, **kwargs
+        )
+    elif model in ("roberta_mlm",):
+        from .nlp import RobertaForMaskedLM
+
+        vocab_s = kwargs.pop("vocab_size", 50265)
+        return RobertaForMaskedLM(vocab_size=vocab_s, **kwargs)
+    elif model in ("deberta", "deberta_classification"):
+        from .nlp import DebertaForSequenceClassification
+
+        vocab_s = kwargs.pop("vocab_size", 50265)
+        n_c = kwargs.pop("num_classes", num_c)
+        return DebertaForSequenceClassification(
+            vocab_size=vocab_s, num_classes=n_c, **kwargs
+        )
+    elif model in ("mistral", "mistral_7b", "mistral_causal_lm"):
+        from .nlp import MistralForCausalLM
+
+        vocab_s = kwargs.pop("vocab_size", 32000)
+        return MistralForCausalLM(vocab_size=vocab_s, **kwargs)
+    elif model in ("gemma", "gemma_2b", "gemma_7b", "gemma_causal_lm"):
+        from .nlp import GemmaForCausalLM
+
+        vocab_s = kwargs.pop("vocab_size", 256000)
+        return GemmaForCausalLM(vocab_size=vocab_s, **kwargs)
     elif model in ("seq2seq", "t5", "seq2seq_transformer"):
         from .nlp import Seq2SeqTransformer
 
