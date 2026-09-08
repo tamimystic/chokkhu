@@ -221,6 +221,20 @@ from .gnn import (
     global_pool,
 )
 
+from .timeseries import (
+    decompose_series,
+    create_lag_matrix,
+    difference,
+    inverse_difference,
+    ARIMA,
+    ExponentialSmoothing,
+    NBEATS,
+    NBEATSBlock,
+    NHITS,
+    NHITSBlock,
+    PatchTST,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",

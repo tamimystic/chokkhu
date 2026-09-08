@@ -237,6 +237,15 @@ from .models.gnn import (
     normalize_adjacency,
 )
 
+from .models.timeseries import (
+    ARIMA,
+    ExponentialSmoothing,
+    NBEATS,
+    NHITS,
+    PatchTST,
+    decompose_series,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",

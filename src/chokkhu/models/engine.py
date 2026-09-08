@@ -448,6 +448,45 @@ def _create_model_instance(
         )
         out_f = kwargs.pop("out_features", num_c if num_c > 1 else 2)
         return GIN(in_features=in_f, out_features=out_f, **kwargs)
+    # --- Time Series & Forecasting Universe ---
+    elif model in ("arima",):
+        from .timeseries import ARIMA
+
+        p = kwargs.pop("p", 1)
+        d = kwargs.pop("d", 0)
+        q = kwargs.pop("q", 1)
+        return ARIMA(p=p, d=d, q=q, **kwargs)
+    elif model in ("exponential_smoothing", "ets", "holt_winters"):
+        from .timeseries import ExponentialSmoothing
+
+        return ExponentialSmoothing(**kwargs)
+    elif model in ("nbeats", "n_beats"):
+        from .timeseries import NBEATS
+
+        in_l = kwargs.pop(
+            "input_length",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 24),
+        )
+        h_dim = kwargs.pop("horizon", 6)
+        return NBEATS(input_length=in_l, horizon=h_dim, **kwargs)
+    elif model in ("nhits", "n_hits"):
+        from .timeseries import NHITS
+
+        in_l = kwargs.pop(
+            "input_length",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 24),
+        )
+        h_dim = kwargs.pop("horizon", 6)
+        return NHITS(input_length=in_l, horizon=h_dim, **kwargs)
+    elif model in ("patchtst", "patch_tst"):
+        from .timeseries import PatchTST
+
+        in_l = kwargs.pop(
+            "input_length",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 24),
+        )
+        h_dim = kwargs.pop("horizon", 6)
+        return PatchTST(input_length=in_l, horizon=h_dim, **kwargs)
     elif model in ("sequential", "cnn"):
         from .dl import Sequential
 
@@ -493,6 +532,7 @@ def train(
         "y_val",
         "callbacks",
         "adj",
+        "steps",
     }
     fit_kwargs = {k: v for k, v in kwargs.items() if k in fit_param_names}
     init_kwargs = {k: v for k, v in kwargs.items() if k not in fit_param_names}
