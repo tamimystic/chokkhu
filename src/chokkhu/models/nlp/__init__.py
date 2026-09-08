@@ -1,4 +1,4 @@
-"""Natural Language Processing and Modern Sovereign Transformer Universe for Chokkhu."""
+"""Natural Language Processing, Classical IR, and Modern Sovereign Transformer Universe for Chokkhu."""
 
 from .tokenizers import (
     BaseTokenizer,
@@ -8,6 +8,12 @@ from .tokenizers import (
     BPETokenizer,
     WordPieceTokenizer,
     SentencePieceTokenizer,
+)
+
+from .classical import (
+    PorterStemmer,
+    TfidfVectorizer,
+    BM25Retriever,
 )
 
 from .embeddings import (
@@ -87,6 +93,10 @@ __all__ = [
     "BPETokenizer",
     "WordPieceTokenizer",
     "SentencePieceTokenizer",
+    # Classical & IR
+    "PorterStemmer",
+    "TfidfVectorizer",
+    "BM25Retriever",
     # Embeddings & Encodings
     "TokenEmbedding",
     "SinusoidalPositionalEncoding",

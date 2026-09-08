@@ -31,6 +31,9 @@ from .transformation import (
 )
 from .core.tensor import Tensor
 from .models import (
+    BM25Retriever,
+    TfidfVectorizer,
+    PorterStemmer,
     GemmaForCausalLM,
     Gemma,
     MistralForCausalLM,
@@ -198,6 +201,9 @@ class EDAWrapper:
 eda = EDAWrapper()
 
 __all__ = [
+    "BM25Retriever",
+    "TfidfVectorizer",
+    "PorterStemmer",
     "GemmaForCausalLM",
     "Gemma",
     "MistralForCausalLM",

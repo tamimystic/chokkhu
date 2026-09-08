@@ -114,6 +114,9 @@ from .vision import (
     non_maximum_suppression,
 )
 from .nlp import (
+    BM25Retriever,
+    TfidfVectorizer,
+    PorterStemmer,
     GemmaForCausalLM,
     Gemma,
     MistralForCausalLM,
@@ -171,6 +174,9 @@ from .nlp import (
 )
 
 __all__ = [
+    "BM25Retriever",
+    "TfidfVectorizer",
+    "PorterStemmer",
     "GemmaForCausalLM",
     "Gemma",
     "MistralForCausalLM",
