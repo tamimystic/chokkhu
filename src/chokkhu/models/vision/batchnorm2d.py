@@ -23,6 +23,14 @@ class BatchNorm2D(Module):
         self.running_var = np.ones((1, num_features, 1, 1))
 
     def forward(self, x: Tensor) -> Tensor:
+        if x.data.ndim == 2:
+            x = x.reshape(x.shape[0], x.shape[1], 1, 1)
+        elif x.data.ndim == 3:
+            x = x.reshape(x.shape[0], 1, x.shape[1], x.shape[2])
+
+        if x.data.size == 0 or x.shape[0] == 0:
+            return x
+
         if self.training:
             mean = x.data.mean(axis=(0, 2, 3), keepdims=True)
             var = x.data.var(axis=(0, 2, 3), keepdims=True)

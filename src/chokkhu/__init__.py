@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, Optional
+
 __version__ = "0.8.0"
 __author__ = "tamimystic"
 
@@ -29,23 +31,58 @@ from .transformation import (
 )
 from .core.tensor import Tensor
 from .models import (
-    NeuralNetwork,
-    Sequential,
-    Linear,
-    Dense,
-    Conv2D,
-    MaxPool2D,
-    AvgPool2D,
-    GlobalAvgPool2D,
-    BatchNorm2D,
-    LeNet5,
     AlexNet,
-    VGG11,
-    VGG16,
-    ResNet18,
-    MobileNetV1,
-    UNet,
+    AvgPool2D,
+    BatchNorm2D,
+    CBAM,
+    ChannelShuffle,
+    Conv2D,
+    ConvNeXt,
+    ConvNeXtTiny,
+    ConvTranspose2D,
+    Dense,
+    DenseNet121,
+    DenseNet169,
+    DenseNet201,
+    DepthwiseSeparableConv2D,
+    EfficientNetB0,
+    FCN,
+    FCN8s,
+    GlobalAvgPool2D,
+    GoogLeNet,
     GradCAM,
+    GroupedConv2D,
+    InceptionV1,
+    InceptionV3,
+    LeNet5,
+    Linear,
+    MaxPool2D,
+    MobileNetV1,
+    MobileNetV2,
+    MobileNetV3,
+    NeuralNetwork,
+    ResNet18,
+    ResNet34,
+    ResNet50,
+    ResNet101,
+    ResNet152,
+    ResNeXt50,
+    ResNeXt101,
+    SEBlock,
+    Sequential,
+    ShuffleNetV1,
+    ShuffleNetV2,
+    SqueezeNet,
+    UNet,
+    VGG11,
+    VGG13,
+    VGG16,
+    VGG19,
+    VisionTransformer,
+    ViT,
+    ViTBase,
+    ViTTiny,
+    ZFNet,
     train,
 )
 from .evaluation import (
@@ -64,7 +101,11 @@ from .pipeline import PipelineResult, TransformationState, pipeline
 
 class EDAWrapper:
     @staticmethod
-    def image(dataset_path: str, save_reports: bool = False, save_dir: str = None):
+    def image(
+        dataset_path: str,
+        save_reports: bool = False,
+        save_dir: Optional[str] = None,
+    ) -> Any:
         if save_reports and save_dir is None:
             save_dir = "chokkhu_outputs/image_reports"
         return ImageEDA(
@@ -75,9 +116,9 @@ class EDAWrapper:
     def tabular(
         dataset_path: str,
         save_reports: bool = False,
-        save_dir: str = None,
-        target_col: str = None,
-    ):
+        save_dir: Optional[str] = None,
+        target_col: Optional[str] = None,
+    ) -> Any:
         if save_reports and save_dir is None:
             save_dir = "chokkhu_outputs/tabular_reports"
         return tabular_fn(
@@ -122,14 +163,49 @@ __all__ = [
     "MaxPool2D",
     "AvgPool2D",
     "GlobalAvgPool2D",
+    "DepthwiseSeparableConv2D",
+    "GroupedConv2D",
+    "ChannelShuffle",
+    "ConvTranspose2D",
     "BatchNorm2D",
+    "SEBlock",
+    "CBAM",
     "LeNet5",
     "AlexNet",
+    "ZFNet",
     "VGG11",
+    "VGG13",
     "VGG16",
+    "VGG19",
+    "GoogLeNet",
+    "InceptionV1",
+    "InceptionV3",
     "ResNet18",
+    "ResNet34",
+    "ResNet50",
+    "ResNet101",
+    "ResNet152",
+    "ResNeXt50",
+    "ResNeXt101",
+    "DenseNet121",
+    "DenseNet169",
+    "DenseNet201",
+    "SqueezeNet",
     "MobileNetV1",
+    "MobileNetV2",
+    "MobileNetV3",
+    "ShuffleNetV1",
+    "ShuffleNetV2",
+    "EfficientNetB0",
+    "ConvNeXt",
+    "ConvNeXtTiny",
     "UNet",
+    "FCN",
+    "FCN8s",
+    "VisionTransformer",
+    "ViT",
+    "ViTTiny",
+    "ViTBase",
     "GradCAM",
     "PowerScaler",
     "QuantileScaler",

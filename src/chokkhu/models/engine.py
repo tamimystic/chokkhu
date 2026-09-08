@@ -71,6 +71,14 @@ def _create_model_instance(
     y_train: Optional[np.ndarray] = None,
     **kwargs: Any,
 ) -> ChokkhuModel:
+    in_c = kwargs.get(
+        "in_channels",
+        (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+    )
+    num_c = kwargs.get(
+        "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
+    )
+
     if model == "linear_regression":
         return LinearRegression(**kwargs)
     elif model == "ridge":
@@ -119,81 +127,128 @@ def _create_model_instance(
             random_state=random_state,
             **kwargs,
         )
+    # --- Vision Universe ---
     elif model in ("lenet", "lenet5"):
         from .vision import LeNet5
 
-        in_c = kwargs.get(
+        in_c_lenet = kwargs.get(
             "in_channels",
             (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 1),
         )
-        num_c = kwargs.get(
-            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
-        )
-        return LeNet5(num_classes=num_c, in_channels=in_c)
+        return LeNet5(num_classes=num_c, in_channels=in_c_lenet)
     elif model in ("alexnet",):
         from .vision import AlexNet
 
-        in_c = kwargs.get(
-            "in_channels",
-            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
-        )
-        num_c = kwargs.get(
-            "num_classes", (len(np.unique(y_train)) if y_train is not None else 1000)
-        )
         return AlexNet(num_classes=num_c, in_channels=in_c)
-    elif model in ("vgg", "vgg16"):
-        from .vision import VGG16
+    elif model in ("zfnet",):
+        from .vision import ZFNet
 
-        in_c = kwargs.get(
-            "in_channels",
-            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
-        )
-        num_c = kwargs.get(
-            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
-        )
-        return VGG16(num_classes=num_c, in_channels=in_c)
+        return ZFNet(num_classes=num_c, in_channels=in_c)
     elif model in ("vgg11",):
         from .vision import VGG11
 
-        in_c = kwargs.get(
-            "in_channels",
-            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
-        )
-        num_c = kwargs.get(
-            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
-        )
         return VGG11(num_classes=num_c, in_channels=in_c)
+    elif model in ("vgg13",):
+        from .vision import VGG13
+
+        return VGG13(num_classes=num_c, in_channels=in_c)
+    elif model in ("vgg", "vgg16"):
+        from .vision import VGG16
+
+        return VGG16(num_classes=num_c, in_channels=in_c)
+    elif model in ("vgg19",):
+        from .vision import VGG19
+
+        return VGG19(num_classes=num_c, in_channels=in_c)
+    elif model in ("googlenet", "inception", "inception_v1", "inceptionv1"):
+        from .vision import GoogLeNet
+
+        return GoogLeNet(num_classes=num_c, in_channels=in_c)
+    elif model in ("inception_v3", "inceptionv3"):
+        from .vision import InceptionV3
+
+        return InceptionV3(num_classes=num_c, in_channels=in_c)
     elif model in ("resnet", "resnet18"):
         from .vision import ResNet18
 
-        in_c = kwargs.get(
-            "in_channels",
-            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
-        )
-        num_c = kwargs.get(
-            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
-        )
         return ResNet18(num_classes=num_c, in_channels=in_c)
-    elif model in ("mobilenet", "mobilenet_v1"):
+    elif model in ("resnet34",):
+        from .vision import ResNet34
+
+        return ResNet34(num_classes=num_c, in_channels=in_c)
+    elif model in ("resnet50",):
+        from .vision import ResNet50
+
+        return ResNet50(num_classes=num_c, in_channels=in_c)
+    elif model in ("resnet101",):
+        from .vision import ResNet101
+
+        return ResNet101(num_classes=num_c, in_channels=in_c)
+    elif model in ("resnet152",):
+        from .vision import ResNet152
+
+        return ResNet152(num_classes=num_c, in_channels=in_c)
+    elif model in ("resnext", "resnext50"):
+        from .vision import ResNeXt50
+
+        return ResNeXt50(num_classes=num_c, in_channels=in_c)
+    elif model in ("resnext101",):
+        from .vision import ResNeXt101
+
+        return ResNeXt101(num_classes=num_c, in_channels=in_c)
+    elif model in ("densenet", "densenet121"):
+        from .vision import DenseNet121
+
+        return DenseNet121(num_classes=num_c, in_channels=in_c)
+    elif model in ("densenet169",):
+        from .vision import DenseNet169
+
+        return DenseNet169(num_classes=num_c, in_channels=in_c)
+    elif model in ("densenet201",):
+        from .vision import DenseNet201
+
+        return DenseNet201(num_classes=num_c, in_channels=in_c)
+    elif model in ("squeezenet",):
+        from .vision import SqueezeNet
+
+        return SqueezeNet(num_classes=num_c, in_channels=in_c)
+    elif model in ("mobilenet", "mobilenet_v1", "mobilenetv1"):
         from .vision import MobileNetV1
 
-        in_c = kwargs.get(
-            "in_channels",
-            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
-        )
-        num_c = kwargs.get(
-            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
-        )
         return MobileNetV1(num_classes=num_c, in_channels=in_c)
+    elif model in ("mobilenet_v2", "mobilenetv2"):
+        from .vision import MobileNetV2
+
+        return MobileNetV2(num_classes=num_c, in_channels=in_c)
+    elif model in ("mobilenet_v3", "mobilenetv3"):
+        from .vision import MobileNetV3
+
+        return MobileNetV3(num_classes=num_c, in_channels=in_c)
+    elif model in ("shufflenet", "shufflenet_v1", "shufflenet_v2", "shufflenetv2"):
+        from .vision import ShuffleNetV2
+
+        return ShuffleNetV2(num_classes=num_c, in_channels=in_c)
+    elif model in ("efficientnet", "efficientnet_b0", "efficientnetb0"):
+        from .vision import EfficientNetB0
+
+        return EfficientNetB0(num_classes=num_c, in_channels=in_c)
+    elif model in ("convnext", "convnext_tiny", "convnexttiny"):
+        from .vision import ConvNeXtTiny
+
+        return ConvNeXtTiny(num_classes=num_c, in_channels=in_c)
     elif model in ("unet",):
         from .vision import UNet
 
-        in_c = kwargs.get(
-            "in_channels",
-            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
-        )
         out_c = kwargs.get("out_channels", 1)
         return UNet(in_channels=in_c, out_channels=out_c)
+    elif model in ("fcn", "fcn8s"):
+        from .vision import FCN8s
+
+        return FCN8s(num_classes=num_c, in_channels=in_c)
+    elif model in ("vit", "vision_transformer", "vit_tiny", "vittiny"):
+        from .vision import VisionTransformer
+
+        return VisionTransformer(in_channels=in_c, num_classes=num_c)
     elif model in ("sequential", "cnn"):
         from .dl import Sequential
 
@@ -311,7 +366,6 @@ def train(
         model, task, random_state, X_train=X_train, y_train=y_train, **init_kwargs
     )
 
-    # Check if model's fit takes custom fit_kwargs
     try:
         model_obj.fit(X_train, y_train, **fit_kwargs)
     except TypeError:

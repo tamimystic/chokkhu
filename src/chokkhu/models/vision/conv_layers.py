@@ -38,7 +38,7 @@ def im2col_indices(
     stride: int = 1,
 ) -> np.ndarray:
     p = padding
-    x_padded = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode="constant")
+    x_padded: np.ndarray = np.pad(x, ((0, 0), (0, 0), (p, p), (p, p)), mode="constant")
     k, i, j = _get_im2col_indices(x.shape, field_height, field_width, padding, stride)
     cols = x_padded[:, k, i, j]
     C = x.shape[1]
@@ -161,7 +161,7 @@ class Conv2D(Module):
 
         fan_in = in_channels * self.kh * self.kw
         w_data = np.random.randn(out_channels, in_channels, self.kh, self.kw) * np.sqrt(
-            2.0 / fan_in
+            2.0 / max(1, fan_in)
         )
         self.weight = Parameter(w_data)
         if bias:
@@ -173,13 +173,81 @@ class Conv2D(Module):
         if x.data.ndim == 3:
             x = x.reshape(x.shape[0], 1, x.shape[1], x.shape[2])
         elif x.data.ndim == 2:
-            side = int(np.sqrt(x.shape[1] // self.in_channels))
+            side = int(np.sqrt(x.shape[1] // max(1, self.in_channels)))
             x = x.reshape(x.shape[0], self.in_channels, side, side)
 
         fn = Conv2DFunction(self.kh, self.kw, self.stride, self.padding)
         if self.bias is not None:
             return fn(x, self.weight, self.bias)
         return fn(x, self.weight)
+
+
+class GroupedConv2D(Module):
+    """Grouped 2D Convolution (splits in_channels into groups)."""
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 3,
+        stride: int = 1,
+        padding: int = 0,
+        groups: int = 1,
+        bias: bool = True,
+    ) -> None:
+        super().__init__()
+        self.groups = groups
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        assert in_channels % groups == 0, "in_channels must be divisible by groups"
+        assert out_channels % groups == 0, "out_channels must be divisible by groups"
+
+        in_group = in_channels // groups
+        out_group = out_channels // groups
+        self.convs = [
+            Conv2D(
+                in_group,
+                out_group,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding,
+                bias=bias,
+            )
+            for _ in range(groups)
+        ]
+        for idx, c in enumerate(self.convs):
+            setattr(self, f"conv_{idx}", c)
+
+    def forward(self, x: Tensor) -> Tensor:
+        # x: (N, C, H, W)
+        in_group = self.in_channels // self.groups
+        outs = []
+        for i, c in enumerate(self.convs):
+            x_i = Tensor(
+                x.data[:, i * in_group : (i + 1) * in_group, :, :],
+                requires_grad=x.requires_grad,
+            )
+            outs.append(c(x_i).data)
+        cat_data = np.concatenate(outs, axis=1)
+        return Tensor(cat_data, requires_grad=x.requires_grad)
+
+
+class ChannelShuffle(Module):
+    """Channel Shuffle operation for ShuffleNet."""
+
+    def __init__(self, groups: int = 2) -> None:
+        super().__init__()
+        self.groups = groups
+
+    def forward(self, x: Tensor) -> Tensor:
+        # (N, C, H, W) -> (N, groups, C // groups, H, W) -> transpose(0, 2, 1, 3, 4) -> (N, C, H, W)
+        N, C, H, W = x.shape
+        g = self.groups
+        channels_per_group = C // g
+        x_reshaped = x.data.reshape(N, g, channels_per_group, H, W)
+        x_transposed = x_reshaped.transpose(0, 2, 1, 3, 4)
+        out = x_transposed.reshape(N, C, H, W)
+        return Tensor(out, requires_grad=x.requires_grad)
 
 
 class MaxPool2DFunction(Function):
@@ -323,7 +391,11 @@ class ConvTranspose2D(Module):
     """Fractionally Strided Transposed 2D Convolution for Upsampling."""
 
     def __init__(
-        self, in_channels: int, out_channels: int, kernel_size: int = 2, stride: int = 2
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int = 2,
+        stride: int = 2,
     ) -> None:
         super().__init__()
         self.in_channels = in_channels
@@ -349,12 +421,17 @@ class ConvTranspose2D(Module):
                 for ic in range(C):
                     for h in range(H):
                         for w in range(W):
+                            h_end = min(out_h, h * self.stride + self.kernel_size)
+                            w_end = min(out_w, w * self.stride + self.kernel_size)
+                            kh_slice = h_end - (h * self.stride)
+                            kw_slice = w_end - (w * self.stride)
                             out[
                                 n,
                                 oc,
-                                h * self.stride : h * self.stride + self.kernel_size,
-                                w * self.stride : w * self.stride + self.kernel_size,
+                                h * self.stride : h_end,
+                                w * self.stride : w_end,
                             ] += (
-                                x.data[n, ic, h, w] * self.weight.data[ic, oc]
+                                x.data[n, ic, h, w]
+                                * self.weight.data[ic, oc, :kh_slice, :kw_slice]
                             )
         return Tensor(out, requires_grad=x.requires_grad)
