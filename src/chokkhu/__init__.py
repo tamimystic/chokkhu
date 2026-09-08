@@ -246,6 +246,14 @@ from .models.timeseries import (
     decompose_series,
 )
 
+from .automl import (
+    AutoTrainer,
+    AutoMLResult,
+    auto_train,
+    BayesianOptimization,
+    Hyperband,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
