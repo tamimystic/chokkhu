@@ -158,10 +158,10 @@ class PowerScaler:
                 t = self._yeo_johnson_transform(col, lmbda)
                 m3 = np.mean((t - np.mean(t)) ** 3)
                 s3 = (np.std(t) + 1e-8) ** 3
-                skew = abs(m3 / s3)
+                skew = float(abs(m3 / s3))
                 if skew < best_skew:
                     best_skew = skew
-                    best_lmbda = lmbda
+                    best_lmbda = float(lmbda)
             self.lambdas[j] = best_lmbda
         return self
 
