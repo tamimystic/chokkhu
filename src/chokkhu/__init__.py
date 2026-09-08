@@ -31,6 +31,13 @@ from .transformation import (
 )
 from .core.tensor import Tensor
 from .models import (
+    MoE,
+    MixtureOfExperts,
+    TopKRouter,
+    Expert,
+    SlidingWindowAttention,
+    DeepSeekMLA,
+    MultiHeadLatentAttention,
     AlexNet,
     AvgPool2D,
     BatchNorm2D,
@@ -182,6 +189,13 @@ class EDAWrapper:
 eda = EDAWrapper()
 
 __all__ = [
+    "MoE",
+    "MixtureOfExperts",
+    "TopKRouter",
+    "Expert",
+    "SlidingWindowAttention",
+    "DeepSeekMLA",
+    "MultiHeadLatentAttention",
     "eda",
     "load",
     "save",

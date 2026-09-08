@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import Any, List, Tuple
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
@@ -169,11 +169,11 @@ def generate_anchor_grid(
     stride_y = img_h / feat_h
     stride_x = img_w / feat_w
 
-    grid_y_raw, grid_x_raw = np.meshgrid(
+    coords: Any = np.meshgrid(
         np.arange(feat_h), np.arange(feat_w), indexing="ij"
     )
-    grid_y: np.ndarray = np.asarray(grid_y_raw, dtype=np.float64)
-    grid_x: np.ndarray = np.asarray(grid_x_raw, dtype=np.float64)
+    grid_y: np.ndarray = np.asarray(coords[0], dtype=np.float64)
+    grid_x: np.ndarray = np.asarray(coords[1], dtype=np.float64)
     centers_x = (grid_x + 0.5) * stride_x
     centers_y = (grid_y + 0.5) * stride_y
 

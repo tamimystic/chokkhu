@@ -114,6 +114,13 @@ from .vision import (
     non_maximum_suppression,
 )
 from .nlp import (
+    MoE,
+    MixtureOfExperts,
+    TopKRouter,
+    Expert,
+    SlidingWindowAttention,
+    DeepSeekMLA,
+    MultiHeadLatentAttention,
     ALiBi,
     BERT,
     BPETokenizer,
@@ -155,6 +162,13 @@ from .nlp import (
 )
 
 __all__ = [
+    "MoE",
+    "MixtureOfExperts",
+    "TopKRouter",
+    "Expert",
+    "SlidingWindowAttention",
+    "DeepSeekMLA",
+    "MultiHeadLatentAttention",
     "ChokkhuModel",
     "train",
     # Classical ML

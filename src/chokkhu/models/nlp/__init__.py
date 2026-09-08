@@ -31,6 +31,16 @@ from .attention import (
     MultiHeadAttention,
     GroupedQueryAttention,
     MultiQueryAttention,
+    MultiHeadLatentAttention,
+    DeepSeekMLA,
+    SlidingWindowAttention,
+)
+
+from .moe import (
+    Expert,
+    TopKRouter,
+    MixtureOfExperts,
+    MoE,
 )
 
 from .transformer_blocks import (
@@ -85,6 +95,14 @@ __all__ = [
     "MultiHeadAttention",
     "GroupedQueryAttention",
     "MultiQueryAttention",
+    "MultiHeadLatentAttention",
+    "DeepSeekMLA",
+    "SlidingWindowAttention",
+    # MoE
+    "Expert",
+    "TopKRouter",
+    "MixtureOfExperts",
+    "MoE",
     # Blocks
     "RMSNorm",
     "SwiGLU",
