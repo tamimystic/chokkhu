@@ -249,6 +249,68 @@ def _create_model_instance(
         from .vision import VisionTransformer
 
         return VisionTransformer(in_channels=in_c, num_classes=num_c)
+    # --- NLP & Sovereign Transformer Universe ---
+    elif model in ("bert", "bert_classification", "bert_classifier"):
+        from .nlp import BertForSequenceClassification
+
+        vocab_s = kwargs.pop("vocab_size", 30522)
+        n_c = kwargs.pop("num_classes", num_c)
+        return BertForSequenceClassification(
+            vocab_size=vocab_s, num_classes=n_c, **kwargs
+        )
+    elif model in ("bert_mlm", "bert_masked_lm"):
+        from .nlp import BertForMaskedLM
+
+        vocab_s = kwargs.pop("vocab_size", 30522)
+        return BertForMaskedLM(vocab_size=vocab_s, **kwargs)
+    elif model in ("gpt", "minigpt", "gpt_causal_lm", "gpt2"):
+        from .nlp import GPTForCausalLM
+
+        vocab_s = kwargs.pop("vocab_size", 50257)
+        return GPTForCausalLM(vocab_size=vocab_s, **kwargs)
+    elif model in ("llama", "llama2", "llama3", "mistral"):
+        from .nlp import LLaMA
+
+        vocab_s = kwargs.pop("vocab_size", 32000)
+        return LLaMA(vocab_size=vocab_s, **kwargs)
+    elif model in ("seq2seq", "t5", "seq2seq_transformer"):
+        from .nlp import Seq2SeqTransformer
+
+        src_v = kwargs.pop("src_vocab_size", 10000)
+        tgt_v = kwargs.pop("tgt_vocab_size", 10000)
+        return Seq2SeqTransformer(src_vocab_size=src_v, tgt_vocab_size=tgt_v, **kwargs)
+    elif model in ("rnn", "elman_rnn"):
+        from .nlp import RNN
+
+        in_d = kwargs.pop(
+            "input_dim", (X_train.shape[-1] if X_train is not None else 64)
+        )
+        h_d = kwargs.pop("hidden_dim", 128)
+        return RNN(input_dim=in_d, hidden_dim=h_d, **kwargs)
+    elif model in ("lstm",):
+        from .nlp import LSTM
+
+        in_d = kwargs.pop(
+            "input_dim", (X_train.shape[-1] if X_train is not None else 64)
+        )
+        h_d = kwargs.pop("hidden_dim", 128)
+        return LSTM(input_dim=in_d, hidden_dim=h_d, **kwargs)
+    elif model in ("bilstm", "bi_lstm"):
+        from .nlp import BiLSTM
+
+        in_d = kwargs.pop(
+            "input_dim", (X_train.shape[-1] if X_train is not None else 64)
+        )
+        h_d = kwargs.pop("hidden_dim", 128)
+        return BiLSTM(input_dim=in_d, hidden_dim=h_d, **kwargs)
+    elif model in ("gru",):
+        from .nlp import GRU
+
+        in_d = kwargs.pop(
+            "input_dim", (X_train.shape[-1] if X_train is not None else 64)
+        )
+        h_d = kwargs.pop("hidden_dim", 128)
+        return GRU(input_dim=in_d, hidden_dim=h_d, **kwargs)
     elif model in ("sequential", "cnn"):
         from .dl import Sequential
 
