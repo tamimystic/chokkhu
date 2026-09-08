@@ -1,3 +1,5 @@
+from .fpn import FeaturePyramidNetwork, PANet
+from .advanced_conv import AtrousConv2D, DilatedConv2D
 from .losses import (
     CIoULoss,
     DIoULoss,
@@ -93,6 +95,11 @@ __all__ = [
     "GIoULoss",
     "DIoULoss",
     "CIoULoss",
+    "FeaturePyramidNetwork",
+    "FPNPyramid",
+    "PANet",
+    "DilatedConv2D",
+    "AtrousConv2D",
     "LeNet5",
     "AlexNet",
     "ZFNet",
