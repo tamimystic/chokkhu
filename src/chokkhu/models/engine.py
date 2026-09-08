@@ -4,6 +4,7 @@ import itertools
 from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
+
 from chokkhu.core.logger import Logger
 from .base import ChokkhuModel
 from .ml import (
@@ -17,31 +18,58 @@ from .ml import (
     LinearRegression,
     LogisticRegression,
     NaiveBayes,
-    RandomForest,
     NeuralNetwork,
+    RandomForest,
 )
 from .rl import QLearning
 
 
-def _get_default_param_grid(model_name: str) -> Dict[str, List[Any]]:
-    """Returns candidate hyperparameter search grids."""
-    if model_name in ("random_forest", "rf"):
-        return {"n_estimators": [10, 20], "max_depth": [3, 5, 10]}
-    elif model_name in ("decision_tree", "dt"):
-        return {"max_depth": [3, 5, 10], "min_samples_split": [2, 5]}
-    elif model_name in ("knn",):
-        return {"k": [3, 5, 7]}
-    elif model_name in ("gradient_boosting", "gbm"):
-        return {"n_estimators": [10, 20], "learning_rate": [0.05, 0.1]}
-    elif model_name in ("neural_network", "mlp"):
-        return {"learning_rate": [0.01, 0.05], "epochs": [30, 50]}
-    elif model_name in ("ridge", "lasso"):
-        return {"learning_rate": [0.001, 0.01, 0.1]}
+def _get_default_param_grid(model: str) -> Dict[str, List[Any]]:
+    if model in ("random_forest", "rf"):
+        return {
+            "n_estimators": [10, 50],
+            "max_depth": [3, 5],
+        }
+    elif model in ("decision_tree", "dt"):
+        return {
+            "max_depth": [3, 5, 10],
+            "min_samples_split": [2, 5],
+        }
+    elif model == "knn":
+        return {
+            "n_neighbors": [3, 5, 7],
+            "weights": ["uniform", "distance"],
+        }
+    elif model == "svm":
+        return {
+            "C": [0.1, 1.0, 10.0],
+            "kernel": ["linear", "rbf"],
+        }
+    elif model in ("gradient_boosting", "gbm"):
+        return {
+            "n_estimators": [20, 50],
+            "learning_rate": [0.05, 0.1],
+        }
+    elif model in (
+        "linear_regression",
+        "logistic_regression",
+        "ridge",
+        "lasso",
+        "elastic_net",
+    ):
+        return {
+            "learning_rate": [0.001, 0.01, 0.1],
+        }
     return {}
 
 
 def _create_model_instance(
-    model: str, task: str, random_state: Optional[int], **kwargs
+    model: str,
+    task: str,
+    random_state: Optional[int],
+    X_train: Optional[np.ndarray] = None,
+    y_train: Optional[np.ndarray] = None,
+    **kwargs: Any,
 ) -> ChokkhuModel:
     if model == "linear_regression":
         return LinearRegression(**kwargs)
@@ -91,6 +119,85 @@ def _create_model_instance(
             random_state=random_state,
             **kwargs,
         )
+    elif model in ("lenet", "lenet5"):
+        from .vision import LeNet5
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 1),
+        )
+        num_c = kwargs.get(
+            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
+        )
+        return LeNet5(num_classes=num_c, in_channels=in_c)
+    elif model in ("alexnet",):
+        from .vision import AlexNet
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+        )
+        num_c = kwargs.get(
+            "num_classes", (len(np.unique(y_train)) if y_train is not None else 1000)
+        )
+        return AlexNet(num_classes=num_c, in_channels=in_c)
+    elif model in ("vgg", "vgg16"):
+        from .vision import VGG16
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+        )
+        num_c = kwargs.get(
+            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
+        )
+        return VGG16(num_classes=num_c, in_channels=in_c)
+    elif model in ("vgg11",):
+        from .vision import VGG11
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+        )
+        num_c = kwargs.get(
+            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
+        )
+        return VGG11(num_classes=num_c, in_channels=in_c)
+    elif model in ("resnet", "resnet18"):
+        from .vision import ResNet18
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+        )
+        num_c = kwargs.get(
+            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
+        )
+        return ResNet18(num_classes=num_c, in_channels=in_c)
+    elif model in ("mobilenet", "mobilenet_v1"):
+        from .vision import MobileNetV1
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+        )
+        num_c = kwargs.get(
+            "num_classes", (len(np.unique(y_train)) if y_train is not None else 10)
+        )
+        return MobileNetV1(num_classes=num_c, in_channels=in_c)
+    elif model in ("unet",):
+        from .vision import UNet
+
+        in_c = kwargs.get(
+            "in_channels",
+            (X_train.shape[1] if X_train is not None and X_train.ndim == 4 else 3),
+        )
+        out_c = kwargs.get("out_channels", 1)
+        return UNet(in_channels=in_c, out_channels=out_c)
+    elif model in ("sequential", "cnn"):
+        from .dl import Sequential
+
+        return Sequential(task=task if task != "auto" else "classification", **kwargs)
     elif model == "q_learning":
         return QLearning(random_state=random_state, **kwargs)
     else:
@@ -107,7 +214,7 @@ def train(
     param_grid: Optional[Dict[str, List[Any]]] = None,
     cv: int = 3,
     verbose: bool = True,
-    **kwargs,
+    **kwargs: Any,
 ) -> ChokkhuModel:
     if verbose:
         Logger.info(f"Training model: {model} (task: {task})")
@@ -121,6 +228,19 @@ def train(
         X_train = np.array(X_train)
     if y_train is not None and not isinstance(y_train, np.ndarray):
         y_train = np.array(y_train)
+
+    fit_param_names = {
+        "epochs",
+        "batch_size",
+        "lr",
+        "optimizer",
+        "loss_fn",
+        "X_val",
+        "y_val",
+        "callbacks",
+    }
+    fit_kwargs = {k: v for k, v in kwargs.items() if k in fit_param_names}
+    init_kwargs = {k: v for k, v in kwargs.items() if k not in fit_param_names}
 
     best_params: Dict[str, Any] = {}
     if tune and X_train is not None and y_train is not None:
@@ -142,19 +262,23 @@ def train(
             np.random.shuffle(indices)
 
             best_score = float("-inf")
-            best_config = kwargs
+            best_config = init_kwargs
 
-            # Simple K-Fold CV search
             fold_size = max(1, n_samples // cv)
             for cfg in combinations:
-                merged_kwargs = {**kwargs, **cfg}
+                merged_kwargs = {**init_kwargs, **cfg}
                 scores = []
                 for f_idx in range(cv):
                     val_idx = indices[f_idx * fold_size : (f_idx + 1) * fold_size]
                     tr_idx = np.setdiff1d(indices, val_idx)
 
                     m = _create_model_instance(
-                        model, task, random_state, **merged_kwargs
+                        model,
+                        task,
+                        random_state,
+                        X_train=X_train,
+                        y_train=y_train,
+                        **merged_kwargs,
                     )
                     m.fit(X_train[tr_idx], y_train[tr_idx])
                     preds = m.predict(X_train[val_idx])
@@ -177,14 +301,21 @@ def train(
                     best_config = merged_kwargs
                     best_params = cfg
 
-            kwargs = best_config
+            init_kwargs = best_config
             if verbose:
                 Logger.info(
                     f"Tuning complete. Best Score: {best_score:.4f}, Best Params: {best_params}"
                 )
 
-    model_obj = _create_model_instance(model, task, random_state, **kwargs)
-    model_obj.fit(X_train, y_train)
+    model_obj = _create_model_instance(
+        model, task, random_state, X_train=X_train, y_train=y_train, **init_kwargs
+    )
+
+    # Check if model's fit takes custom fit_kwargs
+    try:
+        model_obj.fit(X_train, y_train, **fit_kwargs)
+    except TypeError:
+        model_obj.fit(X_train, y_train)
 
     if best_params:
         setattr(model_obj, "best_params_", best_params)
