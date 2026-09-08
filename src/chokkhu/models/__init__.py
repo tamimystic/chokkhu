@@ -1,3 +1,15 @@
+from .generative import (
+    VAE,
+    VQVAE,
+    VectorQuantizer,
+    DDPM,
+    SinusoidalTimeEmbedding,
+    DenoisingMLP,
+    DCGAN,
+    WGANGP,
+    Generator,
+    Discriminator,
+)
 from .audio import (
     stft,
     istft,
@@ -195,6 +207,16 @@ from .nlp import (
 )
 
 __all__ = [
+    "Discriminator",
+    "Generator",
+    "WGANGP",
+    "DCGAN",
+    "DenoisingMLP",
+    "SinusoidalTimeEmbedding",
+    "DDPM",
+    "VectorQuantizer",
+    "VQVAE",
+    "VAE",
     "Wav2Vec2",
     "AudioSpectrogramTransformer",
     "AST",

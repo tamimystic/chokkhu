@@ -31,6 +31,16 @@ from .transformation import (
 )
 from .core.tensor import Tensor
 from .models import (
+    Discriminator,
+    Generator,
+    WGANGP,
+    DCGAN,
+    DenoisingMLP,
+    SinusoidalTimeEmbedding,
+    DDPM,
+    VectorQuantizer,
+    VQVAE,
+    VAE,
     Wav2Vec2,
     AudioSpectrogramTransformer,
     AST,
@@ -220,6 +230,16 @@ class EDAWrapper:
 eda = EDAWrapper()
 
 __all__ = [
+    "Discriminator",
+    "Generator",
+    "WGANGP",
+    "DCGAN",
+    "DenoisingMLP",
+    "SinusoidalTimeEmbedding",
+    "DDPM",
+    "VectorQuantizer",
+    "VQVAE",
+    "VAE",
     "Wav2Vec2",
     "AudioSpectrogramTransformer",
     "AST",

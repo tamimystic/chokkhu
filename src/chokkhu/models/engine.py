@@ -370,6 +370,47 @@ def _create_model_instance(
 
         n_c = kwargs.pop("num_classes", num_c)
         return Wav2Vec2(num_classes=n_c, **kwargs)
+    # --- Generative AI & Diffusion Universe ---
+    elif model in ("vae", "variational_autoencoder"):
+        from .generative import VAE
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 784),
+        )
+        return VAE(in_features=in_f, **kwargs)
+    elif model in ("vqvae", "vq_vae"):
+        from .generative import VQVAE
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 784),
+        )
+        return VQVAE(in_features=in_f, **kwargs)
+    elif model in ("ddpm", "diffusion"):
+        from .generative import DDPM
+
+        d_dim = kwargs.pop(
+            "data_dim",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 32),
+        )
+        return DDPM(data_dim=d_dim, **kwargs)
+    elif model in ("dcgan", "gan"):
+        from .generative import DCGAN
+
+        out_d = kwargs.pop(
+            "out_dim",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 784),
+        )
+        return DCGAN(out_dim=out_d, **kwargs)
+    elif model in ("wgan_gp", "wgan"):
+        from .generative import WGANGP
+
+        out_d = kwargs.pop(
+            "out_dim",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 784),
+        )
+        return WGANGP(out_dim=out_d, **kwargs)
     elif model in ("sequential", "cnn"):
         from .dl import Sequential
 
