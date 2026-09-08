@@ -350,6 +350,26 @@ def _create_model_instance(
         )
         h_d = kwargs.pop("hidden_dim", 128)
         return GRU(input_dim=in_d, hidden_dim=h_d, **kwargs)
+    # --- Audio & Speech Universe ---
+    elif model in ("conformer", "conformer_ctc", "conformer_asr"):
+        from .audio import Conformer
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 80),
+        )
+        n_c = kwargs.pop("num_classes", num_c)
+        return Conformer(in_features=in_f, num_classes=n_c, **kwargs)
+    elif model in ("ast", "audio_spectrogram_transformer"):
+        from .audio import AST
+
+        n_c = kwargs.pop("num_classes", num_c)
+        return AST(num_classes=n_c, **kwargs)
+    elif model in ("wav2vec2", "wav2vec"):
+        from .audio import Wav2Vec2
+
+        n_c = kwargs.pop("num_classes", num_c)
+        return Wav2Vec2(num_classes=n_c, **kwargs)
     elif model in ("sequential", "cnn"):
         from .dl import Sequential
 

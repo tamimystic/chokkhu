@@ -1,3 +1,24 @@
+from .audio import (
+    stft,
+    istft,
+    spectrogram,
+    mel_filterbank,
+    power_to_db,
+    melspectrogram,
+    dct_type2,
+    mfcc,
+    compute_deltas,
+    SpecAugment,
+    Conv1D,
+    DepthwiseConv1D,
+    BatchNorm1D,
+    Conformer,
+    ConformerBlock,
+    ConformerConvModule,
+    AST,
+    AudioSpectrogramTransformer,
+    Wav2Vec2,
+)
 from .base import ChokkhuModel
 from .engine import train
 from .ml import (
@@ -174,6 +195,25 @@ from .nlp import (
 )
 
 __all__ = [
+    "Wav2Vec2",
+    "AudioSpectrogramTransformer",
+    "AST",
+    "ConformerConvModule",
+    "ConformerBlock",
+    "Conformer",
+    "BatchNorm1D",
+    "DepthwiseConv1D",
+    "Conv1D",
+    "SpecAugment",
+    "compute_deltas",
+    "mfcc",
+    "dct_type2",
+    "melspectrogram",
+    "power_to_db",
+    "mel_filterbank",
+    "spectrogram",
+    "istft",
+    "stft",
     "BM25Retriever",
     "TfidfVectorizer",
     "PorterStemmer",

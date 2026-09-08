@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Set, Tuple, Union
 import numpy as np
 
 
@@ -455,7 +455,7 @@ class TfidfVectorizer:
         self.feature_names_ = sorted_terms
 
         # Compute IDF
-        idf = np.zeros(len(self.feature_names_), dtype=np.float64)
+        idf: np.ndarray = np.zeros(len(self.feature_names_), dtype=np.float64)
         for idx, term in enumerate(self.feature_names_):
             df = doc_freq[term]
             if self.smooth_idf:
@@ -470,7 +470,7 @@ class TfidfVectorizer:
         """Transform documents to TF-IDF matrix (n_docs, n_features)."""
         n_docs = len(raw_documents)
         n_features = len(self.feature_names_)
-        matrix = np.zeros((n_docs, n_features), dtype=np.float64)
+        matrix: np.ndarray = np.zeros((n_docs, n_features), dtype=np.float64)
 
         for doc_idx, doc in enumerate(raw_documents):
             tokens = self._tokenize(doc)
@@ -568,7 +568,7 @@ class BM25Retriever:
     def get_scores(self, query: str) -> np.ndarray:
         """Compute BM25 scores for a query across all indexed documents."""
         q_tokens = self._tokenize(query)
-        scores = np.zeros(self.corpus_size, dtype=np.float64)
+        scores: np.ndarray = np.zeros(self.corpus_size, dtype=np.float64)
 
         if self.avgdl == 0.0:
             return scores
@@ -580,7 +580,7 @@ class BM25Retriever:
                 continue
             token_idf = self.idf[token]
 
-            tf = np.zeros(self.corpus_size, dtype=np.float64)
+            tf: np.ndarray = np.zeros(self.corpus_size, dtype=np.float64)
             for i in range(self.corpus_size):
                 if token in self.doc_freqs[i]:
                     tf[i] = self.doc_freqs[i][token]
