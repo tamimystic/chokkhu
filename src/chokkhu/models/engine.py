@@ -411,6 +411,43 @@ def _create_model_instance(
             (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 784),
         )
         return WGANGP(out_dim=out_d, **kwargs)
+    # --- Graph Neural Networks Universe ---
+    elif model in ("gcn",):
+        from .gnn import GCN
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 16),
+        )
+        out_f = kwargs.pop("out_features", num_c if num_c > 1 else 2)
+        return GCN(in_features=in_f, out_features=out_f, **kwargs)
+    elif model in ("gat",):
+        from .gnn import GAT
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 16),
+        )
+        out_f = kwargs.pop("out_features", num_c if num_c > 1 else 2)
+        return GAT(in_features=in_f, out_features=out_f, **kwargs)
+    elif model in ("graphsage", "sage"):
+        from .gnn import GraphSAGE
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 16),
+        )
+        out_f = kwargs.pop("out_features", num_c if num_c > 1 else 2)
+        return GraphSAGE(in_features=in_f, out_features=out_f, **kwargs)
+    elif model in ("gin",):
+        from .gnn import GIN
+
+        in_f = kwargs.pop(
+            "in_features",
+            (X_train.shape[-1] if X_train is not None and X_train.ndim >= 2 else 16),
+        )
+        out_f = kwargs.pop("out_features", num_c if num_c > 1 else 2)
+        return GIN(in_features=in_f, out_features=out_f, **kwargs)
     elif model in ("sequential", "cnn"):
         from .dl import Sequential
 
@@ -455,6 +492,7 @@ def train(
         "X_val",
         "y_val",
         "callbacks",
+        "adj",
     }
     fit_kwargs = {k: v for k, v in kwargs.items() if k in fit_param_names}
     init_kwargs = {k: v for k, v in kwargs.items() if k not in fit_param_names}

@@ -229,6 +229,14 @@ class EDAWrapper:
 
 eda = EDAWrapper()
 
+from .models.gnn import (
+    GCN,
+    GAT,
+    GraphSAGE,
+    GIN,
+    normalize_adjacency,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",

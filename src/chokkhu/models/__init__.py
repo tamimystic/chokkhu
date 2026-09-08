@@ -206,6 +206,21 @@ from .nlp import (
     sample_next_token,
 )
 
+from .gnn import (
+    GCN,
+    GAT,
+    GraphSAGE,
+    GIN,
+    GCNLayer,
+    GATLayer,
+    GraphSAGELayer,
+    GINLayer,
+    normalize_adjacency,
+    dense_to_edge_index,
+    edge_index_to_dense,
+    global_pool,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
