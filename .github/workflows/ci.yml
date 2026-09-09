@@ -32,11 +32,11 @@ jobs:
 
       - name: Run Linting (flake8)
         run: |
-          python -m flake8 src tests
+          python -m flake8 --config=setup.cfg src tests
 
       - name: Run Type Checking (mypy)
         run: |
-          python -m mypy src --ignore-missing-imports --follow-imports=skip
+          python -m mypy src --config-file=setup.cfg --ignore-missing-imports --follow-imports=skip
 
 
   test:

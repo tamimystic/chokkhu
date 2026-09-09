@@ -7,7 +7,7 @@ from scipy import stats
 
 
 class VarianceThresholdSelector:
-    def __init__(self, threshold=0.01):
+    def __init__(self, threshold: float = 0.01) -> None:
         self.threshold = threshold
         self.selected_columns: list[str] = []
 
@@ -28,7 +28,7 @@ class VarianceThresholdSelector:
 
 
 class CorrelationFilterSelector:
-    def __init__(self, threshold=0.95):
+    def __init__(self, threshold: float = 0.95) -> None:
         self.threshold = threshold
         self.dropped_columns: list[str] = []
 
@@ -66,7 +66,7 @@ class CorrelationFilterSelector:
 
 
 class MutualInfoSelector:
-    def __init__(self, k=10):
+    def __init__(self, k: int = 10) -> None:
         self.k = k
         self.selected_columns: list[str] = []
 
@@ -109,7 +109,7 @@ class MutualInfoSelector:
 
 
 class ANOVASelector:
-    def __init__(self, k=10):
+    def __init__(self, k: int = 10) -> None:
         self.k = k
         self.selected_columns: list[str] = []
 
