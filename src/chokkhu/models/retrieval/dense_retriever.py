@@ -79,6 +79,7 @@ class DenseRetriever:
         self.metadata: Dict[Union[int, str], Dict[str, Any]] = {}
         self.vectors: List[np.ndarray] = []
         self.doc_ids: List[Union[int, str]] = []
+        self.index: Optional[Union[HNSWIndex, IVFPQIndex]] = None
 
         if self.backend == "hnsw":
             self.index = HNSWIndex(
@@ -117,15 +118,16 @@ class DenseRetriever:
             arr = arr.reshape(1, -1)
 
         n_samples = arr.shape[0]
+        assigned_ids: List[Union[int, str]]
         if ids is None:
             curr_len = len(self.doc_ids)
-            assigned_ids = list(range(curr_len, curr_len + n_samples))
+            assigned_ids = [int(i) for i in range(curr_len, curr_len + n_samples)]
         else:
             if len(ids) != n_samples:
                 raise ValueError(
                     f"Length of ids ({len(ids)}) must match embeddings ({n_samples})"
                 )
-            assigned_ids = ids
+            assigned_ids = list(ids)
 
         for i in range(n_samples):
             doc_id = assigned_ids[i]
@@ -136,9 +138,9 @@ class DenseRetriever:
             if metadatas is not None:
                 self.metadata[doc_id] = metadatas[i]
 
-        if self.backend == "hnsw":
+        if self.backend == "hnsw" and isinstance(self.index, HNSWIndex):
             self.index.add(arr, assigned_ids)
-        elif self.backend == "ivf_pq":
+        elif self.backend == "ivf_pq" and isinstance(self.index, IVFPQIndex):
             if not self.index.is_trained:
                 self.index.train(arr)
             self.index.add(arr, assigned_ids)
@@ -156,8 +158,9 @@ class DenseRetriever:
         """
         q_vec = np.asarray(query_embedding, dtype=np.float32).ravel()
 
-        if self.backend in ("hnsw", "ivf_pq"):
+        if self.backend in ("hnsw", "ivf_pq") and self.index is not None:
             dists, ids = self.index.search(q_vec, k=k)
+
         else:
             # Exact brute force
             all_vecs = np.array(self.vectors, dtype=np.float32)

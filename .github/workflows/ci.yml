@@ -40,7 +40,8 @@ jobs:
 
       - name: Run Type Checking (mypy)
         run: |
-          PYTHONPATH=src python -m mypy -p chokkhu --ignore-missing-imports --follow-imports=skip
+          PYTHONPATH=src python -m mypy --config-file pyproject.toml src/chokkhu
+
 
 
   test:

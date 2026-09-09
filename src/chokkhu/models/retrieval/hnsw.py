@@ -189,15 +189,16 @@ class HNSWIndex:
             )
 
         n_samples = arr.shape[0]
+        assigned_ids: List[Union[int, str]]
         if ids is None:
             curr_len = len(self.vectors)
-            assigned_ids = list(range(curr_len, curr_len + n_samples))
+            assigned_ids = [int(i) for i in range(curr_len, curr_len + n_samples)]
         else:
             if len(ids) != n_samples:
                 raise ValueError(
                     f"Length of ids ({len(ids)}) must match vectors ({n_samples})"
                 )
-            assigned_ids = ids
+            assigned_ids = list(ids)
 
         for i in range(n_samples):
             vec = arr[i]

@@ -207,15 +207,16 @@ class IVFPQIndex:
             )
 
         n_samples = arr.shape[0]
+        assigned_ids: List[Union[int, str]]
         if ids is None:
             curr_len = self.total_vectors
-            assigned_ids = list(range(curr_len, curr_len + n_samples))
+            assigned_ids = [int(i) for i in range(curr_len, curr_len + n_samples)]
         else:
             if len(ids) != n_samples:
                 raise ValueError(
                     f"Length of ids ({len(ids)}) must match vectors ({n_samples})"
                 )
-            assigned_ids = ids
+            assigned_ids = list(ids)
 
         # 1. Assign to Coarse Centroids
         dists = np.sum(
@@ -287,7 +288,8 @@ class IVFPQIndex:
             query_residual = q_vec - coarse_centroid
 
             # Precompute ADC Lookup Table for this probed list: shape (m, k_sub)
-            lut = np.zeros((self.m, self.k_sub), dtype=np.float32)
+            lut: np.ndarray = np.zeros((self.m, self.k_sub), dtype=np.float32)
+
             for sub_i in range(self.m):
                 start_col = sub_i * self.d_sub
                 end_col = start_col + self.d_sub
