@@ -98,40 +98,42 @@ chokkhu/
 │       │   ├── config.py                  # Global settings, thread limits, seed control
 │       │   └── tensor.py                  # Dynamic Autograd Tensor Engine
 │       │
-│       ├── io/                            # Phase 2: Multi-Modal Data Ingestion
+│       ├── io/                            # Phase 2: Multi-Modal Data Ingestion & Serialization
 │       │   ├── __init__.py
-│       │   ├── tabular.py                 # CSV, TSV, JSON, Parquet, Feather, Excel loaders
-│       │   ├── image.py                   # Multi-threaded image directory & format loaders
-│       │   ├── text.py                    # Raw text, corpus, and line-by-line loaders
-│       │   ├── audio.py                   # WAV, MP3 byte decoding & signal loader
-│       │   └── persistence.py             # Atomic model & pipeline serialization
+│       │   ├── tabular.py                 # CSV, TSV, JSON, Parquet, Feather, Excel, SQLite loaders
+│       │   ├── image.py                   # Multi-threaded image directory & DICOM format loaders
+│       │   ├── text.py                    # Raw text, corpus, JSONL, and line-by-line loaders
+│       │   ├── audio.py                   # WAV, FLAC, MP3 byte decoding & signal loader
+│       │   ├── video.py                   # Frame-by-frame pure OpenCV/NumPy video streamer
+│       │   └── persistence.py             # Atomic model, Safetensors & pipeline serialization
 │       │
 │       ├── cleaning/                      # Phase 3: Deep Data Cleaning & Quality Control
 │       │   ├── __init__.py
-│       │   ├── missing_imputer.py         # Mean, Median, Mode, KNN, Iterative, Constant
-│       │   ├── outlier_detector.py        # IQR, Z-score, Isolation Forest, Elliptic Envelope
-│       │   ├── duplicate_handler.py       # Exact, subset, and fuzzy duplicate handling
-│       │   └── dtype_fixer.py             # Intelligent dtype coercion & datetime parsing
+│       │   ├── missing_imputer.py         # Mean, Median, Mode, KNN, Iterative MICE, Spline, Matrix Factorization
+│       │   ├── outlier_detector.py        # IQR, Z-score, MAD, Mahalanobis, Isolation Forest, LOF, Elliptic Envelope
+│       │   ├── duplicate_handler.py       # Exact, subset, and fuzzy MinHash/Levenshtein duplicate handling
+│       │   └── dtype_fixer.py             # Intelligent dtype coercion, rare category grouping & datetime parsing
 │       │
-│       ├── preprocessing/                 # Phase 4: Feature Preprocessing & Scaling
+│       ├── preprocessing/                 # Phase 4: Feature Preprocessing, Scaling & Encoding
 │       │   ├── __init__.py
-│       │   ├── scaling.py                 # StandardScaler, MinMaxScaler, RobustScaler, PowerScaler, QuantileScaler
-│       │   ├── encoding.py                # OneHotEncoder, OrdinalEncoder, BinaryEncoder, TargetEncoder, FrequencyEncoder, HashEncoder
-│       │   └── feature_selection.py       # VarianceThreshold, CorrelationFilter, MutualInfo, ANOVA, RFESelector
+│       │   ├── scaling.py                 # StandardScaler, MinMaxScaler, MaxAbsScaler, RobustScaler, PowerScaler, QuantileScaler, L1/L2 Normalizer
+│       │   ├── encoding.py                # OneHot, Ordinal, Binary, Target (OOF smoothed), WoE/IV, Frequency, Hash, Helmert Encoders
+│       │   └── feature_selection.py       # VarianceThreshold, CorrelationFilter, MutualInfo, ANOVA, RFE, RFECV, SFFS, LASSO Sparsity
 │       │
-│       ├── transformation/                # Phase 5: Space Projections, Resampling & Augmentation
+│       ├── transformation/                # Phase 5: Space Projections, Manifold Learning, Resampling & Augmentation
 │       │   ├── __init__.py
-│       │   ├── decomposition.py           # PCA, SVD, LDA, t-SNE, KernelPCA
-│       │   ├── resampling.py              # SMOTE, ADASYN, Tomek Links, SMOTETomek, RandomUnderSampler
-│       │   ├── feature_engineering.py     # PolynomialFeatures, Cross-interactions, Binning, Log
-│       │   ├── augmentation_vision.py     # Flip, Rotate, Crop, Blur, Cutout, MixUp, ColorJitter
-│       │   ├── augmentation_text.py       # Synonym replacement, Random swap, Random deletion
-│       │   └── augmentation_audio.py      # Time stretch, Pitch shift, Noise injection, SpecAugment
+│       │   ├── decomposition.py           # PCA, IncrementalPCA, SVD, LDA, FactorAnalysis, FastICA
+│       │   ├── manifold.py                # t-SNE (Barnes-Hut), KernelPCA, Isomap, MDS, UMAP (pure NumPy)
+│       │   ├── resampling.py              # SMOTE, Borderline-SMOTE, ADASYN, SMOTE-NC, Tomek Links, ENN, SMOTETomek, RandomOver/UnderSampler
+│       │   ├── feature_engineering.py     # PolynomialFeatures, SplineTransformer, Cross-interactions, Binning, Cyclical Sin/Cos
+│       │   ├── augmentation_vision.py     # Flip, Rotate, Crop, Blur, Cutout, MixUp, CutMix, ColorJitter, AutoAugment
+│       │   ├── augmentation_text.py       # Synonym replacement, Random swap, Random deletion, Typo injection
+│       │   └── augmentation_audio.py      # Time stretch (Phase Vocoder), Pitch shift, Noise injection, SpecAugment, RIR Reverb
 │       │
-│       ├── splitting/                     # Phase 6: Leakage-Free Data Splitting
+│       ├── splitting/                     # Phase 6: Leakage-Free Data Splitting & Cross-Validation
 │       │   ├── __init__.py
 │       │   ├── engine.py                  # Train/Test, Train/Val/Test (3-way split)
-│       │   └── cross_validation.py        # KFold, StratifiedKFold, TimeSeriesSplit, GroupKFold
+│       │   └── cross_validation.py        # KFold, StratifiedKFold, GroupKFold, TimeSeriesSplit, PurgedTimeSeriesSplit, RepeatedKFold, LOO
 │       │
 │       ├── models/                        # Phase 7 to 13 + RL: The Complete Modeling Universe
 │       │   ├── __init__.py
@@ -140,65 +142,67 @@ chokkhu/
 │       │   │
 │       │   ├── ml/                        # Phase 7: Classical ML & Ensembles
 │       │   │   ├── __init__.py
-│       │   │   ├── linear_regression.py   # OLS, Ridge, Lasso, ElasticNet (GD & Normal Eq)
-│       │   │   ├── logistic_regression.py # Binary & Multinomial Logistic Regression
-│       │   │   ├── knn.py                 # K-Nearest Neighbors (Classification & Regression)
-│       │   │   ├── decision_tree.py       # CART Tree with Gini, Entropy, MSE, MAE criteria
-│       │   │   ├── random_forest.py       # Bagging Ensemble with OOB scoring & feature subsets
+│       │   │   ├── linear_regression.py   # OLS, Ridge, Lasso, ElasticNet, Huber, Passive-Aggressive, GLMs
+│       │   │   ├── logistic_regression.py # Binary & Multinomial Logistic Regression (L-BFGS / SGD solvers)
+│       │   │   ├── knn.py                 # K-Nearest Neighbors & Radius Neighbors with KD-Tree and Ball-Tree
+│       │   │   ├── decision_tree.py       # CART Tree with Gini, Entropy, MSE, MAE, Cost-Complexity Pruning
+│       │   │   ├── random_forest.py       # Bagging Ensemble with OOB scoring, feature subsets & quantile trees
 │       │   │   ├── extra_trees.py         # Extremely Randomized Trees
-│       │   │   ├── gradient_boosting.py   # Gradient Tree Boosting with Log-Odds & Deviance
-│       │   │   ├── adaboost.py            # Adaptive Boosting with decision stumps
-│       │   │   ├── svm.py                 # Support Vector Machine (Linear, RBF, Poly, Sigmoid)
-│       │   │   ├── naive_bayes.py         # Gaussian, Multinomial, Bernoulli, Complement NB
-│       │   │   ├── kmeans.py              # K-Means++ with Inertia & Elbow evaluation
+│       │   │   ├── gradient_boosting.py   # Gradient Tree Boosting with Log-Odds, Deviance & HistGradientBoosting
+│       │   │   ├── adaboost.py            # Adaptive Boosting (SAMME / SAMME.R)
+│       │   │   ├── svm.py                 # Support Vector Machine (Linear, RBF, Poly, Sigmoid, Mahalanobis) with SMO solver
+│       │   │   ├── naive_bayes.py         # Gaussian, Multinomial, Bernoulli, Complement NB, QDA
+│       │   │   ├── kmeans.py              # K-Means++ and Mini-Batch K-Means with Inertia & Silhouette
 │       │   │   ├── kmedoids.py            # K-Medoids with PAM algorithm
 │       │   │   ├── dbscan.py              # Density-Based Spatial Clustering
 │       │   │   ├── optics.py              # Ordering Points To Identify Clustering Structure
-│       │   │   ├── hierarchical.py        # Agglomerative Clustering (Single, Complete, Ward)
-│       │   │   ├── gmm.py                 # Gaussian Mixture Models with EM Algorithm
-│       │   │   └── anomaly.py             # Isolation Forest, LOF, One-Class SVM
+│       │   │   ├── hierarchical.py        # Agglomerative Clustering (Ward, Single, Complete, Average linkages)
+│       │   │   ├── gmm.py                 # Gaussian Mixture Models with Expectation-Maximization (EM)
+│       │   │   ├── spectral_clustering.py # Spectral Clustering via Graph Laplacian Eigen-decomposition
+│       │   │   └── anomaly.py             # Isolation Forest, LOF, One-Class SVM, Elliptic Envelope
 │       │   │
-│       │   ├── dl/                        # Phase 8: Sovereign Deep Learning & Autograd
+│       │   ├── dl/                        # Phase 8: Sovereign Deep Learning & Autograd Framework
 │       │   │   ├── __init__.py
-│       │   │   ├── autograd.py            # Computational Graph, Tensor, Reverse Autodiff
-│       │   │   ├── layers.py              # Linear, Dropout, BatchNorm1D, LayerNorm, RMSNorm, GroupNorm, Flatten, Embedding
-│       │   │   ├── activations.py         # ReLU, GELU, SiLU, LeakyReLU, ELU, SELU, Mish, Sigmoid, Tanh, Softmax
-│       │   │   ├── losses.py              # MSE, MAE, CrossEntropy, BinaryCrossEntropy, Huber, Focal, Dice, Triplet
-│       │   │   ├── optimizers.py          # SGD, Momentum, Nesterov, Adam, AdamW, RMSProp, Adagrad, Lion
-│       │   │   ├── schedulers.py          # StepLR, CosineAnnealingLR, ExponentialLR, ReduceLROnPlateau
-│       │   │   ├── callbacks.py           # EarlyStopping, ModelCheckpoint, LRLogger
-│       │   │   └── sequential.py          # Sequential Model Builder (.fit, .predict, .predict_proba)
+│       │   │   ├── autograd.py            # Computational Graph, Tensor, Tape-based Reverse Autodiff
+│       │   │   ├── layers.py              # Linear, Dropout, SpatialDropout2D, BatchNorm1D, BatchNorm2D, LayerNorm, RMSNorm, GroupNorm, InstanceNorm, Embedding
+│       │   │   ├── activations.py         # ReLU, GELU, SiLU, LeakyReLU, PReLU, ELU, SELU, Mish, Softmax, LogSoftmax, Sigmoid, Tanh
+│       │   │   ├── losses.py              # MSE, MAE, Huber, CrossEntropy (log-sum-exp), BCEWithLogits, Focal, Dice, Tversky, Triplet, Contrastive, CTC
+│       │   │   ├── optimizers.py          # SGD (Momentum, Nesterov), Adam, AdamW, RMSProp, Adagrad, Adadelta, Lion
+│       │   │   ├── schedulers.py          # StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR, OneCycleLR, ReduceLROnPlateau
+│       │   │   ├── callbacks.py           # EarlyStopping, ModelCheckpoint, LRLogger, TensorBoard-style ASCII visualizer
+│       │   │   └── sequential.py          # Sequential & Functional Model Builder (.fit, .predict, .predict_proba)
 │       │   │
-│       │   ├── vision/                    # Phase 9: Complete Computer Vision Universe
+│       │   ├── vision/                    # Phase 9: Complete Computer Vision Architecture Universe
 │       │   │   ├── __init__.py
-│       │   │   ├── conv_layers.py         # Conv2D (im2col), ConvTranspose2D, DepthwiseSeparableConv2D, GroupedConv2D, ChannelShuffle, MaxPool2D, AvgPool2D, GlobalAvgPool2D
+│       │   │   ├── conv_layers.py         # Conv2D (im2col), ConvTranspose2D, DepthwiseSeparableConv2D, GroupedConv2D, ChannelShuffle, DilatedConv2D, DeformableConv2D, MaxPool2D, AvgPool2D, GlobalAvgPool2D, SPP
 │       │   │   ├── batchnorm2d.py         # Spatial 2D Batch Normalization
-│       │   │   ├── attention_blocks.py    # SEBlock (Squeeze-and-Excitation), CBAM
-│       │   │   ├── detection.py           # Anchor Boxes, IoU, Non-Maximum Suppression (NMS), YOLO-Head, SSD, RetinaNet
-│       │   │   ├── fpn.py                 # Feature Pyramid Networks (FPN), PANet
+│       │   │   ├── attention_blocks.py    # SEBlock (Squeeze-and-Excitation), CBAM, CoordAttention, Non-Local Blocks
+│       │   │   ├── detection.py           # Anchor Boxes, IoU, GIoU, DIoU, CIoU, NMS, Soft-NMS, YOLO-Head, SSD, RetinaNet
+│       │   │   ├── fpn.py                 # Feature Pyramid Networks (FPN), PANet, BiFPN
 │       │   │   ├── losses.py              # FocalLoss, DiceLoss, TverskyLoss, GIoU, DIoU, CIoU
-│       │   │   ├── xai_vision.py          # GradCAM, GradCAM++, Saliency Maps
+│       │   │   ├── xai_vision.py          # GradCAM, GradCAM++, Score-CAM, LayerCAM, Guided Backprop, Saliency Maps
 │       │   │   └── architectures/         # Comprehensive CNN & Vision Architectures
 │       │   │       ├── __init__.py
 │       │   │       ├── lenet.py           # LeNet-5 (1998)
 │       │   │       ├── alexnet.py         # AlexNet (2012), ZFNet (2013)
 │       │   │       ├── vgg.py             # VGG-11, VGG-13, VGG-16, VGG-19 (2014)
-│       │   │       ├── inception.py       # GoogLeNet / InceptionV1, InceptionV3 (2014-2015)
-│       │   │       ├── resnet.py          # ResNet-18, ResNet-34, ResNet-50, ResNet-101, ResNet-152 (2015)
+│       │   │       ├── inception.py       # GoogLeNet / InceptionV1, InceptionV3, InceptionV4 (2014-2016)
+│       │   │       ├── resnet.py          # ResNet-18, ResNet-34, ResNet-50, ResNet-101, ResNet-152, WideResNet (2015)
 │       │   │       ├── resnext.py         # ResNeXt-50, ResNeXt-101 (2017)
 │       │   │       ├── densenet.py        # DenseNet-121, DenseNet-169, DenseNet-201 (2017)
 │       │   │       ├── squeezenet.py      # SqueezeNet with Fire Modules (2016)
 │       │   │       ├── mobilenet.py       # MobileNetV1, MobileNetV2 (Inverted Residuals), MobileNetV3 (2017-2019)
 │       │   │       ├── shufflenet.py      # ShuffleNetV1, ShuffleNetV2 (Channel Shuffle) (2018)
-│       │   │       ├── efficientnet.py    # EfficientNet-B0 to B4 (MBConv + Compound Scaling) (2019)
-│       │   │       ├── convnext.py        # ConvNeXt-Tiny, ConvNeXt-Small (Modern Pure CNN) (2022)
+│       │   │       ├── efficientnet.py    # EfficientNet-B0 to B7 (MBConv + Compound Scaling) (2019)
+│       │   │       ├── convnext.py        # ConvNeXt-Tiny, ConvNeXt-Small, ConvNeXt-Base (Modern Pure CNN) (2022)
 │       │   │       ├── unet.py            # U-Net Image Segmentation (2015)
-│       │   │       ├── fcn.py             # FCN-8s, FCN-32s Semantic Segmentation (2015)
-│       │   │       ├── vit.py             # Vision Transformer (ViT-Tiny, ViT-Base) (2020)
+│       │   │       ├── fcn.py             # FCN-8s, FCN-16s, FCN-32s Semantic Segmentation (2015)
+│       │   │       ├── deeplab.py         # DeepLabV3+ with Atrous Spatial Pyramid Pooling (ASPP)
+│       │   │       ├── vit.py             # Vision Transformer (ViT-Tiny, ViT-Base, ViT-Large) (2020)
 │       │   │       ├── swin.py            # Swin Transformer (Shifted Window Attention) (2021)
 │       │   │       └── deit.py            # DeiT (Distillation Token Vision Transformer) (2021)
 │       │   │
-│       │   ├── nlp/                       # Phase 10: NLP, Sequence Models & Ultra-Modern LLMs
+│       │   ├── nlp/                       # Phase 10: NLP, Sequence Models & Ultra-Modern Frontier LLMs
 │       │   │   ├── __init__.py
 │       │   │   ├── tokenizers/            # Pure NumPy Tokenization Subsystem
 │       │   │   │   ├── __init__.py
@@ -369,67 +373,218 @@ chokkhu/
 
 ## 3. Phase-by-Phase Detailed Implementation Roadmap
 
-### Phase 1: Foundation, Build System & Multi-OS CI/CD
-- **Modern Packaging**: Zero build-time compilation, PEP 518/621 compliance (`pyproject.toml`, `setup.py`), `< 5 MB` wheel target.
-- **CI/CD Matrix**: Automated GitHub Actions testing across Ubuntu, Windows, and macOS for Python 3.9, 3.10, 3.11, 3.12, and 3.13 (17 active jobs, 100% Green).
-- **Code Standards**: 100% Black formatting, 0 Flake8 errors, 100% Mypy type-checked.
+### Phase 1: Foundation, Infrastructure, Dynamic Config & Multi-OS CI/CD
+- **Global Deterministic Control & Hardware Optimization**:
+  - Unified seed management (`ck.core.config.set_seed(42)`) controlling random generators in NumPy, Python `random`, and internal weight initializers.
+  - Multi-threaded CPU BLAS optimization (`set_num_threads(n)` for OpenBLAS / MKL / Accelerate).
+  - Vectorized SIMD-friendly array operations ensuring zero C-compiler dependency while maximizing throughput.
+- **Modern Packaging & PEP Compliance**:
+  - Zero build-time compilation, PEP 518/621 compliance (`pyproject.toml`, `setup.py`), `< 5 MB` wheel target.
+  - Multi-OS GitHub Actions testing across Ubuntu, Windows, and macOS for Python 3.9, 3.10, 3.11, 3.12, and 3.13 (17 active jobs, 100% Green).
+- **Core Exceptions & Logging**:
+  - Typed exceptions: `DataLeakageError`, `DimensionMismatchError`, `ConvergenceWarning`, `NumericalInstabilityError`.
+  - Rich ANSI/Unicode terminal logger with configurable verbosity levels, execution timer wrappers, and ASCII progress tracking.
 
-### Phase 2: Multi-Modal Data Ingestion (`io/`)
-- Pure NumPy, Pandas, Pillow, OpenCV-headless ingestion for Tabular (CSV, TSV, JSON), Image folders, Raw text, and Audio WAV files.
-- Thread-safe, memory-mapped batch streaming and atomic pipeline serialization.
+---
 
-### Phase 3: Deep Data Cleaning & Imputation (`cleaning/`)
-- Imputers: Mean, Median, Mode, KNN Imputer, Iterative MICE Imputer, Constant.
-- Outliers: IQR Filter, Z-Score Filter, Isolation Forest, Elliptic Envelope.
-- Duplicates & Dtypes: Exact & subset duplicate pruning, intelligent datetime & numerical coercion.
+### Phase 2: Multi-Modal Data Ingestion, Streaming & Serialization (`io/`)
+- **Tabular Ingestion**:
+  - Memory-mapped streaming reader for ultra-large CSV, TSV, JSON, and JSON Lines (`.jsonl`).
+  - Native Parquet and Feather format parser integration using raw buffer streams without heavy PyArrow dependency.
+  - SQLite and SQL database connection interface executing direct table queries into NumPy/Pandas containers.
+  - Native Excel (`.xlsx`) XML stream loader for office spreadsheets.
+- **Vision, Audio & Video Multi-Modal Ingestion**:
+  - Multi-threaded asynchronous image folder reader with class directory mapping, batch prefetching, and Exif metadata parsing.
+  - Medical image DICOM format raw byte parser.
+  - Native WAV, FLAC, OGG, MP3 PCM audio decoder reading sample rate, channel count, and floating-point audio buffers.
+  - Frame-by-frame pure OpenCV/NumPy video stream generator for action recognition and video analysis.
+- **Persistence & Serialization**:
+  - `SafeTensors` format serializer: Zero-copy, header-indexed, pure NumPy model weight saving/loading preventing arbitrary code execution vulnerability of standard pickle.
+  - Atomic pipeline serializer bundling fitted preprocessors, transformation states, models, and metadata into compressed `.chokkhu` archives.
 
-### Phase 4: Feature Preprocessing & Scaling (`preprocessing/`)
-- Scalers: StandardScaler, MinMaxScaler, RobustScaler, PowerScaler (Yeo-Johnson/Box-Cox), QuantileScaler (Uniform/Normal).
-- Encoders: OneHotEncoder, OrdinalEncoder, BinaryEncoder, TargetEncoder, FrequencyEncoder, HashEncoder.
-- Feature Selectors: VarianceThreshold, CorrelationFilter, MutualInfoSelector, ANOVA F-Selector, RFESelector.
+---
 
-### Phase 5: Space Projections, Resampling & Augmentations (`transformation/`)
-- Space Projections: PCA, SVD, LDA, t-SNE, KernelPCA.
-- Resampling: SMOTE, ADASYN, Tomek Links, SMOTETomek, RandomOverSampler, RandomUnderSampler.
-- Augmentation Suites:
-  - Vision: Flip, Rotate, Crop, Blur, Cutout, MixUp, ColorJitter.
-  - Text: Synonym Replacement, Random Swap, Random Deletion.
-  - Audio: Time Stretch, Pitch Shift, Additive Gaussian Noise, SpecAugment.
+### Phase 3: Deep Data Cleaning, Quality Control & Automated Imputation (`cleaning/`)
+- **Advanced Imputation Engines**:
+  - `Mean`, `Median`, `Mode`, and `Constant` statistical imputers with automated dtype mapping.
+  - `KNNImputer`: Distance-weighted k-nearest neighbors imputation over Euclidean/Manhattan metrics.
+  - `IterativeImputer (MICE)`: Multivariate Imputation by Chained Equations modeling each missing feature as a function of all other features via Bayesian ridge / decision tree regressors.
+  - `Spline / Linear Interpolation`: Forward-fill and backward-fill time-series imputers.
+  - `MatrixFactorizationImputer`: Low-rank SVD reconstruction for high-dimensional sparse tabular data.
+- **Multivariate Outlier & Anomaly Detection**:
+  - Interquartile Range (`IQR 1.5x / 3x` Tukey fences) with selective winsorization / clipping.
+  - `Z-Score` and `Modified Z-Score (MAD)` (Median Absolute Deviation robust to extreme clusters).
+  - `Mahalanobis Distance`: Covariance-based multivariate outlier detection accounting for inter-feature correlations ($D_M(x) = \sqrt{(x - \mu)^T \Sigma^{-1} (x - \mu)}$).
+  - `Isolation Forest`: Randomized isolation trees isolating anomalies at shallow tree depths.
+  - `Local Outlier Factor (LOF)`: Local reachability density comparison detecting outliers relative to surrounding density.
+  - `Elliptic Envelope`: Minimum Covariance Determinant (MCD) estimating Gaussian support envelope.
+- **Data Sanitation & Hygiene**:
+  - Exact, subset, and fuzzy duplicate handling using MinHash / Levenshtein N-gram distance.
+  - Intelligent dtype coercion (converting string numbers with currency symbols, percentages, and locale separators).
+  - Categorical typo clustering and rare category grouping ($\text{frequency} < \tau \rightarrow \text{"Other"}$).
+  - ISO 8601, RFC 2822, and Unix timestamp parsing into standard datetime objects.
+
+---
+
+### Phase 4: Feature Preprocessing, Scaling & Advanced Encodings (`preprocessing/`)
+- **Scaling & Normalization Suite**:
+  - `StandardScaler`: Zero-mean unit-variance transformation:
+    $$z = \frac{x - \mu}{\sigma}$$
+  - `MinMaxScaler`: Bounded interval transformation $z = \frac{x - x_{\min}}{x_{\max} - x_{\min}} \cdot (b - a) + a$.
+  - `MaxAbsScaler`: Scaled by maximum absolute value $z = \frac{x}{|x_{\max}|}$ preserving sparsity.
+  - `RobustScaler`: Median and interquartile range scaling $z = \frac{x - \text{median}}{\text{IQR}}$ immune to outliers.
+  - `PowerScaler`: Yeo-Johnson (supporting negative values) and Box-Cox (positive values) power transforms with Maximum Likelihood parameter $\lambda$ estimation for variance stabilization.
+  - `QuantileScaler`: Rank-based non-linear mapping transforming arbitrary distributions into Uniform or Gaussian Normal distributions.
+  - `L1 / L2 Normalizer`: Sample-wise vector unit norm projection ($x / \|x\|_p$).
+- **Categorical Encoding Suite**:
+  - `OneHotEncoder`: Sparse/dense binary indicator mapping with `handle_unknown='ignore'`, `min_frequency` thresholding, and drop-first dummy encoding.
+  - `OrdinalEncoder` / `LabelEncoder`: Deterministic integer mapping with unknown token handling.
+  - `BinaryEncoder`: Integer encoding projected into binary bit columns for high-cardinality features.
+  - `TargetEncoder`: M-estimate smoothed mean target encoding with K-Fold Out-Of-Fold (OOF) cross-validation preventing target leakage:
+    $$\hat{x}_i = \frac{n_i \cdot \bar{y}_i + m \cdot \bar{y}_{\text{global}}}{n_i + m}$$
+  - `WeightOfEvidenceEncoder (WoE)` & `InformationValue (IV)`: Credit risk and binary classification log-odds encoding ($\ln(\frac{\% \text{Goods}}{\% \text{Bads}})$).
+  - `FrequencyEncoder`: Replacing category labels with their normalized training set occurrence frequencies.
+  - `HashEncoder`: MurmurHash3 feature hashing projecting unbounded vocabularies into fixed $N$-dimensional spaces.
+  - `Helmert / Sum / Backward Difference Contrast Encoders`.
+- **Feature Selection Suite**:
+  - `VarianceThreshold`: Eliminating zero-variance constants and near-zero-variance quasi-constants.
+  - `CorrelationFilter`: Pairwise Pearson, Spearman, and Kendall rank multi-collinearity removal with automatic drop heuristics.
+  - `MutualInfoSelector`: Non-linear dependency scoring via k-nearest neighbor entropy estimation for discrete and continuous targets:
+    $$\mathcal{I}(X; Y) = \iint p(x, y) \log \frac{p(x, y)}{p(x)p(y)} dx dy$$
+  - `ANOVA F-Selector`: Analysis of Variance F-test testing linear relationship between individual numerical features and categorical classes ($F = \frac{\text{MSB}}{\text{MSW}}$).
+  - `RFESelector` & `RFECV`: Recursive Feature Elimination with step pruning and cross-validated optimal subset scoring.
+  - `Sequential Feature Selector`: Sequential Forward Selection (SFS) and Sequential Backward Selection (SBS).
+  - `L1 Sparsity Selector`: LASSO / ElasticNet L1 penalty pruning non-zero coefficients.
+
+---
+
+### Phase 5: Space Projections, Manifold Learning, Resampling & Augmentations (`transformation/`)
+- **Linear Space Projections**:
+  - `PCA`: Exact Full SVD, Randomized SVD, and Incremental Mini-Batch Principal Component Analysis with explained variance ratio and whitening.
+  - `TruncatedSVD`: Latent Semantic Analysis (LSA) for sparse term-document matrices.
+  - `LinearDiscriminantAnalysis (LDA)`: Supervised dimensionality reduction maximizing Fisher's class separability criterion ($\frac{w^T S_B w}{w^T S_W w}$).
+  - `FactorAnalysis`: Probabilistic model discovering unobserved latent factors with orthogonal rotation (Varimax).
+  - `FastICA`: Independent Component Analysis decomposing non-Gaussian signals via negentropy optimization.
+- **Non-Linear Manifold Learning**:
+  - `t-SNE`: t-Distributed Stochastic Neighbor Embedding with exact $O(N^2)$ and Barnes-Hut quadtree $O(N \log N)$ approximations.
+  - `KernelPCA`: Non-linear projection using RBF (Gaussian), Polynomial, Sigmoid, and Cosine Mercer kernels.
+  - `Isomap`: Isometric feature mapping computing geodesic shortest paths via Dijkstra algorithm followed by MDS.
+  - `Multidimensional Scaling (MDS)`: Metric distance preservation in low-dimensional coordinates.
+  - `UMAP`: Uniform Manifold Approximation and Projection using fuzzy simplicial sets and stochastic gradient descent in pure NumPy.
+- **Resampling & Imbalanced Learning**:
+  - `SMOTE`: Synthetic Minority Over-sampling Technique generating convex combinations of $k$-nearest minority neighbors:
+    $$x_{\text{new}} = x_i + \lambda \cdot (x_{zi} - x_i), \quad \lambda \sim \mathcal{U}(0, 1)$$
+  - `Borderline-SMOTE`: Focusing synthetic oversampling strictly on minority samples near the decision boundary (DANGER zone).
+  - `ADASYN`: Adaptive Synthetic sampling generating more synthetic instances for minority samples harder to learn.
+  - `SMOTE-NC`: Generalized SMOTE handling mixed nominal and continuous features.
+  - `RandomOverSampler` & `RandomUnderSampler`.
+  - `Tomek Links`: Identifying and removing ambiguous nearest neighbor pairs of opposing classes across the boundary.
+  - `EditedNearestNeighbors (ENN)`: Under-sampling majority instances whose class differs from majority of their $k$-nearest neighbors.
+  - `SMOTE-Tomek` & `SMOTE-ENN`: Combined over-sampling and cleaning pipelines.
+- **Feature Engineering & Mathematical Transforms**:
+  - `PolynomialFeatures`: Generating interaction terms and powers up to degree $d$ with `interaction_only` and `include_bias` options.
+  - `SplineTransformer`: Periodic and B-spline piecewise polynomials capturing non-linear feature curves.
+  - `CyclicalEncodings`: Converting periodic time features (Hour, DayOfWeek, Month) into smooth continuous orthogonal coordinates ($\sin(\frac{2\pi t}{T}), \cos(\frac{2\pi t}{T})$).
+  - `Binning / Discretization`: Equal-width, Equal-frequency (Quantile), and K-Means cluster discretization.
+- **Multi-Modal Augmentation Suites**:
+  - **Vision**: Random Horizontal/Vertical Flip, Random Rotate ($[-180^\circ, 180^\circ]$ bilinear), Random Crop & Resize, Color Jitter (Brightness, Contrast, Saturation, Hue), Gaussian Blur, Random Erasing / Cutout, MixUp ($x = \lambda x_1 + (1-\lambda) x_2$), CutMix (bounding box patch replacement with area ratio label interpolation), AutoAugment policy engine.
+  - **Text**: Synonym Replacement (WordNet-style semantic replacement), Random Insertion, Random Swap, Random Deletion (EDA - Easy Data Augmentation), Back-Translation simulation, Character-level typo injection.
+  - **Audio**: Time Stretch (Phase Vocoder), Pitch Shift, Additive Gaussian Noise, SpecAugment (Time & Frequency masking), Room Impulse Response (RIR) convolution reverb.
+
+---
 
 ### Phase 6: Leakage-Free Splitting & Stratification (`splitting/`)
-- Train/Test Split, 3-Way Train/Val/Test Split.
-- KFold, StratifiedKFold, TimeSeriesSplit, GroupKFold.
+- **Splitting Strategies**:
+  - `train_test_split`: Deterministic random splitting with shuffle and seed control.
+  - `train_val_test_split`: 3-way statistical split ensuring completely independent evaluation.
+- **Cross-Validation Engines**:
+  - `KFold`: Standard $k$-fold cross-validation.
+  - `StratifiedKFold`: Preserving exact class label proportions across every fold.
+  - `GroupKFold`: Ensuring distinct groups (e.g., individual patients, users, devices) never overlap between train and validation splits.
+  - `TimeSeriesSplit`: Expanding window and rolling origin cross-validation preserving strict temporal causality.
+  - `PurgedGroupTimeSeriesSplit`: Combinatorial purged cross-validation with embargo periods eliminating serial correlation leakage in financial/time-series data.
+  - `RepeatedKFold` & `LeaveOneOut (LOO)`.
+
+---
 
 ### Phase 7: Classical Machine Learning & Ensembles (`models/ml/`)
-- Linear & Logistic: OLS, Ridge, Lasso, ElasticNet, Binary & Multinomial Logistic Regression.
-- Trees & Forests: CART Decision Tree (Gini/Entropy/MSE/MAE), Random Forest, Extra Trees.
-- Boosting: Gradient Tree Boosting, AdaBoost.
-- Support Vector Machines: Linear, Polynomial, RBF, Sigmoid Kernels with SMO/QP solvers.
-- Neighbors & Naive Bayes: KNN (Classification & Regression), Gaussian, Multinomial, Bernoulli, Complement NB.
-- Clustering: K-Means++, K-Medoids (PAM), DBSCAN, OPTICS, Agglomerative Hierarchical (Ward/Single/Complete/Average), GMM.
-- Anomaly Detection: Isolation Forest, Local Outlier Factor (LOF), One-Class SVM.
+- **Linear & Generalized Linear Models (GLMs)**:
+  - `LinearRegression`: Ordinary Least Squares (OLS) via Normal Equations $(X^T X)^{-1} X^T y$ and SVD.
+  - `RidgeRegression`: L2 regularized regression solving $(X^T X + \alpha I)^{-1} X^T y$.
+  - `LassoRegression`: L1 regularized regression via Coordinate Descent with soft-thresholding operator $\mathcal{S}(z, \gamma) = \text{sign}(z) \max(|z| - \gamma, 0)$.
+  - `ElasticNet`: Convex combination of L1 and L2 penalties ($\alpha \rho \|w\|_1 + \frac{\alpha (1-\rho)}{2} \|w\|_2^2$).
+  - `HuberRegressor`: Linear regression robust to outliers minimizing Huber loss.
+  - `LogisticRegression`: Binary and Multinomial (Softmax) Logistic Regression with L1, L2, ElasticNet penalties and vectorized L-BFGS / SGD solvers.
+  - `PassiveAggressive`: Online margin-based classifier and regressor for streaming data.
+- **Instance-Based Models**:
+  - `KNNClassifier` & `KNNRegressor`: K-Nearest Neighbors supporting Uniform and Distance-weighted voting, accelerated by pure NumPy KD-Tree and Ball-Tree spatial indices.
+  - `RadiusNeighbors`: Fixed distance radius ball voting.
+  - `NearestCentroid`: Prototype-based classification.
+- **Decision Trees & Tree Ensembles**:
+  - `DecisionTreeClassifier` & `DecisionTreeRegressor`: CART trees supporting Gini Impurity, Shannon Entropy, Mean Squared Error (MSE), Mean Absolute Error (MAE) criteria, minimum sample leaf constraints, maximum depth, and Minimal Cost-Complexity Pruning with parameter $\alpha$.
+  - `RandomForestClassifier` & `RandomForestRegressor`: Bootstrap aggregation (Bagging) ensemble with random feature subspace sampling at each split ($\sqrt{p}$ or $\log_2 p$), out-of-bag (OOB) scoring, and quantile prediction intervals.
+  - `ExtraTreesClassifier` & `ExtraTreesRegressor`: Extremely Randomized Trees sampling random split thresholds per feature for maximum variance reduction.
+  - `IsolationForest`: Unsupervised anomaly isolation trees computing anomaly scores from average path lengths $c(n)$.
+- **Boosting Algorithms**:
+  - `GradientBoostingClassifier` & `GradientBoostingRegressor`: Gradient Tree Boosting with shrinkage learning rate $\eta$, stochastic subsampling, deviance / log-odds / MSE loss functions, and tree leaf value optimization.
+  - `AdaBoostClassifier` & `AdaBoostRegressor`: Adaptive Boosting (SAMME and SAMME.R algorithms) adjusting sample weights $w_i \leftarrow w_i \exp(\alpha_m \mathbb{I}(y_i \neq G_m(x_i)))$.
+  - `HistGradientBoosting`: Fast histogram binning (256 integer bins) enabling $10\times$ faster split evaluations on massive datasets.
+- **Support Vector Machines (SVM)**:
+  - `SVC` & `SVR`: Support Vector Classification and Regression implementing Platt's Sequential Minimal Optimization (SMO) algorithm.
+  - Support for Linear, Polynomial ($(\gamma \langle x, x' \rangle + r)^d$), RBF ($\exp(-\gamma \|x - x'\|^2)$), Sigmoid ($\tanh(\gamma \langle x, x' \rangle + r)$), and Mahalanobis kernels.
+  - `LinearSVC`: High-speed dual coordinate descent linear SVM.
+- **Probabilistic & Bayesian Classifiers**:
+  - `GaussianNB`: Continuous feature classification via Gaussian probability density function $\mathcal{N}(\mu_{ck}, \sigma_{ck}^2)$.
+  - `MultinomialNB`: Word count / frequency classification with Laplace / Lidstone smoothing $\alpha$.
+  - `BernoulliNB`: Binary feature naive Bayes with multivariate Bernoulli models.
+  - `ComplementNB`: Specialized Naive Bayes designed for severely imbalanced text corpora.
+  - `LinearDiscriminantAnalysis (LDA)` & `QuadraticDiscriminantAnalysis (QDA)` classifiers.
+- **Clustering Universe**:
+  - `KMeans`: K-Means with K-Means++ seeded initialization, Lloyd's optimization, and Mini-Batch K-Means for streaming datasets.
+  - `KMedoids`: Partitioning Around Medoids (PAM) robust to extreme outliers using arbitrary distance metrics.
+  - `DBSCAN`: Density-Based Spatial Clustering identifying core points, border points, and arbitrary-shaped clusters with noise isolation ($\epsilon$, $\text{MinPts}$).
+  - `OPTICS`: Reachability distance ordering graph clustering.
+  - `AgglomerativeClustering`: Hierarchical clustering with Ward's variance minimization, Complete (maximum), Average, and Single linkage distance updates.
+  - `GaussianMixture (GMM)`: Soft probabilistic clustering via Expectation-Maximization (EM) estimating Gaussian components $(\pi_k, \mu_k, \Sigma_k)$ with full, tied, diag, and spherical covariance constraints.
+  - `SpectralClustering`: Graph Laplacian eigen-decomposition followed by K-Means in spectral embedding space.
+- **Anomaly Detection**:
+  - `IsolationForest`, `LocalOutlierFactor (LOF)`, `OneClassSVM`, `EllipticEnvelope` (Minimum Covariance Determinant).
 
-### Phase 8: Sovereign Autograd Deep Learning Framework (`models/dl/`)
-- **Autograd Engine**: Reverse-mode automatic differentiation with dynamic DAG generation and topological backpropagation.
-- **Layers**: Linear, Dropout, SpatialDropout, BatchNorm1D, LayerNorm, RMSNorm, GroupNorm, InstanceNorm, Flatten, Embedding.
-- **Activations**: ReLU, LeakyReLU, PReLU, ELU, SELU, GELU, SiLU/Swish, Mish, Softmax, LogSoftmax, Sigmoid, HardSigmoid, Tanh.
-- **Losses**: MSE, MAE, Huber, SmoothL1, CrossEntropy (log-sum-exp stabilized), BinaryCrossEntropy, FocalLoss, DiceLoss, TripletMarginLoss.
-- **Optimizers**: SGD (Momentum, Nesterov, L2 decay), Adam, AdamW (decoupled weight decay), RMSProp, Adagrad, Lion.
-- **Schedulers & Callbacks**: StepLR, CosineAnnealingLR, ExponentialLR, ReduceLROnPlateau, EarlyStopping, ModelCheckpoint.
-- **Sequential Container**: `.add()`, `.fit()`, `.predict()`, `.predict_proba()`, `.save()`, `.load()`.
+---
+
+### Phase 8: Sovereign Deep Learning, Dynamic Autograd & Computational Graph (`models/dl/`, `core/tensor.py`)
+- **Autograd Engine**:
+  - Dynamic DAG (Directed Acyclic Graph) construction with reverse-mode automatic differentiation, tape-based execution, broadcasting backward rules, in-place operation tracking, and memory-retaining computation graphs.
+- **Layers**:
+  - `Linear` / `Dense`, `Dropout`, `SpatialDropout2D`, `AlphaDropout`, `BatchNorm1D`, `BatchNorm2D`, `LayerNorm`, `RMSNorm`, `GroupNorm`, `InstanceNorm`, `Embedding`, `Flatten`, `Reshape`, `Permute`.
+- **Activation Functions**:
+  - `ReLU`, `LeakyReLU`, `PReLU` (learnable slope), `ELU`, `SELU` (self-normalizing scale/alpha), `GELU` (Gaussian Error Linear Unit with exact erf and tanh approximations), `SiLU / Swish` ($x \cdot \sigma(\beta x)$), `Mish` ($x \tanh(\ln(1 + e^x))$), `Hardswish`, `Hardsigmoid`, `Softmax`, `LogSoftmax`, `Softplus`, `Tanh`, `Sigmoid`.
+- **Loss Functions**:
+  - `MSE`, `MAE`, `Huber Loss`, `Smooth L1 Loss`, `CrossEntropyLoss` (log-sum-exp numerically stabilized with label smoothing), `BCEWithLogits`, `FocalLoss` ($\alpha (1-p_t)^\gamma \log(p_t)$), `DiceLoss`, `TverskyLoss`, `TripletMarginLoss`, `ContrastiveLoss`, `CosineSimilarityLoss`, `CTCLoss` (Connectionist Temporal Classification for speech/OCR).
+- **Optimizers**:
+  - `SGD` (with Polyak Momentum, Nesterov Accelerated Gradient, Weight Decay), `Adam` (Adaptive Moment Estimation with bias correction), `AdamW` (Decoupled Weight Decay), `RMSProp` (Exponential moving average of squared gradients), `Adagrad`, `Adadelta`, `Adamax`, `NAdam`, `Lion` (EvoLved Sign Momentum).
+- **Learning Rate Schedulers**:
+  - `StepLR`, `MultiStepLR`, `ExponentialLR`, `CosineAnnealingLR`, `CosineAnnealingWarmRestarts`, `ReduceLROnPlateau`, `OneCycleLR` (Smith 1-cycle policy), `LinearWarmupLR`.
+- **Training Callbacks & Containers**:
+  - `EarlyStopping` (patience, min_delta, restore_best_weights), `ModelCheckpoint` (saving top-k checkpoints), `LRLogger`, `TensorBoard-style ASCII loss visualizer`, `Sequential` & `Functional` Model Containers with `.compile()`, `.fit()`, `.evaluate()`, `.predict()`, `.predict_proba()`.
+
+---
 
 ### Phase 9: Complete Computer Vision Architecture Universe (`models/vision/`)
-- **Convolutions**: Vectorized `im2col`/`col2im` GEMM Conv2D, ConvTranspose2D, DepthwiseSeparableConv2D, GroupedConv2D, ChannelShuffle, MaxPool2D, AvgPool2D, GlobalAvgPool2D, BatchNorm2D.
-- **Attention Modules**: Squeeze-and-Excitation (`SEBlock`), Convolutional Block Attention Module (`CBAM`).
+- **Convolutional Mechanics**:
+  - Vectorized `im2col` & `col2im` GEMM `Conv2D`, `ConvTranspose2D` (Deconvolution / Fractional strided), `DepthwiseSeparableConv2D`, `GroupedConv2D`, `ChannelShuffle`, `Dilated / Atrous Conv2D` (rate $r$), `Deformable Convolution` (learnable offset sampling), `MaxPool2D`, `AvgPool2D`, `GlobalAvgPool2D`, `GlobalMaxPool2D`, `Spatial Pyramid Pooling (SPP)`.
+- **Visual Attention Modules**:
+  - Squeeze-and-Excitation (`SEBlock` with channel-wise squeeze and excitation), Convolutional Block Attention Module (`CBAM` with spatial and channel attention), Coordinate Attention (`CoordAttention`), `Non-Local Neural Networks` (Self-Attention in CV).
 - **Architectures**:
-  - Pioneers: `LeNet5` (1998), `AlexNet` (2012), `ZFNet` (2013), `VGG11`, `VGG13`, `VGG16`, `VGG19` (2014).
-  - Multi-Branch: `GoogLeNet` / `InceptionV1` (2014), `InceptionV3` (2015).
-  - Residual & Dense: `ResNet18`, `ResNet34`, `ResNet50`, `ResNet101`, `ResNet152` (2015), `ResNeXt50`, `ResNeXt101` (2017), `DenseNet121`, `DenseNet169`, `DenseNet201` (2017), `SqueezeNet` (2016).
-  - Edge & Mobile: `MobileNetV1` (2017), `MobileNetV2` (2018), `MobileNetV3` (2019), `ShuffleNetV1`, `ShuffleNetV2` (2018).
-  - Modern Pure CNNs: `EfficientNetB0` (2019), `ConvNeXtTiny`, `ConvNeXt` (2022).
-  - Segmentation: `UNet` (2015), `FCN8s`, `FCN32s` (2015).
-  - Vision Transformers: `VisionTransformer` (`ViT`), `SwinTransformer` (2021), `DeiT` (2021).
-- **Detection & XAI**: Anchor Box generation, IoU, Non-Maximum Suppression (`NMS`), YOLO Grid Head, SSD Head, RetinaNet Head, Feature Pyramid Network (`FPN`), `PANet`, `GradCAM`.
+  - **Pioneers**: `LeNet5` (1998), `AlexNet` (2012), `ZFNet` (2013), `VGG11`, `VGG13`, `VGG16`, `VGG19` (2014).
+  - **Multi-Branch & Inception**: `GoogLeNet` / `InceptionV1` (2014), `InceptionV3` (Factorized convolutions 2015), `InceptionV4` / `Inception-ResNet`.
+  - **Residual & Dense Networks**: `ResNet18`, `ResNet34`, `ResNet50`, `ResNet101`, `ResNet152` (He et al. 2015), `ResNeXt50`, `ResNeXt101` (Grouped residual transformations 2017), `DenseNet121`, `DenseNet169`, `DenseNet201` (Dense connectivity with transition layers 2017), `SqueezeNet` (Fire modules 2016), `WideResNet`.
+  - **Mobile, Edge & Efficient Networks**: `MobileNetV1` (Depthwise separable convolutions 2017), `MobileNetV2` (Inverted residuals with linear bottlenecks 2018), `MobileNetV3` (Hard-swish and NAS tuned 2019), `ShuffleNetV1`, `ShuffleNetV2` (Channel split and channel shuffle 2018), `EfficientNetB0` to B7 (MBConv with compound scaling 2019).
+  - **Modern Pure CNNs**: `ConvNeXtTiny`, `ConvNeXt` (Liu et al. 2022 modern pure 7x7 depthwise conv architecture).
+  - **Semantic & Medical Segmentation**: `UNet` (Ronneberger et al. 2015 Contracting & Expansive paths with skip connections), `FCN8s`, `FCN16s`, `FCN32s` (Long et al. 2015 Fully Convolutional Networks), `SegNet` (Index unpooling), `DeepLabV3+` (Atrous Spatial Pyramid Pooling - ASPP).
+  - **Object Detection & Heads**: Anchor Box generation, Intersection over Union (IoU), Generalized IoU (GIoU), Distance IoU (DIoU), Complete IoU (CIoU), Non-Maximum Suppression (NMS, Soft-NMS), `YOLOHead` (Grid bounding box & class confidence loss), `SSDHead` (Single Shot MultiBox Detector with multi-scale feature anchors), `RetinaNetHead` (Focal Loss for dense anchor classification), Feature Pyramid Network (`FPN`), Path Aggregation Network (`PANet`).
+  - **Vision Transformers (ViT)**: `VisionTransformer` (ViT-Tiny, ViT-Base, ViT-Large with patch extraction, linear projection, class token, position embeddings), `SwinTransformer` (Shifted Window Attention with cyclic shift and patch merging 2021), `DeiT` (Data-efficient Image Transformers with Distillation Token 2021).
+  - **Visual Explainability (XAI)**: `GradCAM` (Gradient-weighted Class Activation Mapping), `GradCAM++`, `Score-CAM`, `LayerCAM`, `Guided Backpropagation`, `Saliency Maps`.
 
 ---
 
