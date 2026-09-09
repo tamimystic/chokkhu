@@ -452,7 +452,7 @@ chokkhu/
   - `RNN`, `LSTM` (full gate equations), `BiLSTM`, `GRU`.
   - `RWKV` (Receptance Weighted Key Value): Linear attention RNN with Transformer-level parallelism.
   - `RetNet` (Retentive Network): Multi-Scale Retention mechanism.
-  - `Mamba / S6 Selective State Space Model`: Discrete-time parameter-dependent scan $h_t = ar{\mathbf{A}}_t h_{t-1} + ar{\mathbf{B}}_t x_t$, $y_t = \mathbf{C}_t h_t$.
+  - `Mamba / S6 Selective State Space Model`: Discrete-time parameter-dependent scan $h_t = \bar{\mathbf{A}}_t h_{t-1} + \bar{\mathbf{B}}_t x_t$, $y_t = \mathbf{C}_t h_t$.
 - **Attention Modules**:
   - Scaled Dot-Product Attention, Multi-Head Attention (`MHA`), Multi-Query Attention (`MQA`), Grouped-Query Attention (`GQA`).
   - `SlidingWindowAttention` (SWA): Local attention window with rolling KV-cache.
@@ -470,7 +470,8 @@ chokkhu/
 - **Generation & LLM Alignment**:
   - `TextGenerator`: Greedy, Temperature scaling, Top-K, Top-P Nucleus sampling, Beam Search with N-gram repetition penalty.
   - `Speculative Decoding`: Small draft model speculative token generation with parallel main-model verification (2-3x speedup).
-  - `Direct Preference Optimization` (DPO): Direct policy parameter alignment without auxiliary reward models.
+  - `Direct Preference Optimization` (DPO): Direct policy parameter alignment without auxiliary reward models:
+    $$\mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_w, y_l)}\left[\log \sigma\left(\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)\right]$$
   - `ORPO` (Odds Ratio Preference Optimization) & `KTO` (Kahneman-Tversky Optimization).
 
 ---
@@ -507,32 +508,35 @@ chokkhu/
   - `VQ-VAE`: Vector-Quantized Variational Autoencoder with Straight-Through Estimator codebook dictionary learning.
 - **Generative Adversarial Networks (GANs)**:
   - `DCGAN`: Deep Convolutional GAN with transpose convolutions.
-  - `WGAN-GP`: Wasserstein GAN with exact Gradient Penalty constraint ($\mathbb{E}[(\|
-abla_{\hat{x}} D(\hat{x})\|_2 - 1)^2]$).
-  - `StyleGAN2 / StyleGAN-XL`: Mapping Network $f: \mathcal{Z} ightarrow \mathcal{W}$, Style Modulation/Demodulation, Noise injection, and Path Length Regularization.
+  - `WGAN-GP`: Wasserstein GAN with exact Gradient Penalty constraint:
+    $$\mathcal{L}_{\text{WGAN-GP}} = \mathbb{E}[D(\tilde{x})] - \mathbb{E}[D(x)] + \lambda \mathbb{E}\left[(\|\nabla_{\hat{x}} D(\hat{x})\|_2 - 1)^2\right]$$
+  - `StyleGAN2 / StyleGAN-XL`: Mapping Network $f: \mathcal{Z} \rightarrow \mathcal{W}$, Style Modulation/Demodulation, Noise injection, and Path Length Regularization.
   - `Pix2Pix` & `CycleGAN`: Paired and Unpaired Image-to-Image translation with PatchGAN discriminator and cycle consistency loss.
 - **Diffusion Models & Deterministic Samplers**:
-  - `DDPM` (Denoising Diffusion Probabilistic Models): Linear/Cosine $eta_t$ variance schedulers, sinusoidal time embeddings, reverse Gaussian denoising.
+  - `DDPM` (Denoising Diffusion Probabilistic Models): Linear/Cosine $\beta_t$ variance schedulers, sinusoidal time embeddings, reverse Gaussian denoising.
   - `DDIM` (Denoising Diffusion Implicit Models): Deterministic fast sampling loop achieving high fidelity in 15-20 steps.
-  - `Classifier-Free Guidance (CFG)`: Conditional vs unconditional score interpolation $v_{	ext{guided}} = v_{	ext{uncond}} + s \cdot (v_{	ext{cond}} - v_{	ext{uncond}})$.
+  - `Classifier-Free Guidance (CFG)`: Conditional vs unconditional score interpolation:
+    $$v_{\text{guided}} = v_{\text{uncond}} + s \cdot (v_{\text{cond}} - v_{\text{uncond}})$$
   - `DPM-Solver` & `Euler A` high-order ODE samplers.
 - **Latent Diffusion & Flow Matching**:
   - `Latent Diffusion Models (LDM / Stable Diffusion style)`: VAE latent space diffusion with Cross-Attention text/context conditioning.
-  - `Rectified Flow Matching (Flux / SD3)`: Optimal transport straight-line velocity field ODE solver ($rac{dx_t}{dt} = v_t(x_t)$).
+  - `Rectified Flow Matching (Flux / SD3)`: Optimal transport straight-line velocity field ODE solver:
+    $$\frac{dx_t}{dt} = v_t(x_t), \quad x_t = (1 - t) x_0 + t x_1$$
   - `Normalizing Flows (RealNVP, GLOW)`: Invertible affine coupling layers with exact log-determinant Jacobian computation.
 - **Adapters & Fine-Tuning**:
-  - `LoRA (Low-Rank Adaptation)`: Parameter-efficient rank-$r$ adaptation $\Delta W = rac{lpha}{r} B \cdot A$ for all linear/convolutional layers.
+  - `LoRA (Low-Rank Adaptation)`: Parameter-efficient rank-$r$ adaptation $\Delta W = \frac{\alpha}{r} B \cdot A$ for all linear/convolutional layers.
   - `ControlNet`: Spatial condition injection via zero-initialized convolution layers.
 
 ---
 
 ### Phase 13: Graph Neural Networks & Geometric Deep Learning (`models/gnn/`)
 - **Graph Foundations & Spectral Operations**:
-  - Graph Adjacency, Degree Matrix, Symmetric Normalized Laplacian ($	ilde{D}^{-1/2} 	ilde{A} 	ilde{D}^{-1/2}$), Random-Walk Normalization ($	ilde{D}^{-1} 	ilde{A}$).
+  - Graph Adjacency, Degree Matrix, Symmetric Normalized Laplacian ($\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2}$), Random-Walk Normalization ($\tilde{D}^{-1} \tilde{A}$).
   - Dense $\leftrightarrow$ Sparse COO Edge Index conversion.
   - Global Graph Readout Pooling: Mean, Max, Sum, Attention-based readout.
 - **Core GNN Layers**:
-  - `GCNLayer` (Kipf & Welling): First-order localized spectral graph convolution.
+  - `GCNLayer` (Kipf & Welling): First-order localized spectral graph convolution:
+    $$H^{(l+1)} = \sigma\left(\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} H^{(l)} W^{(l)}\right)$$
   - `GATLayer` (Veličković et al.): Multi-Head Attention over graph neighborhoods with LeakyReLU self-attention coefficients.
   - `GraphSAGELayer` (Hamilton et al.): Neighborhood sampling with Mean, Max-Pooling, and Sum aggregators.
   - `GINLayer` (Graph Isomorphism Network): Maximally powerful Weisfeiler-Lehman graph isomorphism test layer with learnable $\epsilon$.
@@ -574,7 +578,7 @@ abla_{\hat{x}} D(\hat{x})\|_2 - 1)^2]$).
 
 ### Phase 15: Model Evaluation, Diagnostics, Uncertainty & Calibration (`evaluation/`)
 - **Classification Metrics**:
-  - Accuracy, Balanced Accuracy, Precision, Recall, F1-Score, F-$eta$ Score.
+  - Accuracy, Balanced Accuracy, Precision, Recall, F1-Score, F-$\beta$ Score.
   - ROC-AUC (Trapezoidal numerical integration), PR-AUC (Average Precision score).
   - Log-Loss / Binary Cross-Entropy, Confusion Matrix.
   - Matthew's Correlation Coefficient (MCC), Cohen's Kappa, Brier Score.
@@ -607,7 +611,8 @@ abla_{\hat{x}} D(\hat{x})\|_2 - 1)^2]$).
 - **Tree-Specific Explainers**:
   - `TreeSHAP`: Exact $O(TLD^2)$ polynomial-time Shapley value computation for Decision Trees, Random Forests, and Gradient Boosting.
 - **Neural & Visual Explainers**:
-  - `IntegratedGradients`: Axiomatic path integral attribution satisfying Completeness and Implementation Invariance ($\int_0^1 rac{\partial F(x' + lpha(x - x'))}{\partial x_i} dlpha$).
+  - `IntegratedGradients`: Axiomatic path integral attribution satisfying Completeness and Implementation Invariance:
+    $$\text{IG}_i(x) = (x_i - x'_i) \times \int_{0}^{1} \frac{\partial F(x' + \alpha (x - x'))}{\partial x_i} d\alpha$$
   - `SmoothGrad`: Gaussian noise perturbation smoothing for sharp gradient saliency.
   - `DeepLIFT`: Difference-from-reference conservation attribution.
   - `GradCAM`, `GradCAM++`, `Score-CAM`, `LayerCAM` for convolutional feature maps.
@@ -620,7 +625,7 @@ abla_{\hat{x}} D(\hat{x})\|_2 - 1)^2]$).
 
 ### Phase 17: Autonomous AutoML, NAS & Universal Pipeline Engine (`pipeline/`, `automl/`)
 - **Universal Leak-Free Pipeline Engine (`ck.pipeline`)**:
-  - Sequential chaining: Loading $ightarrow$ Cleaning $ightarrow$ Preprocessing $ightarrow$ Transformations $ightarrow$ Modeling $ightarrow$ Evaluation.
+  - Sequential chaining: Loading $\rightarrow$ Cleaning $\rightarrow$ Preprocessing $\rightarrow$ Transformations $\rightarrow$ Modeling $\rightarrow$ Evaluation.
   - Strict Statistical Isolation: Fitting scalers, encoders, PCA, and selectors strictly on `X_train` and applying frozen `PreprocessorState` / `TransformationState` to `X_test` / `X_val` / production inference data.
   - Resampling Isolation: SMOTE and oversampling applied strictly to training data, leaving validation and test splits untouched.
   - Production Serialization: `.save()` and `PipelineResult.load()` for single-call `.predict()` on raw unseen inputs.
@@ -644,18 +649,21 @@ abla_{\hat{x}} D(\hat{x})\|_2 - 1)^2]$).
 
 ### Bonus Phase: Sovereign Deep Reinforcement Learning (RL) (`models/rl/`)
 - **Tabular RL**:
-  - `QLearning`: Epsilon-Greedy exploration, Bellman optimality update $Q(s, a) \leftarrow Q(s, a) + lpha [r + \gamma \max_{a'} Q(s', a') - Q(s, a)]$.
+  - `QLearning`: Epsilon-Greedy exploration, Bellman optimality update:
+    $$Q(s, a) \leftarrow Q(s, a) + \alpha \left[r + \gamma \max_{a'} Q(s', a') - Q(s, a)\right]$$
   - Custom GridWorld, Bandit, and CartPole simulator environments.
 - **Deep Q-Networks (DQN)**:
   - `DQN`: Neural Q-function approximator with Experience Replay Buffer and periodically updated Target Network.
   - `Double DQN`: Decoupled action selection and action evaluation mitigating overestimation bias.
-  - `Dueling DQN`: Separate State Value $V(s)$ and Advantage $A(s, a)$ stream decomposition ($Q(s, a) = V(s) + (A(s, a) - rac{1}{|\mathcal{A}|} \sum_{a'} A(s, a'))$).
+  - `Dueling DQN`: Separate State Value $V(s)$ and Advantage $A(s, a)$ stream decomposition:
+    $$Q(s, a) = V(s) + \left(A(s, a) - \frac{1}{|\mathcal{A}|} \sum_{a'} A(s, a')\right)$$
   - `Prioritized Experience Replay (PER)`: TD-error proportional transition sampling.
 - **Policy Gradients & Actor-Critic**:
   - `REINFORCE`: Monte Carlo policy gradient with state-value baseline subtraction.
   - `Advantage Actor-Critic (A2C)`: Synchronous Actor-Critic estimating advantage $A(s, a) = Q(s, a) - V(s)$.
-  - `Proximal Policy Optimization (PPO)`: Clipped surrogate objective $L^{	ext{CLIP}}(	heta) = \hat{\mathbb{E}}_t \left[ \min\left(r_t(	heta)\hat{A}_t, 	ext{clip}(r_t(	heta), 1-\epsilon, 1+\epsilon)\hat{A}_tight) ight]$.
-  - `Soft Actor-Critic (SAC)`: Off-policy maximum entropy Actor-Critic maximizing return + policy entropy $\mathcal{H}(\pi(\cdot|s))$.
+  - `Proximal Policy Optimization (PPO)`: Clipped surrogate objective:
+    $$L^{\text{CLIP}}(\theta) = \hat{\mathbb{E}}_t \left[ \min\left(r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t\right) \right]$$
+  - `Soft Actor-Critic (SAC)`: Off-policy maximum entropy Actor-Critic maximizing expected reward plus policy entropy $\mathcal{H}(\pi(\cdot|s))$.
 - **Multi-Armed Bandits**:
   - `UCB1`: Upper Confidence Bound exploration.
   - `Thompson Sampling`: Bayesian posterior sampling with Beta-Bernoulli and Gaussian conjugate priors.
