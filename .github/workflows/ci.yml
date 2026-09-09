@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Type Checking (mypy)
         run: |
-          python -m mypy src --config-file=setup.cfg --ignore-missing-imports --follow-imports=skip
+          python -m mypy src/chokkhu --config-file=setup.cfg --ignore-missing-imports --follow-imports=skip
 
 
   test:
