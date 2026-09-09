@@ -46,7 +46,9 @@ class HNSWIndex:
         self.dim = dim
         self.metric = metric.lower()
         if self.metric not in ("euclidean", "cosine", "dot", "ip"):
-            raise ValueError(f"Unsupported metric: {metric}. Must be 'euclidean', 'cosine', or 'dot'.")
+            raise ValueError(
+                f"Unsupported metric: {metric}. Must be 'euclidean', 'cosine', or 'dot'."
+            )
 
         self.m = m
         self.m0 = 2 * m
@@ -83,7 +85,9 @@ class HNSWIndex:
             return float(-np.dot(a, b))
         return 0.0
 
-    def _batch_distance(self, query: np.ndarray, target_indices: List[int]) -> np.ndarray:
+    def _batch_distance(
+        self, query: np.ndarray, target_indices: List[int]
+    ) -> np.ndarray:
         """Vectorized distance between a query vector and a list of target indices."""
         if not target_indices:
             return np.empty(0, dtype=np.float32)
@@ -110,7 +114,11 @@ class HNSWIndex:
         return int(np.floor(-np.log(unif) * self.ml))
 
     def _search_layer(
-        self, query: np.ndarray, entry_points: List[int], num_candidates: int, level: int
+        self,
+        query: np.ndarray,
+        entry_points: List[int],
+        num_candidates: int,
+        level: int,
     ) -> List[Tuple[float, int]]:
         """Greedy beam search in a single layer."""
         visited = set(entry_points)
@@ -158,7 +166,9 @@ class HNSWIndex:
         return [node for _, node in candidates[:max_connections]]
 
     def add(
-        self, vectors: Union[np.ndarray, List[List[float]]], ids: Optional[List[Union[int, str]]] = None
+        self,
+        vectors: Union[np.ndarray, List[List[float]]],
+        ids: Optional[List[Union[int, str]]] = None,
     ) -> None:
         """Insert vectors into the HNSW index.
 
@@ -174,7 +184,9 @@ class HNSWIndex:
             arr = arr.reshape(1, -1)
 
         if arr.shape[1] != self.dim:
-            raise ValueError(f"Vector dim {arr.shape[1]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Vector dim {arr.shape[1]} does not match index dim {self.dim}"
+            )
 
         n_samples = arr.shape[0]
         if ids is None:
@@ -182,7 +194,9 @@ class HNSWIndex:
             assigned_ids = list(range(curr_len, curr_len + n_samples))
         else:
             if len(ids) != n_samples:
-                raise ValueError(f"Length of ids ({len(ids)}) must match vectors ({n_samples})")
+                raise ValueError(
+                    f"Length of ids ({len(ids)}) must match vectors ({n_samples})"
+                )
             assigned_ids = ids
 
         for i in range(n_samples):
@@ -235,10 +249,13 @@ class HNSWIndex:
                     if len(neigh_conns) > max_conn:
                         n_vec = self.vectors[neighbor]
                         pair_dists = [
-                            (self._distance(n_vec, self.vectors[c]), c) for c in neigh_conns
+                            (self._distance(n_vec, self.vectors[c]), c)
+                            for c in neigh_conns
                         ]
                         pair_dists.sort(key=lambda x: x[0])
-                        self.graphs[lvl][neighbor] = [c for _, c in pair_dists[:max_conn]]
+                        self.graphs[lvl][neighbor] = [
+                            c for _, c in pair_dists[:max_conn]
+                        ]
 
             curr_ep = [c for _, c in candidates]
 
@@ -277,7 +294,9 @@ class HNSWIndex:
 
         q_vec = np.asarray(query, dtype=np.float32).ravel()
         if q_vec.shape[0] != self.dim:
-            raise ValueError(f"Query dim {q_vec.shape[0]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Query dim {q_vec.shape[0]} does not match index dim {self.dim}"
+            )
 
         ef = ef_search or self.ef_search
         ef = max(ef, k)

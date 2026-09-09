@@ -68,7 +68,9 @@ class RandomHyperplaneLSH:
             arr = arr.reshape(1, -1)
 
         if arr.shape[1] != self.dim:
-            raise ValueError(f"Vector dim {arr.shape[1]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Vector dim {arr.shape[1]} does not match index dim {self.dim}"
+            )
 
         n_samples = arr.shape[0]
         if ids is None:
@@ -76,7 +78,9 @@ class RandomHyperplaneLSH:
             assigned_ids = list(range(curr_len, curr_len + n_samples))
         else:
             if len(ids) != n_samples:
-                raise ValueError(f"Length of ids ({len(ids)}) must match vectors ({n_samples})")
+                raise ValueError(
+                    f"Length of ids ({len(ids)}) must match vectors ({n_samples})"
+                )
             assigned_ids = ids
 
         for i in range(n_samples):
@@ -117,7 +121,9 @@ class RandomHyperplaneLSH:
 
         q_vec = np.asarray(query, dtype=np.float32).ravel()
         if q_vec.shape[0] != self.dim:
-            raise ValueError(f"Query dim {q_vec.shape[0]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Query dim {q_vec.shape[0]} does not match index dim {self.dim}"
+            )
 
         # Collect candidate indices across all tables
         candidates: Set[int] = set()
@@ -213,10 +219,14 @@ class MinHashLSH:
         self.b_coeffs = rng.randint(0, self.prime, size=n_permutations, dtype=np.int64)
 
         # Hash tables: tables[band_idx][band_hash] = list of doc_id
-        self.tables: List[Dict[int, List[Union[int, str]]]] = [{} for _ in range(self.b)]
+        self.tables: List[Dict[int, List[Union[int, str]]]] = [
+            {} for _ in range(self.b)
+        ]
         self.signatures: Dict[Union[int, str], np.ndarray] = {}
 
-    def compute_signature(self, set_indices: Union[Set[int], List[int], np.ndarray]) -> np.ndarray:
+    def compute_signature(
+        self, set_indices: Union[Set[int], List[int], np.ndarray]
+    ) -> np.ndarray:
         """Compute MinHash signature vector for a set of token/shingle integer IDs."""
         if not set_indices:
             return np.full(self.num_perm, self.prime, dtype=np.int64)
@@ -228,7 +238,9 @@ class MinHashLSH:
         return sig
 
     def add(
-        self, doc_id: Union[int, str], set_indices: Union[Set[int], List[int], np.ndarray]
+        self,
+        doc_id: Union[int, str],
+        set_indices: Union[Set[int], List[int], np.ndarray],
     ) -> None:
         """Add a set document to the MinHash LSH index."""
         sig = self.compute_signature(set_indices)

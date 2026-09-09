@@ -67,9 +67,7 @@ class IVFPQIndex:
         self.is_trained: bool = False
         self.total_vectors: int = 0
 
-    def _simple_kmeans(
-        self, X: np.ndarray, k: int, n_iter: int = 20
-    ) -> np.ndarray:
+    def _simple_kmeans(self, X: np.ndarray, k: int, n_iter: int = 20) -> np.ndarray:
         """Lightweight Lloyd's K-Means clustering in pure NumPy."""
         n_samples = X.shape[0]
         if n_samples <= k:
@@ -109,7 +107,9 @@ class IVFPQIndex:
 
         return centroids
 
-    def train(self, X: Union[np.ndarray, List[List[float]]], n_iter: int = 25) -> "IVFPQIndex":
+    def train(
+        self, X: Union[np.ndarray, List[List[float]]], n_iter: int = 25
+    ) -> "IVFPQIndex":
         """Train the coarse quantizer and product quantizer codebooks on representative vectors.
 
         Parameters
@@ -121,7 +121,9 @@ class IVFPQIndex:
         """
         arr = np.asarray(X, dtype=np.float32)
         if arr.shape[1] != self.dim:
-            raise ValueError(f"Feature dim {arr.shape[1]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Feature dim {arr.shape[1]} does not match index dim {self.dim}"
+            )
 
         n_samples = arr.shape[0]
         n_clusters = min(self.n_lists, n_samples)
@@ -171,9 +173,7 @@ class IVFPQIndex:
             cb = self.codebooks[sub_i]  # shape (k_sub, d_sub)
 
             # Distances from sub_res (N, d_sub) to cb (k_sub, d_sub)
-            sub_dists = np.sum(
-                (sub_res[:, None, :] - cb[None, :, :]) ** 2, axis=2
-            )
+            sub_dists = np.sum((sub_res[:, None, :] - cb[None, :, :]) ** 2, axis=2)
             codes[:, sub_i] = np.argmin(sub_dists, axis=1)
 
         return codes
@@ -193,14 +193,18 @@ class IVFPQIndex:
             Identifiers for the vectors.
         """
         if not self.is_trained:
-            raise RuntimeError("Index must be trained before adding vectors. Call .train(X) first.")
+            raise RuntimeError(
+                "Index must be trained before adding vectors. Call .train(X) first."
+            )
 
         arr = np.asarray(vectors, dtype=np.float32)
         if arr.ndim == 1:
             arr = arr.reshape(1, -1)
 
         if arr.shape[1] != self.dim:
-            raise ValueError(f"Vector dim {arr.shape[1]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Vector dim {arr.shape[1]} does not match index dim {self.dim}"
+            )
 
         n_samples = arr.shape[0]
         if ids is None:
@@ -208,7 +212,9 @@ class IVFPQIndex:
             assigned_ids = list(range(curr_len, curr_len + n_samples))
         else:
             if len(ids) != n_samples:
-                raise ValueError(f"Length of ids ({len(ids)}) must match vectors ({n_samples})")
+                raise ValueError(
+                    f"Length of ids ({len(ids)}) must match vectors ({n_samples})"
+                )
             assigned_ids = ids
 
         # 1. Assign to Coarse Centroids
@@ -258,7 +264,9 @@ class IVFPQIndex:
 
         q_vec = np.asarray(query, dtype=np.float32).ravel()
         if q_vec.shape[0] != self.dim:
-            raise ValueError(f"Query dim {q_vec.shape[0]} does not match index dim {self.dim}")
+            raise ValueError(
+                f"Query dim {q_vec.shape[0]} does not match index dim {self.dim}"
+            )
 
         n_probe = min(max(1, n_probe), self.n_lists)
 

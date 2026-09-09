@@ -122,7 +122,9 @@ class DenseRetriever:
             assigned_ids = list(range(curr_len, curr_len + n_samples))
         else:
             if len(ids) != n_samples:
-                raise ValueError(f"Length of ids ({len(ids)}) must match embeddings ({n_samples})")
+                raise ValueError(
+                    f"Length of ids ({len(ids)}) must match embeddings ({n_samples})"
+                )
             assigned_ids = ids
 
         for i in range(n_samples):

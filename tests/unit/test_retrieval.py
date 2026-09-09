@@ -18,7 +18,9 @@ def test_hnsw_basic():
     n_samples = 100
     X = np.random.randn(n_samples, dim).astype(np.float32)
 
-    index = HNSWIndex(dim=dim, metric="euclidean", m=8, ef_construction=32, ef_search=32, seed=42)
+    index = HNSWIndex(
+        dim=dim, metric="euclidean", m=8, ef_construction=32, ef_search=32, seed=42
+    )
     index.add(X)
 
     assert len(index) == n_samples
@@ -40,7 +42,9 @@ def test_hnsw_cosine_recall():
     n_samples = 200
     X = np.random.randn(n_samples, dim).astype(np.float32)
 
-    index = HNSWIndex(dim=dim, metric="cosine", m=16, ef_construction=64, ef_search=64, seed=42)
+    index = HNSWIndex(
+        dim=dim, metric="cosine", m=16, ef_construction=64, ef_search=64, seed=42
+    )
     index.add(X)
 
     # Brute force search
