@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 
@@ -11,12 +12,8 @@ class TabularStats:
             "shape": df.shape,
             "dtypes": df.dtypes,
             "missing": df.isnull().sum(),
-            "numerical_cols": df.select_dtypes(
-                include=["int64", "float64"]
-            ).columns.tolist(),
-            "categorical_cols": df.select_dtypes(
-                include=["object", "category"]
-            ).columns.tolist(),
+            "numerical_cols": df.select_dtypes(include=[np.number]).columns.tolist(),
+            "categorical_cols": df.select_dtypes(exclude=[np.number]).columns.tolist(),
         }
         if len(results["numerical_cols"]) > 0:
             results["correlation"] = df[results["numerical_cols"]].corr()
