@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import os
-import tempfile
+
 import pandas as pd
 import pytest
+
 from chokkhu.cli import main
 
 
@@ -17,14 +18,12 @@ def test_cli_help_and_empty():
     assert main([]) == 0
 
 
-def test_cli_clean_and_pipeline():
-    import shutil
+def test_cli_clean_and_pipeline(tmp_path):
     import matplotlib.pyplot as plt
 
-    tmpdir = tempfile.mkdtemp()
     try:
-        csv_path = os.path.join(tmpdir, "test.csv")
-        out_path = os.path.join(tmpdir, "cleaned.csv")
+        csv_path = str(tmp_path / "test.csv")
+        out_path = str(tmp_path / "cleaned.csv")
         df = pd.DataFrame(
             {
                 "a": [1.0, 2.0, None, 4.0, 5.0, 6.0],
@@ -40,7 +39,7 @@ def test_cli_clean_and_pipeline():
         assert os.path.exists(out_path)
 
         # Test pipeline
-        pipe_save = os.path.join(tmpdir, "pipe.pkl")
+        pipe_save = str(tmp_path / "pipe.pkl")
         ret = main(["pipeline", "-d", csv_path, "-t", "target", "-s", pipe_save])
         assert ret == 0
 
@@ -55,4 +54,3 @@ def test_cli_clean_and_pipeline():
         assert ret == 0
     finally:
         plt.close("all")
-        shutil.rmtree(tmpdir, ignore_errors=True)

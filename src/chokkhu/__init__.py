@@ -6,7 +6,7 @@ __version__ = "0.8.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean
-from .eda import ImageEDA, image
+from .eda import ImageEDA
 from .eda import tabular as tabular_fn
 from .io import load, save
 from .preprocessing import (

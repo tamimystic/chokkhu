@@ -1,44 +1,16 @@
 from __future__ import annotations
 
-from .detection_models import (
-    RetinaNetHead,
-    SSDHead,
-    YOLOHead,
-    generate_anchor_grid,
-)
-from .fpn import FeaturePyramidNetwork, PANet
-
-FPNPyramid = FeaturePyramidNetwork
 from .advanced_conv import AtrousConv2D, DilatedConv2D
-from .losses import (
-    CIoULoss,
-    DIoULoss,
-    DiceLoss,
-    FocalLoss,
-    GIoULoss,
-    TverskyLoss,
-)
-from .conv_layers import (
-    AvgPool2D,
-    ChannelShuffle,
-    Conv2D,
-    ConvTranspose2D,
-    DepthwiseSeparableConv2D,
-    GlobalAvgPool2D,
-    GroupedConv2D,
-    MaxPool2D,
-)
-from .batchnorm2d import BatchNorm2D
-from .attention_blocks import CBAM, ChannelAttention, SEBlock, SpatialAttention
-from .detection import compute_iou, non_maximum_suppression
-from .xai_vision import GradCAM
 from .architectures import (
     AlexNet,
     BottleneckResidualBlock,
-    ChannelShuffle,
     ConvNeXt,
     ConvNeXtBlock,
     ConvNeXtTiny,
+    DeiT,
+    DeiTBase,
+    DeiTSmall,
+    DeiTTiny,
     DenseBlock,
     DenseNet121,
     DenseNet169,
@@ -59,20 +31,20 @@ from .architectures import (
     MobileNetV3,
     PatchEmbedding,
     ResidualBlock,
+    ResNeXt50,
+    ResNeXt101,
     ResNet18,
     ResNet34,
     ResNet50,
     ResNet101,
     ResNet152,
-    ResNeXt50,
-    ResNeXt101,
     ShuffleNetV1,
     ShuffleNetV2,
     SqueezeNet,
-    SwinTransformer,
+    SwinBase,
+    SwinSmall,
     SwinT,
-    DeiT,
-    DeiTTiny,
+    SwinTransformer,
     TransitionBlock,
     UNet,
     VGG11,
@@ -85,6 +57,37 @@ from .architectures import (
     ViTTiny,
     ZFNet,
 )
+from .attention_blocks import CBAM, ChannelAttention, SEBlock, SpatialAttention
+from .batchnorm2d import BatchNorm2D
+from .conv_layers import (
+    AvgPool2D,
+    ChannelShuffle,
+    Conv2D,
+    ConvTranspose2D,
+    DepthwiseSeparableConv2D,
+    GlobalAvgPool2D,
+    GroupedConv2D,
+    MaxPool2D,
+)
+from .detection import compute_iou, non_maximum_suppression
+from .detection_models import (
+    RetinaNetHead,
+    SSDHead,
+    YOLOHead,
+    generate_anchor_grid,
+)
+from .fpn import FeaturePyramidNetwork, PANet
+from .losses import (
+    CIoULoss,
+    DIoULoss,
+    DiceLoss,
+    FocalLoss,
+    GIoULoss,
+    TverskyLoss,
+)
+from .xai_vision import GradCAM
+
+FPNPyramid = FeaturePyramidNetwork
 
 __all__ = [
     "Conv2D",
