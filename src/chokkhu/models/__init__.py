@@ -237,6 +237,15 @@ from .timeseries import (
     PatchTST,
 )
 
+from .retrieval import (
+    HNSWIndex,
+    IVFPQIndex,
+    RandomHyperplaneLSH,
+    MinHashLSH,
+    DenseRetriever,
+    reciprocal_rank_fusion,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -438,4 +447,11 @@ __all__ = [
     "GenerationConfig",
     "sample_next_token",
     "TextGenerator",
+    # Vector Retrieval
+    "HNSWIndex",
+    "IVFPQIndex",
+    "RandomHyperplaneLSH",
+    "MinHashLSH",
+    "DenseRetriever",
+    "reciprocal_rank_fusion",
 ]

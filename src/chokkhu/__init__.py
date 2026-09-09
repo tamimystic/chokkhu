@@ -261,6 +261,15 @@ from .automl import (
     Hyperband,
 )
 
+from .models.retrieval import (
+    HNSWIndex,
+    IVFPQIndex,
+    RandomHyperplaneLSH,
+    MinHashLSH,
+    DenseRetriever,
+    reciprocal_rank_fusion,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -470,4 +479,11 @@ __all__ = [
     "auto_train",
     "BayesianOptimization",
     "Hyperband",
+    # Vector Retrieval
+    "HNSWIndex",
+    "IVFPQIndex",
+    "RandomHyperplaneLSH",
+    "MinHashLSH",
+    "DenseRetriever",
+    "reciprocal_rank_fusion",
 ]
