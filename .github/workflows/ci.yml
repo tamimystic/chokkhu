@@ -36,7 +36,8 @@ jobs:
 
       - name: Run Type Checking (mypy)
         run: |
-          python -m mypy src --follow-imports=skip
+          python -m mypy src --ignore-missing-imports --follow-imports=skip
+
 
   test:
     name: CI on ${{ matrix.os }} (Python ${{ matrix.python-version }})

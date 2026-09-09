@@ -18,7 +18,11 @@ def test_cli_help_and_empty():
 
 
 def test_cli_clean_and_pipeline():
-    with tempfile.TemporaryDirectory() as tmpdir:
+    import shutil
+    import matplotlib.pyplot as plt
+
+    tmpdir = tempfile.mkdtemp()
+    try:
         csv_path = os.path.join(tmpdir, "test.csv")
         out_path = os.path.join(tmpdir, "cleaned.csv")
         df = pd.DataFrame(
@@ -49,3 +53,6 @@ def test_cli_clean_and_pipeline():
         # Test automl
         ret = main(["automl", "-d", out_path, "-t", "target", "--time-budget", "3"])
         assert ret == 0
+    finally:
+        plt.close("all")
+        shutil.rmtree(tmpdir, ignore_errors=True)
