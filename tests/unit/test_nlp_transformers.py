@@ -1,9 +1,9 @@
 """Unit tests for NLP tokenizers, embeddings, recurrent models, attention, transformer blocks, architectures, and generation."""
 
 from __future__ import annotations
-import os
-import tempfile
+
 import numpy as np
+
 
 import chokkhu as ck
 from chokkhu.core.tensor import Tensor
@@ -80,7 +80,7 @@ def test_word_tokenizer():
     assert "quick dog" in decoded
 
 
-def test_bpe_tokenizer():
+def test_bpe_tokenizer(tmp_path):
     corpus = [
         "low lower lowest",
         "new newer newest",
@@ -96,12 +96,11 @@ def test_bpe_tokenizer():
     assert "lower widest" in decoded or "lower" in decoded
 
     # Test save and load
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        path = os.path.join(tmp_dir, "bpe.json")
-        tok.save(path)
-        tok2 = BPETokenizer()
-        tok2.load(path)
-        assert tok2.vocab_size == tok.vocab_size
+    path = str(tmp_path / "bpe.json")
+    tok.save(path)
+    tok2 = BPETokenizer()
+    tok2.load(path)
+    assert tok2.vocab_size == tok.vocab_size
 
 
 def test_wordpiece_tokenizer():
