@@ -270,6 +270,26 @@ from .models.retrieval import (
     reciprocal_rank_fusion,
 )
 
+from .models.recommendation import (
+    SVDRecommender,
+    SVDPlusPlus,
+    ImplicitALS,
+    NMFRecommender,
+    BayesianPersonalizedRanking,
+    NeuralCollaborativeFiltering,
+    WideAndDeep,
+    DeepFM,
+    DLRM,
+    SASRec,
+    GRU4Rec,
+    hit_rate_at_k,
+    ndcg_at_k,
+    mrr_at_k,
+    precision_at_k,
+    recall_at_k,
+    map_at_k,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -486,4 +506,22 @@ __all__ = [
     "MinHashLSH",
     "DenseRetriever",
     "reciprocal_rank_fusion",
+    # Recommendation Systems
+    "SVDRecommender",
+    "SVDPlusPlus",
+    "ImplicitALS",
+    "NMFRecommender",
+    "BayesianPersonalizedRanking",
+    "NeuralCollaborativeFiltering",
+    "WideAndDeep",
+    "DeepFM",
+    "DLRM",
+    "SASRec",
+    "GRU4Rec",
+    "hit_rate_at_k",
+    "ndcg_at_k",
+    "mrr_at_k",
+    "precision_at_k",
+    "recall_at_k",
+    "map_at_k",
 ]
