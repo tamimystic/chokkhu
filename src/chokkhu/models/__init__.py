@@ -293,6 +293,16 @@ from .survival import (
     integrated_brier_score,
 )
 
+from .multimodal import (
+    CLIP,
+    CLIPVisionEncoder,
+    CLIPTextEncoder,
+    SigLIP,
+    LLaVALinearProjector,
+    LLaVAMLPProjector,
+    PerceiverResampler,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -542,4 +552,12 @@ __all__ = [
     "concordance_index",
     "brier_score_loss",
     "integrated_brier_score",
+    # Multi-Modal Vision-Language
+    "CLIP",
+    "CLIPVisionEncoder",
+    "CLIPTextEncoder",
+    "SigLIP",
+    "LLaVALinearProjector",
+    "LLaVAMLPProjector",
+    "PerceiverResampler",
 ]
