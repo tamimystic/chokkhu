@@ -49,7 +49,24 @@ from .ml import (
     NeuralNetwork,
     RandomForest,
 )
-from .rl import QLearning
+from .rl import (
+    GridWorld,
+    QLearning,
+    ReplayBuffer,
+    PrioritizedReplayBuffer,
+    DQN,
+    DoubleDQN,
+    DuelingDQN,
+    REINFORCE,
+    ActorCritic,
+    PPO,
+    SAC,
+    EpsilonGreedyBandit,
+    UCB1Bandit,
+    ThompsonSamplingBandit,
+    LinUCBBandit,
+    DecisionTransformer,
+)
 from .dl import (
     Adam,
     AdamW,
@@ -578,4 +595,21 @@ __all__ = [
     "HarmonicOscillatorPINN",
     "SymbolicRegressor",
     "NeuralODE",
+    # Reinforcement Learning & Bandits
+    "GridWorld",
+    "QLearning",
+    "ReplayBuffer",
+    "PrioritizedReplayBuffer",
+    "DQN",
+    "DoubleDQN",
+    "DuelingDQN",
+    "REINFORCE",
+    "ActorCritic",
+    "PPO",
+    "SAC",
+    "EpsilonGreedyBandit",
+    "UCB1Bandit",
+    "ThompsonSamplingBandit",
+    "LinUCBBandit",
+    "DecisionTransformer",
 ]
