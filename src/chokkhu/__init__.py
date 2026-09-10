@@ -290,6 +290,22 @@ from .models.recommendation import (
     map_at_k,
 )
 
+from .models.causal import (
+    PropensityModel,
+    PropensityScoreMatching,
+    InverseProbabilityWeighting,
+    DoublyRobustLearner,
+    SLearner,
+    TLearner,
+    XLearner,
+    TwoModelUplift,
+    ClassTransformationUplift,
+    qini_curve,
+    qini_score,
+    cumulative_gain_curve,
+    uplift_at_k,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -524,4 +540,18 @@ __all__ = [
     "precision_at_k",
     "recall_at_k",
     "map_at_k",
+    # Causal Inference & Uplift
+    "PropensityModel",
+    "PropensityScoreMatching",
+    "InverseProbabilityWeighting",
+    "DoublyRobustLearner",
+    "SLearner",
+    "TLearner",
+    "XLearner",
+    "TwoModelUplift",
+    "ClassTransformationUplift",
+    "qini_curve",
+    "qini_score",
+    "cumulative_gain_curve",
+    "uplift_at_k",
 ]
