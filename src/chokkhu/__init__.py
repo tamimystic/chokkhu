@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "0.9.2"
+__version__ = "1.0.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean
@@ -439,6 +439,34 @@ from .models.nlp.agents import (
     SelfConsistency,
 )
 
+
+from .privacy import (
+    LaplaceMechanism,
+    GaussianMechanism,
+    DP_SGD,
+    FederatedClient,
+    FederatedServer,
+)
+from .quantum import (
+    QuantumCircuit,
+    VariationalQuantumClassifier,
+    QuantumKernel,
+)
+from .geospatial import (
+    SpatialWeights,
+    morans_i,
+    local_morans_i,
+    SpatialAutoregression,
+    GeographicallyWeightedRegression,
+    OrdinaryKriging,
+)
+from .tda import (
+    VietorisRipsComplex,
+    PersistenceDiagram,
+    PersistenceLandscape,
+    bottleneck_distance,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -804,4 +832,26 @@ __all__ = [
     "MultiAgentCoordinator",
     "ReflexionEngine",
     "SelfConsistency",
+    # Privacy-Preserving AI & Federated Learning
+    "LaplaceMechanism",
+    "GaussianMechanism",
+    "DP_SGD",
+    "FederatedClient",
+    "FederatedServer",
+    # Quantum Machine Learning (QML Simulator)
+    "QuantumCircuit",
+    "VariationalQuantumClassifier",
+    "QuantumKernel",
+    # Geo-Spatial Machine Learning & Spatial Statistics
+    "SpatialWeights",
+    "morans_i",
+    "local_morans_i",
+    "SpatialAutoregression",
+    "GeographicallyWeightedRegression",
+    "OrdinaryKriging",
+    # Topological Data Analysis (TDA)
+    "VietorisRipsComplex",
+    "PersistenceDiagram",
+    "PersistenceLandscape",
+    "bottleneck_distance",
 ]

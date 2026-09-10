@@ -39,7 +39,8 @@
 18. [Classical ML, 2D Vision, Audio & Generative DL](#15-classical-ml-2d-vision-audio--generative-dl)
 19. [Sovereign Explainable AI (XAI)](#16-sovereign-explainable-ai-xai)
 20. [Next-Gen Generative AI, LoRA, Conformal & Stacking (Milestone 14)](#17-next-gen-generative-ai-lora-conformal--stacking-milestone-14)
-21. [License & Citation](#license--citation)
+21. [Privacy, Quantum ML, Geo-Spatial, NAS & TDA (Milestone 15)](#18-privacy-quantum-ml-geo-spatial-nas--tda-milestone-15)
+22. [License & Citation](#license--citation)
 
 ---
 
@@ -1522,6 +1523,259 @@ print(f"Optimal Base Learner Weights: {super_learner.get_weights()}")
 | `cv` | `int` | `5` | Number of out-of-fold cross-validation folds for meta-feature generation. |
 | `task` | `str` | `"classification"` | Task type: `"classification"` or `"regression"`. |
 | `use_probabilities` | `bool` | `True` | Whether classification meta-features use class probabilities or hard labels. |
+
+
+---
+
+## 18. Privacy, Quantum ML, Geo-Spatial, NAS & TDA (Milestone 15)
+
+### 18.1 Differential Privacy & DP-SGD (`LaplaceMechanism`, `GaussianMechanism`, `DP_SGD`)
+
+```python
+import numpy as np
+from chokkhu.privacy import LaplaceMechanism, GaussianMechanism, DP_SGD
+
+# 1. Laplace Mechanism for query perturbation
+laplace = LaplaceMechanism(epsilon=0.5, sensitivity=1.0)
+noisy_count = laplace.perturb(100.0)
+print(f"Differentially Private Perturbed Count: {noisy_count:.2f}")
+
+# 2. Gaussian Mechanism for (epsilon, delta)-DP
+gaussian = GaussianMechanism(epsilon=1.0, delta=1e-5, sensitivity=1.0)
+noisy_stat = gaussian.perturb(42.0)
+print(f"Gaussian Perturbed Statistic: {noisy_stat:.2f}")
+
+# 3. Differentially Private SGD Optimizer with Per-Sample Clipping
+dp_optimizer = DP_SGD(lr=0.01, l2_norm_clip=1.0, noise_multiplier=0.8)
+params = {"W": np.random.randn(10, 2), "b": np.zeros(2)}
+per_sample_grads = [{"W": np.random.randn(10, 2), "b": np.random.randn(2)} for _ in range(8)]
+
+updated_params = dp_optimizer.step(params, per_sample_grads)
+privacy_spent = dp_optimizer.compute_privacy_spent(total_samples=1000, batch_size=8, target_delta=1e-5)
+print(f"Privacy Spent: epsilon={privacy_spent['epsilon']:.4f}, delta={privacy_spent['delta']}")
+```
+
+#### Parameter Breakdown: `DP_SGD`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `lr` | `float` | `0.01` | Optimization step learning rate. |
+| `l2_norm_clip` | `float` | `1.0` | Maximum L2 norm bound $C$ for per-sample gradient clipping. |
+| `noise_multiplier` | `float` | `1.0` | Calibrated noise ratio $\sigma = \text{noise\_multiplier} \times C$. |
+| `random_state` | `int` / `None` | `None` | Seed for reproducible pseudo-random noise generation. |
+
+---
+
+### 18.2 Decentralized Federated Learning (`FederatedServer`, `FederatedClient`, `FedAvg`, `FedProx`)
+
+```python
+import numpy as np
+from chokkhu.privacy import FederatedServer, FederatedClient
+
+# Simulate decentralized non-IID client partitions
+client1_X, client1_y = np.random.randn(50, 4), np.random.randn(50, 1)
+client2_X, client2_y = np.random.randn(60, 4), np.random.randn(60, 1)
+
+# Register clients with FedProx proximal regularization (mu > 0)
+c1 = FederatedClient(client_id="hospital_A", X=client1_X, y=client1_y, mu=0.01, lr=0.01)
+c2 = FederatedClient(client_id="hospital_B", X=client2_X, y=client2_y, mu=0.01, lr=0.01)
+
+# Orchestrate federated aggregation rounds
+server = FederatedServer(
+    initial_weights={"W": np.zeros((4, 1)), "b": np.zeros((1,))},
+    clients=[c1, c2],
+    strategy="fedprox"
+)
+
+for r in range(5):
+    round_summary = server.train_round(fraction_fit=1.0, local_epochs=3, batch_size=16)
+    print(f"Round {r+1} Complete - Mean Client Loss: {round_summary['mean_client_loss']:.4f}")
+
+global_predictions = server.predict(np.random.randn(5, 4))
+print(f"Global Model Predictions Shape: {global_predictions.shape}")
+```
+
+#### Parameter Breakdown: `FederatedServer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `initial_weights` | `dict` | *Required* | Initial global model parameters `{'W': ..., 'b': ...}`. |
+| `clients` | `list` | `None` | Registered `FederatedClient` instances. |
+| `strategy` | `str` | `"fedavg"` | Aggregation strategy (`"fedavg"` or `"fedprox"`). |
+
+---
+
+### 18.3 Quantum Machine Learning Simulator & Variational Quantum Classifier (`QuantumCircuit`, `VQC`, `QuantumKernel`)
+
+```python
+import numpy as np
+from chokkhu.quantum import QuantumCircuit, VariationalQuantumClassifier, QuantumKernel
+
+# 1. State Vector Quantum Circuit Simulation & Bell State Generation
+qc = QuantumCircuit(n_qubits=2)
+qc.h(0).cnot(0, 1)  # Create maximally entangled Bell state (|00> + |11>) / sqrt(2)
+print(f"Computational Basis Probabilities: {qc.probabilities()}")
+print(f"Pauli-Z Expectation <Z_0>: {qc.expectation_z(0):.4f}")
+
+# 2. Variational Quantum Classifier (QNN) with Exact Parameter Shift Rule Gradients
+X_quantum = np.random.uniform(-np.pi, np.pi, size=(30, 2))
+y_quantum = (X_quantum[:, 0] + X_quantum[:, 1] > 0).astype(int)
+
+vqc = VariationalQuantumClassifier(n_qubits=2, n_layers=2, lr=0.1)
+vqc.fit(X_quantum, y_quantum, epochs=10, batch_size=8)
+q_preds = vqc.predict(X_quantum[:5])
+print(f"VQC Predictions: {q_preds}")
+
+# 3. Quantum Kernel Matrix Estimation
+qk = QuantumKernel(n_qubits=2)
+gram_matrix = qk.compute_matrix(X_quantum[:10])
+print(f"Quantum Gram Matrix (Fidelity) Shape: {gram_matrix.shape}")
+```
+
+#### Parameter Breakdown: `VariationalQuantumClassifier`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_qubits` | `int` | `2` | Number of simulated qubits in quantum register. |
+| `n_layers` | `int` | `2` | Number of parameterized variational rotation and entangling ansatz layers. |
+| `lr` | `float` | `0.05` | Learning rate for parameter shift rule gradient descent. |
+
+---
+
+### 18.4 Geo-Spatial Statistics, Spatial Autoregression & GWR (`SpatialWeights`, `morans_i`, `SAR`, `GWR`)
+
+```python
+import numpy as np
+from chokkhu.geospatial import SpatialWeights, morans_i, SpatialAutoregression, GeographicallyWeightedRegression
+
+# 2D geographic coordinates [lat, lon] and spatial attributes
+coords = np.random.uniform(20.0, 26.0, size=(50, 2))
+values = coords[:, 0] * 3.5 + np.random.randn(50) * 0.2
+
+# 1. Spatial Weight Matrix and Global Moran's I Autocorrelation
+sw = SpatialWeights(coords, method="knn", k=5, row_standardize=True)
+moran = morans_i(values, sw, permutations=99)
+print(f"Global Moran's I: {moran['I']:.4f}, p-value: {moran['p_value']:.4f}")
+
+# 2. Spatial Autoregression (Spatial Lag Model: y = rho * W * y + X * beta)
+X_geo = np.random.randn(50, 3)
+sar = SpatialAutoregression(model_type="lag")
+sar.fit(X_geo, values, sw)
+print(f"Estimated Spatial Autoregressive Rho: {sar.rho:.4f}")
+
+# 3. Geographically Weighted Regression (Localized Spatial Beta Estimation)
+gwr = GeographicallyWeightedRegression(bandwidth=2.0, kernel="gaussian")
+gwr.fit(coords, X_geo, values)
+gwr_preds = gwr.predict(coords[:5], X_geo[:5])
+print(f"GWR Predictions: {gwr_preds}")
+```
+
+#### Parameter Breakdown: `SpatialWeights`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `coords` | `np.ndarray` | *Required* | Coordinate matrix $(N \times 2)$ containing spatial coordinates. |
+| `method` | `str` | `"knn"` | Kernel structure: `"knn"`, `"inverse_distance"`, `"gaussian"`, or `"threshold"`. |
+| `k` | `int` | `5` | Number of nearest neighbors for `"knn"` method. |
+| `bandwidth` | `float` | `1.0` | Distance decay parameter for `"gaussian"` or distance threshold. |
+| `row_standardize`| `bool` | `True` | Row-standardization ($\sum_j W_{ij} = 1.0$). |
+
+---
+
+### 18.5 Geostatistical Variogram Modeling & Spatial Kriging (`OrdinaryKriging`)
+
+```python
+import numpy as np
+from chokkhu.geospatial import OrdinaryKriging
+
+# Spatial point observations
+obs_coords = np.random.uniform(0.0, 10.0, size=(30, 2))
+z_values = np.sin(obs_coords[:, 0]) + np.cos(obs_coords[:, 1])
+
+# Ordinary Kriging with Spherical Variogram Model
+kriging = OrdinaryKriging(variogram_model="spherical", nugget=0.02, sill=1.0, range_val=4.0)
+kriging.fit(obs_coords, z_values)
+
+# Interpolate over target spatial grid
+target_coords = np.array([[2.5, 3.5], [7.0, 8.0]])
+z_pred, error_variance = kriging.predict(target_coords)
+print(f"Kriging Interpolated Values: {z_pred}, Estimation Variances: {error_variance}")
+```
+
+#### Parameter Breakdown: `OrdinaryKriging`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `variogram_model` | `str` | `"spherical"` | Theoretical semivariogram model: `"spherical"`, `"exponential"`, or `"gaussian"`. |
+| `nugget` | `float` | `0.0` | Micro-scale variance / measurement error $c_0$. |
+| `sill` | `float` | `1.0` | Total asymptotic semivariance $c_0 + c$. |
+| `range_val` | `float` | `1.0` | Spatial correlation range threshold $a$. |
+
+---
+
+### 18.6 Differentiable Neural Architecture Search (`DARTS`)
+
+```python
+import numpy as np
+from chokkhu.automl import DARTS
+
+# Tabular classification dataset
+X_nas = np.random.randn(100, 8)
+y_nas = (X_nas[:, 0] + X_nas[:, 1] > 0).astype(int)
+
+# Continuous relaxation of candidate operations (Identity, Linear, ReLU, GELU, Residual)
+darts = DARTS(
+    input_dim=8,
+    num_classes=2,
+    num_intermediate_nodes=3,
+    hidden_dim=32,
+    lr_weights=0.01,
+    lr_arch=0.005
+)
+darts.fit(X_nas, y_nas, epochs=10, batch_size=16)
+
+# Extract discovered discrete optimal architecture
+genotype = darts.genotype()
+print(f"Discovered Optimal Neural Architecture Genotype: {genotype}")
+```
+
+#### Parameter Breakdown: `DARTS`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `input_dim` | `int` | *Required* | Feature input dimension $D$. |
+| `num_classes` | `int` | `2` | Number of output target classes. |
+| `num_intermediate_nodes` | `int` | `3` | Number of mixed-op candidate layers in supernet search space. |
+| `hidden_dim` | `int` | `32` | Layer width for intermediate candidate operations. |
+| `lr_weights` | `float` | `0.01` | Learning rate for candidate operation parameters $w$. |
+| `lr_arch` | `float` | `0.005` | Learning rate for architecture parameters $\alpha$. |
+
+---
+
+### 18.7 Topological Data Analysis & Persistent Homology (`VietorisRipsComplex`, `PersistenceLandscape`)
+
+```python
+import numpy as np
+from chokkhu.tda import VietorisRipsComplex, PersistenceDiagram, PersistenceLandscape, bottleneck_distance
+
+# Point cloud with topological hole (circle)
+angles = np.linspace(0, 2 * np.pi, 24, endpoint=False)
+point_cloud = np.column_stack([np.cos(angles), np.sin(angles)]) + np.random.randn(24, 2) * 0.05
+
+# 1. Build Vietoris-Rips Simplicial Filtration
+rips = VietorisRipsComplex(max_edge_length=2.5, max_dimension=1)
+diagrams = rips.fit_transform(point_cloud)
+
+# 2. Extract H0 (connected components) and H1 (loops) Persistence
+h0_diag = PersistenceDiagram(diagrams[0], dimension=0)
+h1_diag = PersistenceDiagram(diagrams[1], dimension=1)
+print(f"H0 Total Persistence: {h0_diag.total_persistence():.4f}, Persistent Entropy: {h0_diag.persistent_entropy():.4f}")
+
+# 3. Vectorize into Continuous Persistence Landscapes for ML Classifiers
+landscape = PersistenceLandscape(num_landscapes=3, resolution=40)
+topo_features = landscape.transform(diagrams[0])
+print(f"Extracted Topological Feature Vector Shape: {topo_features.shape}")
+```
+
+#### Parameter Breakdown: `VietorisRipsComplex`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `max_edge_length` | `float` | `inf` | Maximum filtration scale $\epsilon$ for simplex construction. |
+| `max_dimension` | `int` | `1` | Maximum homology dimension ($0$ for $H_0$, $1$ for $H_0$ and $H_1$). |
 
 ## License & Citation
 

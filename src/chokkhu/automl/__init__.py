@@ -13,6 +13,7 @@ from .stacking import (
     SuperLearner,
     StackingEnsemble,
 )
+from .nas import DARTS
 from .autotrainer import (
     AutoTrainer,
     AutoMLResult,
@@ -26,6 +27,7 @@ __all__ = [
     "BayesianOptimization",
     "Hyperband",
     "BOHB",
+    "DARTS",
     "SuperLearner",
     "StackingEnsemble",
     "AutoTrainer",
