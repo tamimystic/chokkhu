@@ -327,6 +327,16 @@ from .models.multimodal import (
     PerceiverResampler,
 )
 
+from .models.sciml import (
+    PINN,
+    BurgersPINN,
+    HeatPINN,
+    WavePINN,
+    HarmonicOscillatorPINN,
+    SymbolicRegressor,
+    NeuralODE,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -592,4 +602,12 @@ __all__ = [
     "LLaVALinearProjector",
     "LLaVAMLPProjector",
     "PerceiverResampler",
+    # Scientific Machine Learning & PINNs
+    "PINN",
+    "BurgersPINN",
+    "HeatPINN",
+    "WavePINN",
+    "HarmonicOscillatorPINN",
+    "SymbolicRegressor",
+    "NeuralODE",
 ]
