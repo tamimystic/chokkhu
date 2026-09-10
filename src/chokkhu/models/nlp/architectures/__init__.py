@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 from .bert import BERT, BertForMaskedLM, BertForSequenceClassification
-from .roberta import RoBERTa, RobertaForMaskedLM, RobertaForSequenceClassification
+from .bitnet import BitLinear, BitNet158
 from .deberta import DeBERTa, DebertaForSequenceClassification
-from .gpt import GPT, MiniGPT, GPTForCausalLM
+from .deepseek import DeepSeekMoE, DeepSeekV3
+from .gemma import Gemma, GemmaForCausalLM
+from .gpt import GPT, GPTForCausalLM, MiniGPT
 from .llama import LLaMA, LlamaForCausalLM
 from .mistral import Mistral, MistralForCausalLM
-from .gemma import Gemma, GemmaForCausalLM
+from .qwen import Qwen2_5
+from .roberta import RoBERTa, RobertaForMaskedLM, RobertaForSequenceClassification
 from .seq2seq import Seq2SeqTransformer, T5
 
 __all__ = [
@@ -30,4 +33,9 @@ __all__ = [
     "GemmaForCausalLM",
     "Seq2SeqTransformer",
     "T5",
+    "DeepSeekMoE",
+    "DeepSeekV3",
+    "Qwen2_5",
+    "BitLinear",
+    "BitNet158",
 ]

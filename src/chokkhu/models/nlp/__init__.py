@@ -59,30 +59,53 @@ from .transformer_blocks import (
 
 from .architectures import (
     BERT,
-    BertForSequenceClassification,
     BertForMaskedLM,
-    RoBERTa,
-    RobertaForSequenceClassification,
-    RobertaForMaskedLM,
+    BertForSequenceClassification,
+    BitLinear,
+    BitNet158,
     DeBERTa,
     DebertaForSequenceClassification,
+    DeepSeekMoE,
+    DeepSeekV3,
+    Gemma,
+    GemmaForCausalLM,
     GPT,
-    MiniGPT,
     GPTForCausalLM,
     LLaMA,
     LlamaForCausalLM,
+    MiniGPT,
     Mistral,
     MistralForCausalLM,
-    Gemma,
-    GemmaForCausalLM,
+    Qwen2_5,
+    RoBERTa,
+    RobertaForMaskedLM,
+    RobertaForSequenceClassification,
     Seq2SeqTransformer,
     T5,
 )
 
+from .linear_attention import (
+    RWKV6,
+    RWKV6TimeMix,
+    RetNet,
+    RetNetRetention,
+)
+
+from .state_space import (
+    Mamba,
+    MambaSSM,
+)
+
+from .alignment import (
+    DPOTrainer,
+    KTOTrainer,
+    ORPOTrainer,
+)
+
 from .generation import (
     GenerationConfig,
-    sample_next_token,
     TextGenerator,
+    sample_next_token,
 )
 
 __all__ = [
@@ -118,6 +141,17 @@ __all__ = [
     "MultiHeadLatentAttention",
     "DeepSeekMLA",
     "SlidingWindowAttention",
+    # Linear Attention & State Space
+    "RWKV6TimeMix",
+    "RWKV6",
+    "RetNetRetention",
+    "RetNet",
+    "MambaSSM",
+    "Mamba",
+    # Alignment
+    "DPOTrainer",
+    "KTOTrainer",
+    "ORPOTrainer",
     # MoE
     "Expert",
     "TopKRouter",
@@ -148,6 +182,11 @@ __all__ = [
     "GemmaForCausalLM",
     "Seq2SeqTransformer",
     "T5",
+    "DeepSeekMoE",
+    "DeepSeekV3",
+    "Qwen2_5",
+    "BitLinear",
+    "BitNet158",
     # Generation
     "GenerationConfig",
     "sample_next_token",
