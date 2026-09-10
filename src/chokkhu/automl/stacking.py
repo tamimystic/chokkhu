@@ -46,6 +46,7 @@ class SuperLearner:
     def _clone_estimator(self, est: Any) -> Any:
         """Create a fresh instance of the estimator with same hyperparameters."""
         import copy
+
         try:
             cloned = copy.deepcopy(est)
             return cloned
@@ -78,7 +79,11 @@ class SuperLearner:
                     fold_model.fit(X_tr, y_tr)
 
                 preds = None
-                if self.task == "classification" and self.use_probabilities and hasattr(fold_model, "predict_proba"):
+                if (
+                    self.task == "classification"
+                    and self.use_probabilities
+                    and hasattr(fold_model, "predict_proba")
+                ):
                     try:
                         probs = fold_model.predict_proba(X_va)
                         if probs.ndim == 2 and probs.shape[1] == 2:
@@ -118,14 +123,18 @@ class SuperLearner:
 
             # Solve regularized normal equations: (Z^T Z + lambda I)^-1 Z^T y
             reg = 1e-3 * np.eye(Z_norm.shape[1])
-            raw_weights = np.linalg.solve(np.dot(Z_norm.T, Z_norm) + reg, np.dot(Z_norm.T, y_norm))
+            raw_weights = np.linalg.solve(
+                np.dot(Z_norm.T, Z_norm) + reg, np.dot(Z_norm.T, y_norm)
+            )
             # Project onto positive probability simplex
             pos_weights = np.maximum(0.0, raw_weights)
             weight_sum: float = float(np.sum(pos_weights))
             if weight_sum > 0:
                 self.weights_ = pos_weights / weight_sum
             else:
-                self.weights_ = np.ones(Z_norm.shape[1], dtype=np.float32) / float(Z_norm.shape[1])
+                self.weights_ = np.ones(Z_norm.shape[1], dtype=np.float32) / float(
+                    Z_norm.shape[1]
+                )
 
         # 3. Fit base estimators on full dataset
         self.fitted_estimators_ = []
@@ -144,7 +153,11 @@ class SuperLearner:
 
         for model in self.fitted_estimators_:
             p = None
-            if self.task == "classification" and self.use_probabilities and hasattr(model, "predict_proba"):
+            if (
+                self.task == "classification"
+                and self.use_probabilities
+                and hasattr(model, "predict_proba")
+            ):
                 try:
                     probs = model.predict_proba(X)
                     if probs.ndim == 2 and probs.shape[1] == 2:
@@ -187,7 +200,9 @@ class SuperLearner:
         """Predict class probabilities."""
         Z_test = self._transform_meta_features(X)
 
-        if self.fitted_meta_estimator_ is not None and hasattr(self.fitted_meta_estimator_, "predict_proba"):
+        if self.fitted_meta_estimator_ is not None and hasattr(
+            self.fitted_meta_estimator_, "predict_proba"
+        ):
             probs = self.fitted_meta_estimator_.predict_proba(Z_test)
             if probs.ndim == 1 or (probs.ndim == 2 and probs.shape[1] == 1):
                 p1 = np.clip(probs.squeeze(), 0.0, 1.0)

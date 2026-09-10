@@ -47,12 +47,16 @@ class ConformalPredictor:
         elif self.residual_type == "signed":
             scores = y_cal - preds
         else:
-            raise ValueError(f"Unknown residual_type: {self.residual_type}. Choose from 'absolute', 'signed'.")
+            raise ValueError(
+                f"Unknown residual_type: {self.residual_type}. Choose from 'absolute', 'signed'."
+            )
 
         self.calibration_scores = np.sort(scores)
 
         # Finite-sample correction index: ceil((n + 1) * (1 - alpha)) / n
-        p = np.clip(np.ceil((n_cal + 1.0) * (1.0 - self.alpha)) / float(n_cal), 0.0, 1.0)
+        p = np.clip(
+            np.ceil((n_cal + 1.0) * (1.0 - self.alpha)) / float(n_cal), 0.0, 1.0
+        )
         self.q_hat = float(np.quantile(self.calibration_scores, p, method="higher"))
         return self.q_hat
 
@@ -62,7 +66,9 @@ class ConformalPredictor:
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Generate point predictions and lower/upper conformal bounds."""
         if self.q_hat is None:
-            raise ValueError("ConformalPredictor must be calibrated with calibrate(X_cal, y_cal) before predicting intervals.")
+            raise ValueError(
+                "ConformalPredictor must be calibrated with calibrate(X_cal, y_cal) before predicting intervals."
+            )
 
         X_test = np.asarray(X_test)
         if hasattr(self.base_estimator, "predict"):

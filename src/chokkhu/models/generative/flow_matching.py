@@ -24,7 +24,9 @@ class VelocityMLP:
 
         # Sinusoidal time embedding projection frequencies
         half_dim = time_embed_dim // 2
-        self.freqs = np.exp(-np.log(10000.0) * np.arange(0, half_dim) / max(half_dim, 1))
+        self.freqs = np.exp(
+            -np.log(10000.0) * np.arange(0, half_dim) / max(half_dim, 1)
+        )
 
         # Weight layers
         dims = [input_dim + time_embed_dim] + self.hidden_dims + [input_dim]
@@ -126,7 +128,9 @@ class FlowMatching:
         ut = x1 - x0
         return xt, ut
 
-    def compute_loss(self, x1: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
+    def compute_loss(
+        self, x1: np.ndarray
+    ) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
         """Sample x0 ~ N(0, I) and t ~ U(0, 1) and compute Flow Matching MSE loss."""
         x1 = np.asarray(x1, dtype=np.float32)
         n_samples = x1.shape[0]
@@ -207,14 +211,14 @@ class FlowMatching:
         for i in range(len(self.net.weights)):
             self.m_w[i] = beta1 * self.m_w[i] + (1.0 - beta1) * grad_w[i]
             self.v_w[i] = beta2 * self.v_w[i] + (1.0 - beta2) * (grad_w[i] ** 2)
-            m_hat = self.m_w[i] / (1.0 - beta1 ** self.t_step)
-            v_hat = self.v_w[i] / (1.0 - beta2 ** self.t_step)
+            m_hat = self.m_w[i] / (1.0 - beta1**self.t_step)
+            v_hat = self.v_w[i] / (1.0 - beta2**self.t_step)
             self.net.weights[i] -= self.lr * m_hat / (np.sqrt(v_hat) + eps)
 
             self.m_b[i] = beta1 * self.m_b[i] + (1.0 - beta1) * grad_b[i]
             self.v_b[i] = beta2 * self.v_b[i] + (1.0 - beta2) * (grad_b[i] ** 2)
-            mb_hat = self.m_b[i] / (1.0 - beta1 ** self.t_step)
-            vb_hat = self.v_b[i] / (1.0 - beta2 ** self.t_step)
+            mb_hat = self.m_b[i] / (1.0 - beta1**self.t_step)
+            vb_hat = self.v_b[i] / (1.0 - beta2**self.t_step)
             self.net.biases[i] -= self.lr * mb_hat / (np.sqrt(vb_hat) + eps)
 
         return loss
@@ -250,7 +254,9 @@ class FlowMatching:
                 x = x + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 
             else:
-                raise ValueError(f"Unknown ODE integration method: {method}. Choose from 'euler', 'midpoint', 'rk4'.")
+                raise ValueError(
+                    f"Unknown ODE integration method: {method}. Choose from 'euler', 'midpoint', 'rk4'."
+                )
 
         return x
 

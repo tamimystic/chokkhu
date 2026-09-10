@@ -68,7 +68,7 @@ class BOHB:
         """Execute full multi-bracket BOHB hyperparameter search."""
         for s in reversed(range(self.s_max + 1)):
             # Initial number of configurations in bracket
-            n = int(np.ceil((self.B / self.max_budget) * (self.eta ** s) / (s + 1)))
+            n = int(np.ceil((self.B / self.max_budget) * (self.eta**s) / (s + 1)))
             # Initial budget per configuration
             r = self.min_budget * (self.eta ** (self.s_max - s))
 
@@ -77,7 +77,7 @@ class BOHB:
 
             for i in range(s + 1):
                 n_i = int(np.floor(n * (self.eta ** (-i))))
-                r_i = float(r * (self.eta ** i))
+                r_i = float(r * (self.eta**i))
 
                 # Evaluate all configurations in current tier
                 val_losses = []

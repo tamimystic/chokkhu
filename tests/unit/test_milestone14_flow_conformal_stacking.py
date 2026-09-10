@@ -95,7 +95,14 @@ def test_lora_linear_and_adapter():
     np.random.seed(42)
     x = np.random.randn(8, 16).astype(np.float32)
 
-    lora = LoRALinear(in_features=16, out_features=8, r=4, lora_alpha=16.0, lora_dropout=0.1, random_state=42)
+    lora = LoRALinear(
+        in_features=16,
+        out_features=8,
+        r=4,
+        lora_alpha=16.0,
+        lora_dropout=0.1,
+        random_state=42,
+    )
     out_unmerged = lora.forward(x, training=False)
     assert out_unmerged.shape == (8, 8)
 
@@ -153,7 +160,9 @@ def test_conformal_predictor():
     assert cov_metrics["empirical_coverage"] >= 0.75
 
     # 1-Line helper
-    l_bound, u_bound = conformal_interval(y_cal, reg.predict(X_cal), reg.predict(X_test), alpha=0.1)
+    l_bound, u_bound = conformal_interval(
+        y_cal, reg.predict(X_cal), reg.predict(X_test), alpha=0.1
+    )
     assert len(l_bound) == 30
 
 
@@ -189,10 +198,11 @@ def test_matrix_profile_motifs_and_discords():
 
 def test_bohb_hyperparameter_tuner():
     """Test BOHB multi-fidelity successive halving optimization."""
+
     def toy_eval(config: dict, budget: float) -> float:
         x, y = config["x"], config["y"]
         # Maximize negative quadratic + budget scaling
-        score = -(x - 1.0) ** 2 - (y + 2.0) ** 2 + float(budget) * 0.01
+        score = -((x - 1.0) ** 2) - (y + 2.0) ** 2 + float(budget) * 0.01
         return float(score)
 
     bounds = {"x": (-5.0, 5.0), "y": (-5.0, 5.0)}

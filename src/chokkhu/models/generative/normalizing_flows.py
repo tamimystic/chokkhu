@@ -30,15 +30,23 @@ class AffineCouplingLayer:
             self.mask = np.asarray(mask, dtype=np.float32)
 
         # Scale network: predicts log-scale s
-        self.w_s1: np.ndarray = (self.rng.randn(dim, hidden_dim) * np.sqrt(2.0 / dim)).astype(np.float32)
+        self.w_s1: np.ndarray = (
+            self.rng.randn(dim, hidden_dim) * np.sqrt(2.0 / dim)
+        ).astype(np.float32)
         self.b_s1: np.ndarray = np.zeros((1, hidden_dim), dtype=np.float32)
-        self.w_s2: np.ndarray = (self.rng.randn(hidden_dim, dim) * 0.01).astype(np.float32)
+        self.w_s2: np.ndarray = (self.rng.randn(hidden_dim, dim) * 0.01).astype(
+            np.float32
+        )
         self.b_s2: np.ndarray = np.zeros((1, dim), dtype=np.float32)
 
         # Translation network: predicts shift t
-        self.w_t1: np.ndarray = (self.rng.randn(dim, hidden_dim) * np.sqrt(2.0 / dim)).astype(np.float32)
+        self.w_t1: np.ndarray = (
+            self.rng.randn(dim, hidden_dim) * np.sqrt(2.0 / dim)
+        ).astype(np.float32)
         self.b_t1: np.ndarray = np.zeros((1, hidden_dim), dtype=np.float32)
-        self.w_t2: np.ndarray = (self.rng.randn(hidden_dim, dim) * 0.01).astype(np.float32)
+        self.w_t2: np.ndarray = (self.rng.randn(hidden_dim, dim) * 0.01).astype(
+            np.float32
+        )
         self.b_t2: np.ndarray = np.zeros((1, dim), dtype=np.float32)
 
     def _scale_net(self, x: np.ndarray) -> np.ndarray:
@@ -130,7 +138,7 @@ class RealNVP:
         """Compute exact log-likelihood log p(x) = log p_z(z) + sum log|det J|."""
         z, log_det = self.forward(x)
         # Log-likelihood under standard standard Gaussian N(0, I)
-        log_pz = -0.5 * (self.dim * np.log(2.0 * np.pi) + np.sum(z ** 2, axis=-1))
+        log_pz = -0.5 * (self.dim * np.log(2.0 * np.pi) + np.sum(z**2, axis=-1))
         return log_pz + log_det
 
     def compute_loss(self, x: np.ndarray) -> float:

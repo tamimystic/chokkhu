@@ -30,12 +30,18 @@ class LoRALinear:
         self.rng = np.random.RandomState(random_state)
 
         # Base frozen weights W0
-        self.weight: np.ndarray = (self.rng.randn(in_features, out_features) * np.sqrt(2.0 / in_features)).astype(np.float32)
-        self.bias: Optional[np.ndarray] = np.zeros((1, out_features), dtype=np.float32) if bias else None
+        self.weight: np.ndarray = (
+            self.rng.randn(in_features, out_features) * np.sqrt(2.0 / in_features)
+        ).astype(np.float32)
+        self.bias: Optional[np.ndarray] = (
+            np.zeros((1, out_features), dtype=np.float32) if bias else None
+        )
 
         # Trainable low-rank adaptation matrices: A ~ N(0, 1/r), B = 0
         if r > 0:
-            self.lora_A: np.ndarray = (self.rng.randn(in_features, r) * (1.0 / np.sqrt(r))).astype(np.float32)
+            self.lora_A: np.ndarray = (
+                self.rng.randn(in_features, r) * (1.0 / np.sqrt(r))
+            ).astype(np.float32)
             self.lora_B: np.ndarray = np.zeros((r, out_features), dtype=np.float32)
         else:
             self.lora_A = np.zeros((in_features, 0), dtype=np.float32)
@@ -51,10 +57,14 @@ class LoRALinear:
         if not self.merged and self.r > 0:
             h_adapter = x
             if training and self.lora_dropout > 0.0:
-                mask = (self.rng.rand(*h_adapter.shape) > self.lora_dropout).astype(np.float32)
+                mask = (self.rng.rand(*h_adapter.shape) > self.lora_dropout).astype(
+                    np.float32
+                )
                 h_adapter = (h_adapter * mask) / (1.0 - self.lora_dropout)
 
-            lora_term = np.dot(np.dot(h_adapter, self.lora_A), self.lora_B) * self.scaling
+            lora_term = (
+                np.dot(np.dot(h_adapter, self.lora_A), self.lora_B) * self.scaling
+            )
             out = out + lora_term
 
         if self.bias is not None:
@@ -103,7 +113,9 @@ class LoRAAdapter:
             if w is not None:
                 in_f, out_f = w.shape
             else:
-                raise ValueError("Could not deduce dimensions from provided linear layer.")
+                raise ValueError(
+                    "Could not deduce dimensions from provided linear layer."
+                )
 
         has_bias = getattr(linear_layer, "bias", None) is not None
         lora_layer = LoRALinear(
@@ -130,7 +142,9 @@ class LoRAAdapter:
         trainable_params = 0
 
         for layer in layers:
-            base_count = layer.weight.size + (layer.bias.size if layer.bias is not None else 0)
+            base_count = layer.weight.size + (
+                layer.bias.size if layer.bias is not None else 0
+            )
             adapter_count = layer.lora_A.size + layer.lora_B.size
             total_params += base_count + adapter_count
             trainable_params += adapter_count
@@ -139,5 +153,7 @@ class LoRAAdapter:
             "total_params": total_params,
             "trainable_params": trainable_params,
             "frozen_params": total_params - trainable_params,
-            "trainable_percent": 100.0 * float(trainable_params) / float(max(total_params, 1)),
+            "trainable_percent": 100.0
+            * float(trainable_params)
+            / float(max(total_params, 1)),
         }
