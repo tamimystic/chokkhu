@@ -258,3 +258,29 @@ def test_topological_data_analysis_and_rips():
     d2 = np.array([[0.0, 1.1], [0.1, 0.7]])
     b_dist = bottleneck_distance(d1, d2)
     assert b_dist >= 0.0
+
+
+def test_edge_cases_and_numerical_stability():
+    """Test corner cases: extreme rotations, zero variance, empty diagrams, single sample inputs."""
+    # 1. Quantum large angles
+    qc = QuantumCircuit(n_qubits=2)
+    qc.rx(100.0 * np.pi, 0).ry(-50.0 * np.pi, 1)
+    probs = qc.probabilities()
+    assert abs(float(np.sum(probs)) - 1.0) < 1e-8
+
+    # 2. TDA empty diagram transform
+    pl = PersistenceLandscape(num_landscapes=3, resolution=10)
+    feat = pl.transform(np.empty((0, 2)))
+    assert len(feat) == 30
+    assert (feat == 0.0).all()
+
+    # 3. Geospatial identical points and zero variance
+    coords = np.array([[1.0, 1.0], [1.0, 1.0], [2.0, 2.0], [2.0, 2.0]])
+    sw = SpatialWeights(coords, method="knn", k=2, row_standardize=True)
+    m_res = morans_i(np.ones(4), sw, permutations=10)
+    assert not np.isnan(m_res["I"])
+
+    # 4. DARTS 1-sample batch
+    darts = DARTS(input_dim=2, num_classes=2, num_intermediate_nodes=1, hidden_dim=4)
+    darts.fit(np.array([[0.5, -0.5]]), np.array([0]), epochs=1, batch_size=1)
+    assert len(darts.genotype()) == 1

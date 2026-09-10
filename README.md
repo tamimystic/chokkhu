@@ -108,13 +108,13 @@ y_train = np.random.randint(0, 2, size=200)
 
 # Run full AutoML search: profiles data, tests candidate models, performs CV ranking
 result = ck.auto_train(
-    X_train=X_train,
-    y_train=y_train,
+    X_train,
+    y_train,
     task="classification",
     time_budget_secs=30,
     metric="accuracy",
     cv=5,
-    random_state=42
+    random_state=42,
 )
 
 print(result.summary())
@@ -140,24 +140,21 @@ y_pred = result.predict(X_train[:10])
 from chokkhu.automl import BayesianOptimization
 
 # Objective function to maximize
-def objective(params):
-    x, y = params[0], params[1]
+def objective(config):
+    x, y = config["x"], config["y"]
     return -(x**2 + y**2) + 10.0
 
-# Define parameter search bounds [(min_x, max_x), (min_y, max_y)]
-bounds = [(-5.0, 5.0), (-5.0, 5.0)]
-
-opt = BayesianOptimization(
-    func=objective,
-    bounds=bounds,
+# Define parameter search bounds
+bounds = {"x": (-5.0, 5.0), "y": (-5.0, 5.0)}
+bo = BayesianOptimization(
+    objective_fn=objective,
+    param_bounds=bounds,
     n_init=5,
-    n_iter=20,
-    acq="ei",
-    xi=0.01,
-    random_state=42
+    n_iter=10,
+    acquisition="ei",
 )
-best_params, best_value = opt.optimize()
-print(f"Optimal parameters: {best_params}, Max objective: {best_value}")
+best_params = bo.optimize()
+print(f"Optimal Parameters: {best_params}, Maximum Objective: {bo.best_score:.4f}")
 ```
 
 #### Parameter Breakdown: `BayesianOptimization`
@@ -183,25 +180,23 @@ import numpy as np
 from chokkhu.models.retrieval import HNSWIndex
 
 # 128-dimensional dense vector embeddings
-embeddings = np.random.randn(1000, 128).astype(np.float32)
+embeddings = np.random.randn(100, 128).astype(np.float32)
 embeddings /= np.linalg.norm(embeddings, axis=1, keepdims=True)
 
-# Build sovereign HNSW index
+# Build HNSW index with hierarchical multi-layer graph
 index = HNSWIndex(
     dim=128,
-    max_elements=5000,
-    M=16,
-    ef_construction=100,
-    ef_search=50,
-    metric="cosine",
-    random_state=42
+    metric="euclidean",
+    m=16,
+    ef_construction=64,
+    ef_search=32,
 )
 index.add(embeddings)
 
 # Query top-5 nearest neighbors
-query = embeddings[0:1]
-indices, distances = index.search(query, k=5)
-print(f"Nearest indices: {indices}, Distances: {distances}")
+query = embeddings[0]
+labels, distances = index.search(query, k=5)
+print(f"HNSW Top-5 Neighbor Indices: {labels}")
 ```
 
 #### Parameter Breakdown: `HNSWIndex`
@@ -223,24 +218,22 @@ print(f"Nearest indices: {indices}, Distances: {distances}")
 import numpy as np
 from chokkhu.models.retrieval import IVFPQIndex
 
-vectors = np.random.randn(2000, 64).astype(np.float32)
+vectors = np.random.randn(200, 64).astype(np.float32)
 
 # Build compressed IVF-PQ index
 ivfpq = IVFPQIndex(
     dim=64,
-    n_clusters=16,
+    n_lists=16,
     n_subvectors=8,
     n_bits=8,
-    n_probe=4,
-    metric="l2",
-    random_state=42
+    metric="euclidean",
 )
-ivfpq.fit(vectors)
+ivfpq.train(vectors)
 ivfpq.add(vectors)
 
-query = vectors[0:1]
-indices, distances = ivfpq.search(query, k=5)
-print(f"IVF-PQ Top-5 matches: {indices}")
+query_vec = vectors[0]
+dists, indices = ivfpq.search(query_vec, k=5)
+print(f"IVF-PQ Approximate Nearest Neighbors: {indices}")
 ```
 
 #### Parameter Breakdown: `IVFPQIndex`
@@ -267,24 +260,19 @@ from chokkhu.models.recommendation import DeepFM
 # Cardinalities for 3 categorical features: [100 users, 50 items, 10 categories]
 cat_dims = [100, 50, 10]
 model = DeepFM(
-    cat_dims=cat_dims,
-    num_dim=4,
+    field_cardinalities=cat_dims,
     embedding_dim=16,
-    dnn_hidden_dims=[64, 32],
-    lr=0.001,
-    dropout=0.1,
-    random_state=42
+    mlp_layers=[32, 16],
+    lr=0.01,
+    n_epochs=5,
 )
+# Categorical sample index vectors: (batch_size=4, num_fields=3)
+X_cat = np.array([[12, 5, 2], [34, 18, 7], [90, 42, 1], [0, 11, 9]])
+y = np.array([1, 0, 1, 0])
 
-# Training batch: categorical indices and continuous dense features
-cat_inputs = np.array([[5, 12, 1], [42, 8, 3]])
-num_inputs = np.random.randn(2, 4).astype(np.float32)
-targets = np.array([1.0, 0.0])
-
-# Forward pass & training step
-preds = model.forward(cat_inputs, num_inputs)
-loss = model.train_step(cat_inputs, num_inputs, targets)
-print(f"DeepFM Predictions: {preds.squeeze()}, Loss: {loss:.4f}")
+model.fit(X_cat, y)
+predictions = model.predict_proba(X_cat)
+print(f"DeepFM Click Probability Predictions: {predictions}")
 ```
 
 #### Parameter Breakdown: `DeepFM`
@@ -303,29 +291,26 @@ print(f"DeepFM Predictions: {preds.squeeze()}, Loss: {loss:.4f}")
 ### 3.2 SASRec (Self-Attentive Sequential Recommendation)
 
 ```python
-import numpy as np
 from chokkhu.models.recommendation import SASRec
 
-# Sequence of interacted item IDs: shape (batch_size, max_seq_len)
-item_sequences = np.array([
+# Sequence of interacted item IDs: list of user interaction sequences
+item_sequences = [
     [1, 5, 23, 45, 12],
-    [3, 8, 19, 0, 0]    # 0 is padding
-])
+    [3, 8, 19, 2, 10],
+    [10, 11, 12, 13, 14],
+]
 
 sasrec = SASRec(
-    item_count=100,
     max_len=5,
     hidden_dim=32,
-    num_heads=2,
-    num_blocks=2,
-    dropout_rate=0.1,
-    lr=0.001,
-    random_state=42
+    n_heads=2,
+    n_layers=2,
+    lr=0.01,
+    n_epochs=3,
 )
-
-# Sequence embeddings & scores for candidate items
-seq_embeddings = sasrec.forward(item_sequences)
-print(f"Sequence representations shape: {seq_embeddings.shape}")
+sasrec.fit(item_sequences)
+scores = sasrec.predict_next(item_sequences[0], top_k=5)
+print(f"Next-Item Ranking Predictions: {scores}")
 ```
 
 #### Parameter Breakdown: `SASRec`
@@ -351,18 +336,17 @@ import numpy as np
 from chokkhu.models.causal import DoublyRobustLearner
 
 # Covariates (X), binary treatment (T), and observed outcome (y)
-X = np.random.randn(500, 5)
-T = np.random.binomial(1, 0.5, size=500)
-# Real treatment effect = +2.5
-y = 1.2 * X[:, 0] + 2.5 * T + np.random.randn(500) * 0.1
+X = np.random.randn(100, 5)
+T = np.random.binomial(1, 0.5, size=100)
+y = 1.5 * T + np.dot(X, [0.5, -0.2, 0.8, -0.1, 0.3]) + np.random.randn(100) * 0.1
 
-dr = DoublyRobustLearner(clip_min=0.02, clip_max=0.98, random_state=42)
+dr = DoublyRobustLearner(
+    clip_range=(0.05, 0.95),
+)
 dr.fit(X, T, y)
-
-# Estimate Individual Treatment Effects (ITE) and Average Treatment Effect (ATE)
-ite_preds = dr.predict_ite(X[:5])
-ate_estimate = dr.estimate_ate(X, T, y)
-print(f"Estimated ATE: {ate_estimate:.3f} (True: 2.500)")
+ite_estimates = dr.predict_cate(X[:5])
+ate_estimate = dr.estimate_ate()
+print(f"Average Treatment Effect (ATE): {ate_estimate:.4f}")
 ```
 
 #### Parameter Breakdown: `DoublyRobustLearner`
@@ -407,17 +391,19 @@ import numpy as np
 from chokkhu.models.survival import CoxPHRegression, concordance_index
 
 # Covariates, event durations, and binary censoring events (1=died, 0=censored)
-X = np.random.randn(200, 4)
-times = np.random.exponential(scale=10.0, size=200)
-events = np.random.binomial(1, 0.7, size=200)
+X = np.random.randn(100, 4)
+times = np.random.exponential(scale=10.0, size=100)
+events = np.random.binomial(1, 0.7, size=100)
 
-cox = CoxPHRegression(lr=0.01, max_iter=150, l2_reg=1e-4)
+cox = CoxPHRegression(
+    alpha=0.01,
+    tie_method="efron",
+    max_iter=50,
+)
 cox.fit(X, times, events)
-
-# Predict partial hazard log-ratios and evaluate Harrell's C-index
-risk_scores = cox.predict_risk(X)
-c_idx = concordance_index(times, -risk_scores, events)
-print(f"Concordance Index: {c_idx:.4f}")
+risk_scores = cox.predict_risk(X[:5])
+c_index = concordance_index(times[:5], risk_scores, events[:5])
+print(f"Cox Proportional Hazards C-Index: {c_index:.4f}")
 ```
 
 #### Parameter Breakdown: `CoxPHRegression`
@@ -436,22 +422,19 @@ print(f"Concordance Index: {c_idx:.4f}")
 import numpy as np
 from chokkhu.models.survival import DeepSurv
 
-X = np.random.randn(300, 6)
-times = np.random.exponential(scale=12.0, size=300)
-events = np.random.binomial(1, 0.8, size=300)
+X = np.random.randn(100, 6)
+times = np.random.exponential(scale=12.0, size=100)
+events = np.random.binomial(1, 0.8, size=100)
 
 deep_surv = DeepSurv(
-    input_dim=6,
-    hidden_dims=[32, 16],
-    lr=0.001,
-    l2_reg=1e-4,
-    epochs=50,
-    batch_size=32,
-    random_state=42
+    hidden_layers=[32, 16],
+    lr=0.01,
+    weight_decay=1e-4,
+    n_epochs=20,
 )
 deep_surv.fit(X, times, events)
-risks = deep_surv.predict_risk(X[:5])
-print(f"DeepSurv Predicted Risk Scores: {risks.flatten()}")
+risk_scores = deep_surv.predict_risk(X[:5])
+print(f"DeepSurv Log Hazard Ratios: {risk_scores.flatten()}")
 ```
 
 #### Parameter Breakdown: `DeepSurv`
@@ -477,21 +460,21 @@ from chokkhu.models.multimodal import CLIP
 
 # Create sovereign multi-modal CLIP model
 clip = CLIP(
-    vision_dim=128,
-    text_dim=128,
     embed_dim=64,
-    temperature=0.07,
-    random_state=42
+    image_size=32,
+    patch_size=8,
+    vocab_size=500,
+    init_temperature=0.07,
+    seed=42,
 )
 
-# Vision and text feature batches
-img_features = np.random.randn(8, 128).astype(np.float32)
-txt_features = np.random.randn(8, 128).astype(np.float32)
+# Vision images (B, C, H, W) and text token sequences (B, S)
+images = np.random.randn(4, 3, 32, 32).astype(np.float32)
+texts = np.random.randint(0, 500, size=(4, 8))
 
-# Compute normalized embeddings & similarity matrix
-img_emb, txt_emb, logits = clip.forward(img_features, txt_features)
-loss = clip.compute_loss(img_emb, txt_emb)
-print(f"CLIP Similarity Matrix Shape: {logits.shape}, InfoNCE Loss: {loss:.4f}")
+# Compute normalized embeddings & cross-entropy contrastive loss
+img_emb, txt_emb, loss = clip.forward(images, texts)
+print(f"CLIP Image Embeddings Shape: {img_emb.shape}, Loss: {loss:.4f}")
 ```
 
 #### Parameter Breakdown: `CLIP`
@@ -511,21 +494,17 @@ print(f"CLIP Similarity Matrix Shape: {logits.shape}, InfoNCE Loss: {loss:.4f}")
 import numpy as np
 from chokkhu.models.multimodal import PerceiverResampler
 
-# Arbitrary-length visual tokens: (batch_size=2, num_tokens=196, dim=256)
-visual_tokens = np.random.randn(2, 196, 256).astype(np.float32)
+# Arbitrary-length visual tokens: (batch_size=2, num_tokens=16, dim=256)
+visual_tokens = np.random.randn(2, 16, 256).astype(np.float32)
 
 resampler = PerceiverResampler(
-    dim=256,
-    num_latents=32,
-    latent_dim=512,
-    num_heads=8,
-    num_layers=3,
-    random_state=42
+    vision_dim=256,
+    text_dim=256,
+    num_latents=16,
+    num_heads=4,
 )
-
-# Resample 196 variable tokens into exactly 32 fixed LLM prefix tokens
-fixed_prefix_tokens = resampler.forward(visual_tokens)
-print(f"Resampled Visual Tokens Shape: {fixed_prefix_tokens.shape}") # (2, 32, 512)
+compact_visual_prompts = resampler.forward(visual_tokens)
+print(f"Fixed-Size Visual Prompt Embeddings Shape: {compact_visual_prompts.shape}")
 ```
 
 #### Parameter Breakdown: `PerceiverResampler`
@@ -550,20 +529,23 @@ from chokkhu.models.sciml import BurgersPINN
 
 # Sovereign PINN for Burgers' PDE: u_t + u * u_x - nu * u_xx = 0
 pinn = BurgersPINN(
-    layers=[2, 32, 32, 1],
     nu=0.01 / np.pi,
-    lr=0.001,
-    random_state=42
+    hidden_layers=[32, 32],
+    lr=0.005,
 )
 
-# Spatio-temporal collocation points (x, t)
-collocation_points = np.random.uniform(-1.0, 1.0, size=(100, 2))
-bc_points = np.array([[-1.0, 0.2], [1.0, 0.2]]) # boundary conditions
-bc_u = np.array([[0.0], [0.0]])
+# Collocation spatio-temporal coordinates (x, t) in [-1, 1] x [0, 1]
+tx_colloc = np.random.uniform(low=[-1.0, 0.0], high=[1.0, 1.0], size=(50, 2))
+tx_init = np.column_stack([np.random.uniform(-1.0, 1.0, size=30), np.zeros(30)])
+u_init = -np.sin(np.pi * tx_init[:, 0:1])
+tx_bnd = np.column_stack([np.random.choice([-1.0, 1.0], size=30), np.random.uniform(0.0, 1.0, size=30)])
+u_bnd = np.zeros((30, 1))
 
-# Physics-informed training step (data loss + PDE residual loss)
-total_loss, pde_residual = pinn.train_step(collocation_points, bc_points, bc_u)
-print(f"PINN Total Loss: {total_loss:.5f}, PDE Residual: {pde_residual:.5f}")
+pinn.fit(tx_colloc, tx_init, u_init, tx_bnd, u_bnd, n_epochs=10)
+
+tx_test = np.column_stack([np.linspace(-1, 1, 20), np.full(20, 0.5)])
+u_pred = pinn.predict(tx_test)
+print(f"Burgers Equation Solution u(x, t=0.5) Shape: {u_pred.shape}")
 ```
 
 #### Parameter Breakdown: `BurgersPINN`
@@ -585,19 +567,15 @@ from chokkhu.models.sciml import NeuralODE
 
 # Model continuous dynamical state trajectory dx/dt = f_theta(x, t)
 node = NeuralODE(
-    in_features=2,
+    dim=2,
     hidden_dim=32,
-    method="rk4",
-    random_state=42
+    solver="rk4",
 )
+x0 = np.random.randn(4, 2).astype(np.float32)
+t_span = np.linspace(0, 1, 10).astype(np.float32)
 
-# Initial state at t0
-x0 = np.array([[1.0, 0.0], [-0.5, 0.8]])
-t_span = np.linspace(0.0, 2.0, num=10)
-
-# Integrate trajectory forward in time via 4th-order Runge-Kutta
-trajectory = node.forward(x0, t_span)
-print(f"Trajectory shape: {trajectory.shape}") # (10 timestamps, 2 samples, 2 dims)
+trajectories = node.forward(x0, t_span)
+print(f"Integrated ODE Trajectories Shape: {trajectories.shape}")
 ```
 
 #### Parameter Breakdown: `NeuralODE`
@@ -660,17 +638,14 @@ from chokkhu.compression import PostTrainingQuantizer
 weights_fp32 = np.random.randn(256, 128).astype(np.float32)
 
 ptq = PostTrainingQuantizer(
-    target_bits=8,
-    method="uniform_symmetric",
-    per_channel=True
+    method="minmax",
+    bits=8,
 )
-
-# Quantize to INT8 integers and recover dequantized approximation
-q_weights, scales, zero_points = ptq.quantize(weights_fp32)
-recovered_fp32 = ptq.dequantize(q_weights, scales, zero_points)
-
-quant_error = np.mean(np.abs(weights_fp32 - recovered_fp32))
-print(f"Quantized Dtype: {q_weights.dtype}, Mean Absolute Quant Error: {quant_error:.6f}")
+quantizer = ptq.calibrate(weights_fp32)
+q_weights = quantizer.quantize(weights_fp32)
+weights_reconstructed = quantizer.dequantize(q_weights)
+quant_error = np.mean(np.abs(weights_fp32 - weights_reconstructed))
+print(f"INT8 Quantization Error (MAE): {quant_error:.6f}")
 ```
 
 #### Parameter Breakdown: `PostTrainingQuantizer`
@@ -690,18 +665,14 @@ print(f"Quantized Dtype: {q_weights.dtype}, Mean Absolute Quant Error: {quant_er
 import numpy as np
 from chokkhu.models.vision_3d import PointNet2Classifier
 
-# 3D Point cloud batch: (batch_size=2, num_points=512, xyz_coords=3)
-point_clouds = np.random.randn(2, 512, 3).astype(np.float32)
+# 3D Point cloud batch: (batch_size=2, num_points=64, xyz_coords=3)
+point_clouds = np.random.randn(2, 64, 3).astype(np.float32)
 
-pnet2 = PointNet2Classifier(
+pointnet2 = PointNet2Classifier(
     num_classes=10,
-    in_channels=3,
-    random_state=42
 )
-
-# Forward pass using Set Abstraction (Farthest Point Sampling + Ball Query grouping)
-logits = pnet2.forward(point_clouds)
-print(f"PointNet++ Logits Shape: {logits.shape}") # (2, 10)
+logits = pointnet2.forward(point_clouds)
+print(f"PointNet++ Classification Logits Shape: {logits.shape}")
 ```
 
 #### Parameter Breakdown: `PointNet2Classifier`
@@ -721,19 +692,12 @@ from chokkhu.models.vision_3d import NeRFMLP, volume_render, generate_camera_ray
 
 # Generate camera rays from camera pose matrix
 c2w = np.eye(4, dtype=np.float32)
-rays_o, rays_d = generate_camera_rays(H=64, W=64, focal=50.0, c2w=c2w)
-
-nerf = NeRFMLP(pos_dim=63, dir_dim=27, hidden_dim=128, num_layers=6)
-
-# Query positional densities and directional radiance colors
-sample_pts = np.random.randn(100, 63).astype(np.float32)
-sample_dirs = np.random.randn(100, 27).astype(np.float32)
-density, rgb = nerf.forward(sample_pts, sample_dirs)
-
-# Differentiable volume rendering along ray z-steps
-z_vals = np.linspace(2.0, 6.0, 100, dtype=np.float32)
-rendered_rgb, depth_map, acc_map = volume_render(density, rgb, z_vals, rays_d[:100])
-print(f"Rendered RGB shape: {rendered_rgb.shape}")
+rays_o, rays_d = generate_camera_rays(
+    height=64,
+    width=64,
+    focal_length=100.0,
+    camera_pose=c2w,
+)
 ```
 
 #### Parameter Breakdown: `NeRFMLP`
@@ -759,25 +723,23 @@ from chokkhu.models.nlp.agents import Tool, ToolRegistry, ReActAgent
 registry = ToolRegistry()
 
 def add_numbers(a: float, b: float) -> float:
-    """Add two numbers together."""
-    return float(a) + float(b)
+    """Add two floating point numbers."""
+    return float(a + b)
 
-registry.register(Tool(
-    name="calculator",
-    func=add_numbers,
-    description="Adds two numbers a and b together."
-))
-
-# 2. Initialize sovereign ReAct agent
-agent = ReActAgent(
-    tools=registry,
-    max_steps=5,
-    verbose=True
+registry.register(
+    Tool(
+        name="calculator",
+        func=add_numbers,
+        description="Adds two numbers a and b.",
+    )
 )
 
-# Run deterministic agent loop
-result = agent.run("Calculate the sum of 15.5 and 24.5")
-print(f"Agent Final Output: {result.output}")
+agent = ReActAgent(
+    tools=registry,
+    max_iterations=3,
+)
+result = agent.run("Calculate the sum of 45.5 and 54.5")
+print(f"ReAct Agent Thought & Execution Result: {result}")
 ```
 
 #### Parameter Breakdown: `ReActAgent`
@@ -795,19 +757,20 @@ print(f"Agent Final Output: {result.output}")
 ```python
 from chokkhu.models.nlp.agents import TreeOfThoughts
 
-# Custom thought evaluator heuristic
+def thought_gen(state: str, n: int):
+    return [f"{state} -> candidate_{i}" for i in range(n)]
+
 def custom_evaluator(thought_state: str) -> float:
-    return 1.0 if "valid" in thought_state else 0.2
+    return 1.0 if "candidate_0" in thought_state else 0.2
 
 tot = TreeOfThoughts(
-    max_depth=3,
-    num_branches=3,
-    search_method="bfs",
-    evaluator=custom_evaluator
+    thought_generator=thought_gen,
+    state_evaluator=custom_evaluator,
+    max_depth=2,
+    branching_factor=2,
 )
-
-best_path = tot.solve(initial_problem="Solve constraint satisfaction riddle")
-print(f"Best reasoning trajectory: {best_path}")
+solution = tot.solve(initial_state="Given input data X: find optimal pipeline.")
+print(f"Tree-of-Thoughts Optimal Node State: {solution}")
 ```
 
 #### Parameter Breakdown: `TreeOfThoughts`
@@ -833,33 +796,13 @@ from chokkhu.models.rl import PPO
 ppo = PPO(
     state_dim=4,
     action_dim=2,
-    actor_hidden=[64, 64],
-    critic_hidden=[64, 64],
-    lr_actor=0.0003,
-    lr_critic=0.001,
+    lr_actor=1e-3,
+    lr_critic=2e-3,
     gamma=0.99,
-    gae_lambda=0.95,
-    clip_epsilon=0.2,
-    ppo_epochs=10,
-    batch_size=32,
-    entropy_coeff=0.01,
-    random_state=42
 )
-
-# Collect trajectory transitions
-state = np.array([0.1, -0.2, 0.05, 0.3])
+state = np.random.randn(4)
 action, log_prob, value = ppo.select_action(state)
-
-# Update policy with Generalized Advantage Estimation (GAE)
-states = np.random.randn(64, 4)
-actions = np.random.randint(0, 2, size=64)
-old_log_probs = np.random.randn(64)
-rewards = np.random.randn(64)
-dones = np.zeros(64, dtype=bool)
-values = np.random.randn(64)
-
-loss_dict = ppo.update(states, actions, old_log_probs, rewards, dones, values)
-print(f"PPO Loss Info: {loss_dict}")
+print(f"PPO Selected Action: {action}, Log Prob: {log_prob:.4f}, State Value: {value:.4f}")
 ```
 
 #### Parameter Breakdown: `PPO`
@@ -891,22 +834,19 @@ from chokkhu.models.rl import SAC, LinUCBBandit
 sac = SAC(
     state_dim=8,
     action_dim=2,
-    actor_hidden=[64, 64],
-    critic_hidden=[64, 64],
-    lr=0.0003,
+    hidden_dim=64,
+    lr=1e-3,
     gamma=0.99,
-    tau=0.005,
-    alpha=0.2,
-    random_state=42
 )
-action = sac.select_action(np.random.randn(8))
+continuous_action, _ = sac.sample_action(np.random.randn(8))
+print(f"SAC Continuous Action: {continuous_action}")
 
-# 2. Contextual Multi-Armed Bandits with LinUCB
-bandit = LinUCBBandit(n_arms=5, context_dim=10, alpha=1.0, random_state=42)
+# 2. Linear Upper Confidence Bound (LinUCB) Contextual Bandit
+bandit = LinUCBBandit(n_arms=5, n_features=10, alpha=1.0)
 context = np.random.randn(10)
 chosen_arm = bandit.select_arm(context)
 bandit.update(arm=chosen_arm, context=context, reward=1.0)
-print(f"SAC Action: {action}, LinUCB Chosen Arm: {chosen_arm}")
+print(f"LinUCB Selected Arm: {chosen_arm}")
 ```
 
 #### Parameter Breakdown: `SAC`
@@ -930,37 +870,23 @@ print(f"SAC Action: {action}, LinUCB Chosen Arm: {chosen_arm}")
 
 ```python
 import numpy as np
-from chokkhu.models.gnn import Graphormer, LaplacianPositionalEncoding
+from chokkhu.models.gnn import Graphormer
 
 # Node features: (num_nodes=6, in_features=16)
 x = np.random.randn(6, 16).astype(np.float32)
-# Adjacency matrix
-adj = np.array([
-    [0, 1, 1, 0, 0, 0],
-    [1, 0, 1, 0, 0, 0],
-    [1, 1, 0, 1, 0, 0],
-    [0, 0, 1, 0, 1, 1],
-    [0, 0, 0, 1, 0, 1],
-    [0, 0, 0, 1, 1, 0]
-], dtype=np.float32)
+adj = np.eye(6, dtype=np.float32)
 
-# Compute graph Laplacian positional eigenvectors
-pe_encoder = LaplacianPositionalEncoding(k=4, normalization="sym")
-lap_pe = pe_encoder.compute(adj)
-
+# Graphormer with Spatial & Degree Centrality Encodings
 graphormer = Graphormer(
-    in_features=16,
+    in_dim=16,
     hidden_dim=32,
-    out_features=8,
-    num_heads=4,
+    out_dim=2,
     num_layers=2,
+    n_heads=2,
     pe_dim=4,
-    dropout=0.1,
-    random_state=42
 )
-
-node_embeddings = graphormer.forward(x, adj, pe=lap_pe)
-print(f"Graphormer Output Node Embeddings Shape: {node_embeddings.shape}") # (6, 8)
+out = graphormer.forward(x, adj)
+print(f"Graphormer Output Graph Embeddings Shape: {out.shape}")
 ```
 
 #### Parameter Breakdown: `Graphormer`
@@ -985,32 +911,18 @@ from chokkhu.models.gnn import EGNN, RGCNClassifier
 
 # 1. E(n) Equivariant Graph Neural Network for 3D Molecular Coordinates
 h = np.random.randn(5, 16).astype(np.float32)      # Invariant scalar features
-x_coords = np.random.randn(5, 3).astype(np.float32) # 3D Cartesian coordinates
+# Coordinates: (num_nodes=5, 3D xyz)
+x_coords = np.random.randn(5, 3).astype(np.float32)
 edge_index = np.array([[0, 1, 2, 3], [1, 2, 3, 4]])
 
 egnn = EGNN(
-    in_node_features=16,
+    in_dim=16,
     hidden_dim=32,
-    out_node_features=16,
+    out_dim=16,
     num_layers=2,
-    coord_dim=3,
-    random_state=42
 )
-h_out, x_coords_out = egnn.forward(h, x_coords, edge_index)
-print(f"EGNN Equivariant 3D Coordinates Output Shape: {x_coords_out.shape}")
-
-# 2. Relational Graph Convolutional Network (Knowledge Graphs)
-edge_types = np.array([0, 1, 0, 2])
-rgcn = RGCNClassifier(
-    in_features=16,
-    hidden_dim=32,
-    out_features=4,
-    num_relations=3,
-    num_layers=2,
-    random_state=42
-)
-node_logits = rgcn.forward(h, edge_index, edge_types)
-print(f"R-GCN Logits Shape: {node_logits.shape}")
+h_out, x_out = egnn.forward(h, x_coords, edge_index)
+print(f"EGNN Scalar Feature Shape: {h_out.shape}, Equivariant 3D Coordinates Shape: {x_out.shape}")
 ```
 
 #### Parameter Breakdown: `EGNN`
@@ -1033,29 +945,22 @@ print(f"R-GCN Logits Shape: {node_logits.shape}")
 import numpy as np
 from chokkhu.models.nlp import DeepSeekV3
 
-# Token sequence: (batch_size=2, seq_len=8)
+# Token sequence: (batch_size=2, seq_len=4)
 input_tokens = np.array([
-    [12, 45, 89, 230, 412, 18, 92, 5],
-    [7, 102, 304, 511, 22, 67, 88, 14]
+    [12, 45, 89, 230],
+    [7, 102, 304, 511],
 ])
 
-model = DeepSeekV3(
+# Sovereign DeepSeek-V3 with MLA & DeepSeekMoE
+deepseek = DeepSeekV3(
     vocab_size=1000,
     hidden_dim=64,
     num_layers=2,
-    num_heads=4,
-    q_lora_rank=16,
-    kv_lora_rank=16,
     n_routed_experts=4,
-    n_shared_experts=1,
     top_k=2,
-    mtp_depth=1,
-    random_state=42
 )
-
-# Forward pass computing next-token logits + auxiliary MoE load balancing loss
-logits, aux_loss = model.forward(input_tokens)
-print(f"DeepSeek-V3 Logits Shape: {logits.shape}, MoE Auxiliary Loss: {aux_loss:.4f}")
+logits = deepseek.forward(input_tokens)
+print(f"DeepSeek-V3 Logits Shape: {logits.shape}")
 ```
 
 #### Parameter Breakdown: `DeepSeekV3`
@@ -1087,25 +992,11 @@ input_ids = np.array([[15, 34, 128, 492, 10]])
 mamba = Mamba(
     vocab_size=1000,
     d_model=64,
-    d_state=16,
-    d_conv=4,
-    expand=2,
     num_layers=2,
-    random_state=42
+    d_state=16,
 )
 mamba_logits = mamba.forward(input_ids)
-print(f"Mamba S6 Logits Shape: {mamba_logits.shape}")
-
-# 2. Sovereign RWKV-v6 (WKV linear attention with dynamic time-mixing)
-rwkv = RWKV6(
-    vocab_size=1000,
-    hidden_dim=64,
-    num_layers=2,
-    head_size=16,
-    random_state=42
-)
-rwkv_logits = rwkv.forward(input_ids)
-print(f"RWKV-v6 Logits Shape: {rwkv_logits.shape}")
+print(f"Mamba S6 Output Shape: {mamba_logits.shape}")
 ```
 
 #### Parameter Breakdown: `Mamba`
@@ -1125,28 +1016,20 @@ print(f"RWKV-v6 Logits Shape: {rwkv_logits.shape}")
 
 ```python
 import numpy as np
-from chokkhu.models.nlp import DPOTrainer, MiniGPT
-
-# Create policy model and frozen reference model
-policy = MiniGPT(vocab_size=500, hidden_dim=64, num_layers=2, num_heads=2)
-ref_model = MiniGPT(vocab_size=500, hidden_dim=64, num_layers=2, num_heads=2)
+from chokkhu.models.nlp import DPOTrainer
 
 dpo = DPOTrainer(
-    model=policy,
-    ref_model=ref_model,
     beta=0.1,
-    lr=1e-4
 )
+chosen_logps = np.array([-1.2, -0.8])
+rejected_logps = np.array([-2.5, -2.1])
+ref_chosen_logps = np.array([-1.5, -1.0])
+ref_rejected_logps = np.array([-2.0, -1.8])
 
-# Chosen vs. Rejected completion token batches
-prompt_chosen = np.array([[10, 25, 42, 100], [12, 19, 88, 204]])
-prompt_rejected = np.array([[10, 25, 42, 311], [12, 19, 88, 499]])
-
-loss, implicit_reward_chosen, implicit_reward_rejected = dpo.train_step(
-    prompt_chosen=prompt_chosen,
-    prompt_rejected=prompt_rejected
+loss, chosen_rewards, rejected_rewards = dpo.compute_loss(
+    chosen_logps, rejected_logps, ref_chosen_logps, ref_rejected_logps
 )
-print(f"DPO Loss: {loss:.4f}, Margin: {(implicit_reward_chosen - implicit_reward_rejected).mean():.4f}")
+print(f"DPO Alignment Loss: {loss:.4f}")
 ```
 
 #### Parameter Breakdown: `DPOTrainer`
@@ -1168,14 +1051,13 @@ import numpy as np
 from chokkhu.models import VAE, DDPM
 
 # 1. Variational Autoencoder (VAE)
-images_flat = np.random.randn(100, 784).astype(np.float32)
-vae = VAE(input_dim=784, latent_dim=32, hidden_dim=128)
+images_flat = np.random.randn(20, 784).astype(np.float32)
+vae = VAE(in_features=784, hidden_dim=64, latent_dim=16)
 recon, mu, logvar = vae.forward(images_flat)
-vae_loss = vae.compute_loss(images_flat, recon, mu, logvar)
-print(f"VAE Loss: {vae_loss:.4f}")
+print(f"VAE Reconstructed Shape: {recon.shape}")
 
 # 2. Denoising Diffusion Probabilistic Model (DDPM)
-ddpm = DDPM(input_dim=784, timesteps=1000, beta_start=1e-4, beta_end=0.02)
+ddpm = DDPM(data_dim=32, timesteps=20, beta_start=1e-4, beta_end=0.02)
 sampled_images = ddpm.sample(num_samples=4)
 print(f"DDPM Generated Samples Shape: {sampled_images.shape}")
 ```
@@ -1200,19 +1082,20 @@ from chokkhu.models import stft, melspectrogram, mfcc, Conformer
 waveform = np.sin(2 * np.pi * 440 * np.linspace(0, 1, 16000)).astype(np.float32)
 
 # Extract Mel-Spectrogram and MFCCs
-mel_spec = melspectrogram(waveform, sample_rate=16000, n_fft=512, hop_length=160, n_mels=80)
-mfcc_features = mfcc(waveform, sample_rate=16000, n_mfcc=13)
+mel_spec = melspectrogram(waveform, sr=16000, n_fft=512, hop_length=160, n_mels=80)
+mfcc_features = mfcc(waveform, sr=16000, n_mfcc=13)
 print(f"Mel-Spectrogram Shape: {mel_spec.shape}, MFCC Shape: {mfcc_features.shape}")
 
 # Speech Conformer (Macaron-style FFN + MHA + Depthwise Conv)
 conformer = Conformer(
-    input_dim=80,
-    num_heads=4,
-    ffn_dim=128,
+    in_features=80,
+    num_classes=10,
+    embed_dim=64,
     num_blocks=2,
-    conv_kernel_size=15
+    num_heads=2,
+    ffn_dim=128,
 )
-spec_batch = np.random.randn(2, 100, 80).astype(np.float32)
+spec_batch = np.random.randn(2, 20, 80).astype(np.float32)
 conformer_out = conformer.forward(spec_batch)
 print(f"Conformer Output Shape: {conformer_out.shape}")
 ```
@@ -1238,18 +1121,22 @@ import chokkhu as ck
 from chokkhu.explainability import IntegratedGradients, DeepLIFT
 
 # Create a trained neural model
-model = ck.NeuralNetwork(layers=[10, 32, 2], activation="relu")
-sample = np.random.randn(1, 10)
+X_train = np.random.randn(50, 10)
+y_train = np.random.randint(0, 2, size=50)
+model = ck.NeuralNetwork(layers=[32], activation="relu", epochs=5)
+model.fit(X_train, y_train)
+
+sample = np.random.randn(10)
 
 # 1. Axiomatic feature attribution via Integrated Gradients
-ig = IntegratedGradients(model=model, steps=50, baseline=None)
-attributions = ig.attribute(sample, target_class=0)
+ig = IntegratedGradients(model=model, steps=20, baseline=None)
+attributions = ig.attribute(sample)
 print(f"Integrated Gradients Attributions Shape: {attributions.shape}")
 
 # 2. DeepLIFT difference-from-reference conservation
-dlift = DeepLIFT(model=model, baseline=np.zeros((1, 10)))
-dlift_attributions = dlift.attribute(sample, target_class=0)
-print(f"DeepLIFT Attributions: {dlift_attributions.flatten()}")
+dlift = DeepLIFT(model=model, baseline=np.zeros(10))
+dlift_attributions = dlift.attribute(sample)
+print(f"DeepLIFT Attributions: {dlift_attributions.flatten()[:5]}")
 ```
 
 #### Parameter Breakdown: `IntegratedGradients`
@@ -1276,16 +1163,18 @@ from chokkhu.models.generative import FlowMatching, RectifiedFlow
 X_train = np.random.randn(200, 2) * 0.5 + 2.0
 
 # 1. Continuous Velocity Field Flow Matching with Optimal Transport
-flow = FlowMatching(input_dim=2, hidden_dim=64, num_layers=3, lr=1e-3, sigma_min=1e-4)
-flow.fit(X_train, epochs=20, batch_size=32)
+flow = FlowMatching(input_dim=2, hidden_dims=[64, 64], lr=1e-3, sigma_min=1e-4)
+for _ in range(5):
+    loss = flow.train_step(X_train)
 
 # Sample new points using 4th-order Runge-Kutta (RK4) integration
 synthetic_samples = flow.sample(num_samples=100, steps=50, method="rk4")
 print(f"Generated Flow Samples Shape: {synthetic_samples.shape}")
 
 # 2. Rectified Flow interpolation with straight-line trajectories
-rect_flow = RectifiedFlow(input_dim=2, hidden_dim=32, lr=1e-3)
-rect_flow.fit(X_train, epochs=10)
+rect_flow = RectifiedFlow(input_dim=2, hidden_dims=[32, 32], lr=1e-3)
+for _ in range(5):
+    loss = rect_flow.train_step(X_train)
 rect_samples = rect_flow.sample(num_samples=50, steps=20, method="midpoint")
 print(f"Rectified Flow Samples Shape: {rect_samples.shape}")
 ```
@@ -1311,8 +1200,9 @@ from chokkhu.models.generative import RealNVP
 X = np.random.randn(100, 4)
 
 # Multi-layer RealNVP with analytical Jacobian log-determinant
-nvp = RealNVP(input_dim=4, num_layers=4, hidden_dim=32, lr=1e-3)
-nvp.fit(X, epochs=15, batch_size=16)
+nvp = RealNVP(dim=4, num_layers=4, hidden_dim=32, lr=1e-3)
+for _ in range(5):
+    loss = nvp.compute_loss(X)
 
 # Exact log-likelihood computation
 log_probs = nvp.log_prob(X)
@@ -1340,7 +1230,7 @@ import numpy as np
 from chokkhu.models.generative import LoRALinear, LoRAAdapter
 
 # 1. Direct Low-Rank Linear Adaptation: W_adapted = W0 + (alpha / r) * (B @ A)
-linear = LoRALinear(in_features=128, out_features=64, rank=4, alpha=8.0)
+linear = LoRALinear(in_features=128, out_features=64, r=4, lora_alpha=8.0)
 
 x = np.random.randn(8, 128)
 y = linear.forward(x)
@@ -1351,14 +1241,9 @@ linear.merge()
 y_merged = linear.forward(x)
 np.testing.assert_allclose(y, y_merged, atol=1e-5)
 
-# 2. Attach PEFT LoRA adapters to arbitrary deep architectures
-model_weights = {
-    "encoder.attn.q_proj": np.random.randn(64, 64),
-    "encoder.attn.v_proj": np.random.randn(64, 64),
-    "classifier.dense": np.random.randn(64, 10),
-}
-adapter = LoRAAdapter(model_weights, target_modules=["attn.q_proj", "attn.v_proj"], rank=4, alpha=8.0)
-print(f"Total Base Params: {adapter.count_parameters()['base_params']}, Trainable LoRA Params: {adapter.count_parameters()['trainable_lora_params']}")
+# 2. Attach PEFT LoRA adapter tracking
+param_summary = LoRAAdapter.count_parameters([linear])
+print(f"LoRA Parameter Summary: {param_summary}")
 ```
 
 #### Parameter Breakdown: `LoRALinear`
@@ -1387,11 +1272,12 @@ base_model = LinearRegression()
 base_model.fit(X[:80], y[:80])
 
 # Fit conformal prediction interval with exact 95% coverage guarantee
-conformal = ConformalPredictor(base_model=base_model, alpha=0.05, method="split")
+conformal = ConformalPredictor(base_estimator=base_model, alpha=0.05)
 conformal.calibrate(X[80:110], y[80:110])
 
 # Predict lower and upper confidence bounds
-y_pred, lower, upper = conformal.predict_interval(X[110:])
+bounds = conformal.predict_interval(X[110:])
+lower, upper = bounds[0], bounds[1]
 coverage = np.mean((y[110:] >= lower) & (y[110:] <= upper))
 print(f"Guaranteed Coverage: >= 95%, Empirical Empirical Coverage: {coverage * 100:.1f}%")
 ```
@@ -1419,12 +1305,12 @@ ts[250:270] += 4.0  # Anomaly burst
 
 # Fast STOMP / STAMP sliding-window distance profile computation
 mp = MatrixProfile(window_size=30)
-profile, profile_idx = mp.fit_transform(ts)
+profile, profile_idx = mp.compute(ts)
 
 # Identify recurring patterns (motifs) and anomalous subsequences (discords)
-motifs = find_motifs(profile, profile_idx, top_k=2)
-discords = find_discords(profile, top_k=1)
-print(f"Top Discord (Anomaly) Subsequence Index: {discords[0]}")
+motifs = find_motifs(ts, window_size=30, top_k=2)
+discords = find_discords(ts, window_size=30, top_k=1)
+print(f"Top Discord (Anomaly) Subsequence Info: {discords[0]}")
 ```
 
 #### Parameter Breakdown: `MatrixProfile`
@@ -1442,30 +1328,26 @@ import numpy as np
 from chokkhu.automl import BOHB
 
 # Objective function simulating hyperparameter tuning across variable budget (e.g. epochs)
-def objective_fn(config, budget):
+def eval_func(config, budget):
     lr = config["lr"]
     hidden = config["hidden"]
-    # Simulated loss decreasing with optimal lr & budget
     loss = (np.log10(lr) + 3.0)**2 + (hidden - 64)**2 * 1e-4 + (1.0 / budget)
-    return float(loss)
+    return float(-loss)  # maximize objective
 
-# Hyperparameter search space
-param_distributions = {
-    "lr": ("log_uniform", 1e-4, 1e-1),
-    "hidden": ("int_uniform", 16, 128),
+param_bounds = {
+    "lr": (1e-4, 1e-1),
+    "hidden": (16.0, 128.0),
 }
 
-# Run BOHB successive halving optimization
 bohb = BOHB(
-    objective_fn=objective_fn,
-    param_distributions=param_distributions,
-    min_budget=1,
-    max_budget=9,
+    eval_func=eval_func,
+    param_bounds=param_bounds,
+    min_budget=1.0,
+    max_budget=9.0,
     eta=3,
-    num_iterations=3
 )
-best_config, best_loss = bohb.optimize()
-print(f"Optimal Hyperparameters: {best_config}, Minimum Loss: {best_loss:.5f}")
+best_config, best_score = bohb.optimize()
+print(f"Optimal Hyperparameters: {best_config}, Best Score: {best_score:.5f}")
 ```
 
 #### Parameter Breakdown: `BOHB`
@@ -1485,24 +1367,23 @@ print(f"Optimal Hyperparameters: {best_config}, Minimum Loss: {best_loss:.5f}")
 ```python
 import numpy as np
 from chokkhu.automl import SuperLearner
-from chokkhu.models import LogisticRegression, DecisionTreeClassifier, RandomForestClassifier
+from chokkhu.models import LogisticRegression, DecisionTree, RandomForest
 
 # Multi-class classification dataset
-X = np.random.randn(200, 10)
+X = np.random.randn(100, 4)
 y = (X[:, 0] + X[:, 1] > 0).astype(int)
 
 # Define diverse ensemble of base learners
 base_learners = [
-    ("logreg", LogisticRegression()),
-    ("dt", DecisionTreeClassifier(max_depth=4)),
-    ("rf", RandomForestClassifier(n_estimators=10, max_depth=4)),
+    LogisticRegression(),
+    DecisionTree(max_depth=4),
+    RandomForest(n_estimators=5, max_depth=4),
 ]
 
 # Construct SuperLearner with out-of-fold CV meta-learning
 super_learner = SuperLearner(
-    base_models=base_learners,
-    meta_model="ridge",
-    cv=5,
+    estimators=base_learners,
+    cv=3,
     task="classification",
     use_probabilities=True
 )
@@ -1512,7 +1393,6 @@ super_learner.fit(X, y)
 y_pred_proba = super_learner.predict_proba(X[:5])
 y_pred = super_learner.predict(X[:5])
 print(f"Ensemble Predictions: {y_pred}")
-print(f"Optimal Base Learner Weights: {super_learner.get_weights()}")
 ```
 
 #### Parameter Breakdown: `SuperLearner`
