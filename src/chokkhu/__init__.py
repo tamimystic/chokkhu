@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "0.8.0"
+__version__ = "0.9.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean
