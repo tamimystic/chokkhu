@@ -376,6 +376,22 @@ from .models.vision_3d import (
     quaternion_to_rotation_matrix,
 )
 
+from .models.nlp.agents import (
+    Tool,
+    ToolParameter,
+    ToolRegistry,
+    ReActAgent,
+    AgentAction,
+    AgentFinish,
+    AgentStep,
+    ChainOfThought,
+    TreeOfThoughts,
+    GraphOfThoughts,
+    MultiAgentCoordinator,
+    ReflexionEngine,
+    SelfConsistency,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -682,4 +698,18 @@ __all__ = [
     "generate_camera_rays",
     "GaussianSplatting3D",
     "quaternion_to_rotation_matrix",
+    # Autonomous AI Agents & Execution Engines
+    "Tool",
+    "ToolParameter",
+    "ToolRegistry",
+    "ReActAgent",
+    "AgentAction",
+    "AgentFinish",
+    "AgentStep",
+    "ChainOfThought",
+    "TreeOfThoughts",
+    "GraphOfThoughts",
+    "MultiAgentCoordinator",
+    "ReflexionEngine",
+    "SelfConsistency",
 ]
