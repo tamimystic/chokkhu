@@ -337,6 +337,19 @@ from .models.sciml import (
     NeuralODE,
 )
 
+from .fairness import (
+    demographic_parity_difference,
+    demographic_parity_ratio,
+    equal_opportunity_difference,
+    equalized_odds_difference,
+    disparate_impact_ratio,
+    theil_index,
+    fairness_report,
+    ReweighingTransformer,
+    DisparateImpactRemover,
+    ThresholdOptimizer,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -610,4 +623,15 @@ __all__ = [
     "HarmonicOscillatorPINN",
     "SymbolicRegressor",
     "NeuralODE",
+    # Algorithmic Fairness & Bias Mitigation
+    "demographic_parity_difference",
+    "demographic_parity_ratio",
+    "equal_opportunity_difference",
+    "equalized_odds_difference",
+    "disparate_impact_ratio",
+    "theil_index",
+    "fairness_report",
+    "ReweighingTransformer",
+    "DisparateImpactRemover",
+    "ThresholdOptimizer",
 ]
