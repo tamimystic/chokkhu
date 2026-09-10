@@ -360,6 +360,22 @@ from .compression import (
     FeatureDistiller,
 )
 
+from .models.vision_3d import (
+    TNet,
+    PointNetClassifier,
+    PointNetSegmenter,
+    PointNet2Classifier,
+    SetAbstractionModule,
+    farthest_point_sampling,
+    ball_query,
+    PositionalEncoder,
+    NeRFMLP,
+    volume_render,
+    generate_camera_rays,
+    GaussianSplatting3D,
+    quaternion_to_rotation_matrix,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -652,4 +668,18 @@ __all__ = [
     "GlobalMagnitudePruner",
     "KnowledgeDistiller",
     "FeatureDistiller",
+    # 3D Computer Vision, Point Clouds & Neural Radiance (NeRF & 3DGS)
+    "TNet",
+    "PointNetClassifier",
+    "PointNetSegmenter",
+    "PointNet2Classifier",
+    "SetAbstractionModule",
+    "farthest_point_sampling",
+    "ball_query",
+    "PositionalEncoder",
+    "NeRFMLP",
+    "volume_render",
+    "generate_camera_rays",
+    "GaussianSplatting3D",
+    "quaternion_to_rotation_matrix",
 ]
