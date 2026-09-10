@@ -350,6 +350,16 @@ from .fairness import (
     ThresholdOptimizer,
 )
 
+from .compression import (
+    UniformQuantizer,
+    PostTrainingQuantizer,
+    QuantizedLinear,
+    MagnitudePruner,
+    GlobalMagnitudePruner,
+    KnowledgeDistiller,
+    FeatureDistiller,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -634,4 +644,12 @@ __all__ = [
     "ReweighingTransformer",
     "DisparateImpactRemover",
     "ThresholdOptimizer",
+    # Edge AI, Quantization & Compression
+    "UniformQuantizer",
+    "PostTrainingQuantizer",
+    "QuantizedLinear",
+    "MagnitudePruner",
+    "GlobalMagnitudePruner",
+    "KnowledgeDistiller",
+    "FeatureDistiller",
 ]
