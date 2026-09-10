@@ -330,6 +330,27 @@ from .sciml import (
     NeuralODE,
 )
 
+from .gnn import (
+    GAT,
+    GCN,
+    GIN,
+    GraphSAGE,
+    GATLayer,
+    GCNLayer,
+    GINLayer,
+    GraphSAGELayer,
+    LaplacianPositionalEncoding,
+    GraphormerLayer,
+    Graphormer,
+    RGCNLayer,
+    RGCNClassifier,
+    EGNNLayer,
+    EGNN,
+    TemporalGraphNetwork,
+    HypergraphConvolution,
+    HGNN,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -612,4 +633,23 @@ __all__ = [
     "ThompsonSamplingBandit",
     "LinUCBBandit",
     "DecisionTransformer",
+    # Graph Neural Networks & Geometric Deep Learning
+    "GAT",
+    "GCN",
+    "GIN",
+    "GraphSAGE",
+    "GATLayer",
+    "GCNLayer",
+    "GINLayer",
+    "GraphSAGELayer",
+    "LaplacianPositionalEncoding",
+    "GraphormerLayer",
+    "Graphormer",
+    "RGCNLayer",
+    "RGCNClassifier",
+    "EGNNLayer",
+    "EGNN",
+    "TemporalGraphNetwork",
+    "HypergraphConvolution",
+    "HGNN",
 ]

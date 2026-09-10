@@ -7,17 +7,28 @@ from .utils import (
     edge_index_to_dense,
     global_pool,
 )
-from .layers import (
-    GCNLayer,
-    GATLayer,
-    GraphSAGELayer,
-    GINLayer,
-)
 from .architectures import (
-    GCN,
     GAT,
-    GraphSAGE,
+    GCN,
     GIN,
+    GraphSAGE,
+)
+from .equivariant import EGNN, EGNNLayer
+from .graph_transformer import Graphormer, GraphormerLayer, LaplacianPositionalEncoding
+from .hypergraph import HGNN, HypergraphConvolution
+from .layers import (
+    GATLayer,
+    GCNLayer,
+    GINLayer,
+    GraphSAGELayer,
+)
+from .relational import RGCNClassifier, RGCNLayer
+from .temporal import TemporalGraphNetwork
+from .utils import (
+    dense_to_edge_index,
+    edge_index_to_dense,
+    global_pool,
+    normalize_adjacency,
 )
 
 __all__ = [
@@ -33,4 +44,14 @@ __all__ = [
     "GAT",
     "GraphSAGE",
     "GIN",
+    "LaplacianPositionalEncoding",
+    "GraphormerLayer",
+    "Graphormer",
+    "RGCNLayer",
+    "RGCNClassifier",
+    "EGNNLayer",
+    "EGNN",
+    "TemporalGraphNetwork",
+    "HypergraphConvolution",
+    "HGNN",
 ]
