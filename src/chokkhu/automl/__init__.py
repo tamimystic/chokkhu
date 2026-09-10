@@ -8,6 +8,11 @@ from .surrogate import (
 )
 from .bayesian import BayesianOptimization
 from .hyperband import Hyperband
+from .bohb import BOHB
+from .stacking import (
+    SuperLearner,
+    StackingEnsemble,
+)
 from .autotrainer import (
     AutoTrainer,
     AutoMLResult,
@@ -20,6 +25,9 @@ __all__ = [
     "upper_confidence_bound",
     "BayesianOptimization",
     "Hyperband",
+    "BOHB",
+    "SuperLearner",
+    "StackingEnsemble",
     "AutoTrainer",
     "AutoMLResult",
     "auto_train",

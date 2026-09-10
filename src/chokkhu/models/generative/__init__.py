@@ -20,6 +20,22 @@ from .gan import (
     WGANGP,
 )
 
+from .flow_matching import (
+    VelocityMLP,
+    FlowMatching,
+    RectifiedFlow,
+)
+
+from .normalizing_flows import (
+    AffineCouplingLayer,
+    RealNVP,
+)
+
+from .lora import (
+    LoRALinear,
+    LoRAAdapter,
+)
+
 __all__ = [
     # Autoencoders
     "VAE",
@@ -34,4 +50,14 @@ __all__ = [
     "Discriminator",
     "DCGAN",
     "WGANGP",
+    # Flow Matching
+    "VelocityMLP",
+    "FlowMatching",
+    "RectifiedFlow",
+    # Normalizing Flows
+    "AffineCouplingLayer",
+    "RealNVP",
+    # LoRA
+    "LoRALinear",
+    "LoRAAdapter",
 ]

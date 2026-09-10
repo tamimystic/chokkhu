@@ -38,7 +38,8 @@
 17. [Frontier LLMs, Linear Attention & Alignment (Milestone 13)](#14-frontier-llms-linear-attention--alignment)
 18. [Classical ML, 2D Vision, Audio & Generative DL](#15-classical-ml-2d-vision-audio--generative-dl)
 19. [Sovereign Explainable AI (XAI)](#16-sovereign-explainable-ai-xai)
-20. [License & Citation](#license--citation)
+20. [Next-Gen Generative AI, LoRA, Conformal & Stacking (Milestone 14)](#17-next-gen-generative-ai-lora-conformal--stacking-milestone-14)
+21. [License & Citation](#license--citation)
 
 ---
 
@@ -1258,6 +1259,269 @@ print(f"DeepLIFT Attributions: {dlift_attributions.flatten()}")
 | `baseline` | `np.ndarray` / `None` | `None` | Reference neutral baseline vector (defaults to zero array). |
 
 ---
+
+
+---
+
+## 17. Next-Gen Generative AI, LoRA, Conformal & Stacking (Milestone 14)
+
+### 17.1 Continuous ODE Flow Matching & Rectified Flows (`FlowMatching`, `RectifiedFlow`)
+
+```python
+import numpy as np
+from chokkhu.models.generative import FlowMatching, RectifiedFlow
+
+# Generate 2D training data
+X_train = np.random.randn(200, 2) * 0.5 + 2.0
+
+# 1. Continuous Velocity Field Flow Matching with Optimal Transport
+flow = FlowMatching(input_dim=2, hidden_dim=64, num_layers=3, lr=1e-3, sigma_min=1e-4)
+flow.fit(X_train, epochs=20, batch_size=32)
+
+# Sample new points using 4th-order Runge-Kutta (RK4) integration
+synthetic_samples = flow.sample(num_samples=100, steps=50, method="rk4")
+print(f"Generated Flow Samples Shape: {synthetic_samples.shape}")
+
+# 2. Rectified Flow interpolation with straight-line trajectories
+rect_flow = RectifiedFlow(input_dim=2, hidden_dim=32, lr=1e-3)
+rect_flow.fit(X_train, epochs=10)
+rect_samples = rect_flow.sample(num_samples=50, steps=20, method="midpoint")
+print(f"Rectified Flow Samples Shape: {rect_samples.shape}")
+```
+
+#### Parameter Breakdown: `FlowMatching`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `input_dim` | `int` | *Required* | Dimensionality of the continuous input space $D$. |
+| `hidden_dim` | `int` | `64` | Hidden layer width for the time-dependent velocity MLP network $v_\theta(x, t)$. |
+| `num_layers` | `int` | `3` | Number of dense hidden layers in the velocity field approximator. |
+| `lr` | `float` | `1e-3` | Gradient descent Adam/SGD learning rate during flow matching loss minimization. |
+| `sigma_min` | `float` | `1e-4` | Minimum perturbation noise standard deviation for numerical stability. |
+
+---
+
+### 17.2 Invertible Normalizing Flows (`RealNVP`, `AffineCouplingLayer`)
+
+```python
+import numpy as np
+from chokkhu.models.generative import RealNVP
+
+# Continuous tabular / latent features
+X = np.random.randn(100, 4)
+
+# Multi-layer RealNVP with analytical Jacobian log-determinant
+nvp = RealNVP(input_dim=4, num_layers=4, hidden_dim=32, lr=1e-3)
+nvp.fit(X, epochs=15, batch_size=16)
+
+# Exact log-likelihood computation
+log_probs = nvp.log_prob(X)
+print(f"Mean Log-Likelihood: {np.mean(log_probs):.4f}")
+
+# Invertible sampling from latent base standard Gaussian
+generated_data = nvp.sample(num_samples=50)
+print(f"RealNVP Sample Shape: {generated_data.shape}")
+```
+
+#### Parameter Breakdown: `RealNVP`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `input_dim` | `int` | *Required* | Feature dimensionality $D$ (must be $\ge 2$ for split-coupling). |
+| `num_layers` | `int` | `4` | Number of alternating affine coupling layers in the flow cascade. |
+| `hidden_dim` | `int` | `32` | Hidden layer dimension for scale $s(x)$ and translation $t(x)$ sub-networks. |
+| `lr` | `float` | `1e-3` | Learning rate for maximum likelihood estimation via backpropagation. |
+
+---
+
+### 17.3 Parameter-Efficient Fine-Tuning (`LoRALinear`, `LoRAAdapter`)
+
+```python
+import numpy as np
+from chokkhu.models.generative import LoRALinear, LoRAAdapter
+
+# 1. Direct Low-Rank Linear Adaptation: W_adapted = W0 + (alpha / r) * (B @ A)
+linear = LoRALinear(in_features=128, out_features=64, rank=4, alpha=8.0)
+
+x = np.random.randn(8, 128)
+y = linear.forward(x)
+print(f"Adapted Linear Output Shape: {y.shape}")
+
+# Merge adapter weights directly into frozen base weight matrix for zero-latency inference
+linear.merge()
+y_merged = linear.forward(x)
+np.testing.assert_allclose(y, y_merged, atol=1e-5)
+
+# 2. Attach PEFT LoRA adapters to arbitrary deep architectures
+model_weights = {
+    "encoder.attn.q_proj": np.random.randn(64, 64),
+    "encoder.attn.v_proj": np.random.randn(64, 64),
+    "classifier.dense": np.random.randn(64, 10),
+}
+adapter = LoRAAdapter(model_weights, target_modules=["attn.q_proj", "attn.v_proj"], rank=4, alpha=8.0)
+print(f"Total Base Params: {adapter.count_parameters()['base_params']}, Trainable LoRA Params: {adapter.count_parameters()['trainable_lora_params']}")
+```
+
+#### Parameter Breakdown: `LoRALinear`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_features` | `int` | *Required* | Input feature dimension $d_{\text{in}}$. |
+| `out_features` | `int` | *Required* | Output feature dimension $d_{\text{out}}$. |
+| `rank` | `int` | `4` | Low-rank bottleneck dimension $r \ll \min(d_{\text{in}}, d_{\text{out}})$. |
+| `alpha` | `float` | `1.0` | Scaling hyperparameter $\alpha$ where $\Delta W = \frac{\alpha}{r} B A$. |
+
+---
+
+### 17.4 Distribution-Free Time Series Conformal Prediction (`ConformalPredictor`)
+
+```python
+import numpy as np
+from chokkhu.models.timeseries import ConformalPredictor, conformal_interval
+from chokkhu.models import LinearRegression
+
+# Generate synthetic sequential / regression dataset
+X = np.linspace(0, 10, 150).reshape(-1, 1)
+y = 2.5 * X.flatten() + np.sin(X.flatten()) + np.random.randn(150) * 0.5
+
+# Base forecaster
+base_model = LinearRegression()
+base_model.fit(X[:80], y[:80])
+
+# Fit conformal prediction interval with exact 95% coverage guarantee
+conformal = ConformalPredictor(base_model=base_model, alpha=0.05, method="split")
+conformal.calibrate(X[80:110], y[80:110])
+
+# Predict lower and upper confidence bounds
+y_pred, lower, upper = conformal.predict_interval(X[110:])
+coverage = np.mean((y[110:] >= lower) & (y[110:] <= upper))
+print(f"Guaranteed Coverage: >= 95%, Empirical Empirical Coverage: {coverage * 100:.1f}%")
+```
+
+#### Parameter Breakdown: `ConformalPredictor`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `base_model` | `Any` | *Required* | Any fitted regression or forecasting model providing `.predict(X)`. |
+| `alpha` | `float` | `0.1` | Miscoverage significance level $\alpha \in (0, 1)$, ensuring $1-\alpha$ coverage. |
+| `method` | `str` | `"split"` | Conformal method: `"split"` or `"cross_val"`. |
+
+---
+
+### 17.5 Matrix Profile Time Series Motif & Discord Mining (`MatrixProfile`)
+
+```python
+import numpy as np
+from chokkhu.models.timeseries import MatrixProfile, find_motifs, find_discords
+
+# Generate continuous time series with an embedded anomaly
+np.random.seed(42)
+t = np.linspace(0, 50, 500)
+ts = np.sin(t) + np.random.randn(500) * 0.05
+ts[250:270] += 4.0  # Anomaly burst
+
+# Fast STOMP / STAMP sliding-window distance profile computation
+mp = MatrixProfile(window_size=30)
+profile, profile_idx = mp.fit_transform(ts)
+
+# Identify recurring patterns (motifs) and anomalous subsequences (discords)
+motifs = find_motifs(profile, profile_idx, top_k=2)
+discords = find_discords(profile, top_k=1)
+print(f"Top Discord (Anomaly) Subsequence Index: {discords[0]}")
+```
+
+#### Parameter Breakdown: `MatrixProfile`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `window_size` | `int` | *Required* | Subsequence window length $m$ for z-normalized Euclidean distance comparison. |
+| `algorithm` | `str` | `"stomp"` | Matrix profile algorithm: `"stomp"` (fast $O(n^2)$) or `"stamp"`. |
+
+---
+
+### 17.6 Multi-Fidelity Bayesian Optimization & HyperBand (`BOHB`)
+
+```python
+import numpy as np
+from chokkhu.automl import BOHB
+
+# Objective function simulating hyperparameter tuning across variable budget (e.g. epochs)
+def objective_fn(config, budget):
+    lr = config["lr"]
+    hidden = config["hidden"]
+    # Simulated loss decreasing with optimal lr & budget
+    loss = (np.log10(lr) + 3.0)**2 + (hidden - 64)**2 * 1e-4 + (1.0 / budget)
+    return float(loss)
+
+# Hyperparameter search space
+param_distributions = {
+    "lr": ("log_uniform", 1e-4, 1e-1),
+    "hidden": ("int_uniform", 16, 128),
+}
+
+# Run BOHB successive halving optimization
+bohb = BOHB(
+    objective_fn=objective_fn,
+    param_distributions=param_distributions,
+    min_budget=1,
+    max_budget=9,
+    eta=3,
+    num_iterations=3
+)
+best_config, best_loss = bohb.optimize()
+print(f"Optimal Hyperparameters: {best_config}, Minimum Loss: {best_loss:.5f}")
+```
+
+#### Parameter Breakdown: `BOHB`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `objective_fn` | `Callable` | *Required* | Objective function `f(config, budget) -> float` to minimize. |
+| `param_distributions` | `dict` | *Required* | Dictionary defining hyperparameter search bounds and distributions. |
+| `min_budget` | `float` | `1.0` | Minimum resource budget allocated per candidate configuration. |
+| `max_budget` | `float` | `9.0` | Maximum resource budget allocated to top-performing configurations. |
+| `eta` | `int` | `3` | Halving reduction factor (prunes $1 - 1/\eta$ candidates each round). |
+| `num_iterations` | `int` | `3` | Number of HyperBand outer brackets executed. |
+
+---
+
+### 17.7 SuperLearner Out-of-Fold Cross-Validated Stacking (`SuperLearner`)
+
+```python
+import numpy as np
+from chokkhu.automl import SuperLearner
+from chokkhu.models import LogisticRegression, DecisionTreeClassifier, RandomForestClassifier
+
+# Multi-class classification dataset
+X = np.random.randn(200, 10)
+y = (X[:, 0] + X[:, 1] > 0).astype(int)
+
+# Define diverse ensemble of base learners
+base_learners = [
+    ("logreg", LogisticRegression()),
+    ("dt", DecisionTreeClassifier(max_depth=4)),
+    ("rf", RandomForestClassifier(n_estimators=10, max_depth=4)),
+]
+
+# Construct SuperLearner with out-of-fold CV meta-learning
+super_learner = SuperLearner(
+    base_models=base_learners,
+    meta_model="ridge",
+    cv=5,
+    task="classification",
+    use_probabilities=True
+)
+super_learner.fit(X, y)
+
+# Predict class probabilities and labels
+y_pred_proba = super_learner.predict_proba(X[:5])
+y_pred = super_learner.predict(X[:5])
+print(f"Ensemble Predictions: {y_pred}")
+print(f"Optimal Base Learner Weights: {super_learner.get_weights()}")
+```
+
+#### Parameter Breakdown: `SuperLearner`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `base_models` | `list[tuple[str, Any]]` | *Required* | List of named base estimators `[(name, model), ...]`. |
+| `meta_model` | `str` / `Any` | `"ridge"` | Meta-learner strategy (`"ridge"`, `"nnls"`, `"logistic"`, or custom estimator). |
+| `cv` | `int` | `5` | Number of out-of-fold cross-validation folds for meta-feature generation. |
+| `task` | `str` | `"classification"` | Task type: `"classification"` or `"regression"`. |
+| `use_probabilities` | `bool` | `True` | Whether classification meta-features use class probabilities or hard labels. |
 
 ## License & Citation
 

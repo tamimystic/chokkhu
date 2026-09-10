@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 __author__ = "tamimystic"
 
 from .cleaning import clean
@@ -41,6 +41,13 @@ from .models import (
     VectorQuantizer,
     VQVAE,
     VAE,
+    VelocityMLP,
+    FlowMatching,
+    RectifiedFlow,
+    AffineCouplingLayer,
+    RealNVP,
+    LoRALinear,
+    LoRAAdapter,
     Wav2Vec2,
     AudioSpectrogramTransformer,
     AST,
@@ -283,6 +290,11 @@ from .models.timeseries import (
     NHITS,
     PatchTST,
     decompose_series,
+    ConformalPredictor,
+    conformal_interval,
+    MatrixProfile,
+    find_motifs,
+    find_discords,
 )
 
 from .automl import (
@@ -291,6 +303,9 @@ from .automl import (
     auto_train,
     BayesianOptimization,
     Hyperband,
+    BOHB,
+    SuperLearner,
+    StackingEnsemble,
 )
 
 from .models.retrieval import (
@@ -435,6 +450,13 @@ __all__ = [
     "VectorQuantizer",
     "VQVAE",
     "VAE",
+    "VelocityMLP",
+    "FlowMatching",
+    "RectifiedFlow",
+    "AffineCouplingLayer",
+    "RealNVP",
+    "LoRALinear",
+    "LoRAAdapter",
     "Wav2Vec2",
     "AudioSpectrogramTransformer",
     "AST",
@@ -657,12 +679,20 @@ __all__ = [
     "NHITS",
     "PatchTST",
     "decompose_series",
+    "ConformalPredictor",
+    "conformal_interval",
+    "MatrixProfile",
+    "find_motifs",
+    "find_discords",
     # AutoML
     "AutoTrainer",
     "AutoMLResult",
     "auto_train",
     "BayesianOptimization",
     "Hyperband",
+    "BOHB",
+    "SuperLearner",
+    "StackingEnsemble",
     # Vector Retrieval
     "HNSWIndex",
     "IVFPQIndex",

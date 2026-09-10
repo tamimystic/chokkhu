@@ -18,6 +18,15 @@ from .neural import (
     NHITSBlock,
     PatchTST,
 )
+from .conformal import (
+    ConformalPredictor,
+    conformal_interval,
+)
+from .matrix_profile import (
+    MatrixProfile,
+    find_motifs,
+    find_discords,
+)
 
 __all__ = [
     "decompose_series",
@@ -31,4 +40,9 @@ __all__ = [
     "NHITS",
     "NHITSBlock",
     "PatchTST",
+    "ConformalPredictor",
+    "conformal_interval",
+    "MatrixProfile",
+    "find_motifs",
+    "find_discords",
 ]
