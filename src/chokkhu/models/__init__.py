@@ -282,6 +282,17 @@ from .causal import (
     uplift_at_k,
 )
 
+from .survival import (
+    KaplanMeierFitter,
+    NelsonAalenFitter,
+    logrank_test,
+    CoxPHRegression,
+    DeepSurv,
+    concordance_index,
+    brier_score_loss,
+    integrated_brier_score,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -522,4 +533,13 @@ __all__ = [
     "qini_score",
     "cumulative_gain_curve",
     "uplift_at_k",
+    # Survival Analysis & Reliability
+    "KaplanMeierFitter",
+    "NelsonAalenFitter",
+    "logrank_test",
+    "CoxPHRegression",
+    "DeepSurv",
+    "concordance_index",
+    "brier_score_loss",
+    "integrated_brier_score",
 ]
