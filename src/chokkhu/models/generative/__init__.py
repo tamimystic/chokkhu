@@ -1,39 +1,39 @@
 """Generative AI, Autoencoders, Diffusion Models, and GANs for Chokkhu."""
 
 from __future__ import annotations
+
 from .autoencoders import (
     VAE,
     VQVAE,
     VectorQuantizer,
 )
-
 from .diffusion import (
     DDPM,
-    SinusoidalTimeEmbedding,
     DenoisingMLP,
+    SinusoidalTimeEmbedding,
 )
-
-from .gan import (
-    Generator,
-    Discriminator,
-    DCGAN,
-    WGANGP,
-)
-
 from .flow_matching import (
-    VelocityMLP,
     FlowMatching,
     RectifiedFlow,
+    VelocityMLP,
 )
-
+from .gan import (
+    DCGAN,
+    WGANGP,
+    Discriminator,
+    Generator,
+)
+from .latent_diffusion import (
+    LatentCrossAttentionBlock,
+    LatentDiffusionModel,
+)
+from .lora import (
+    LoRAAdapter,
+    LoRALinear,
+)
 from .normalizing_flows import (
     AffineCouplingLayer,
     RealNVP,
-)
-
-from .lora import (
-    LoRALinear,
-    LoRAAdapter,
 )
 
 __all__ = [
@@ -45,6 +45,8 @@ __all__ = [
     "DDPM",
     "SinusoidalTimeEmbedding",
     "DenoisingMLP",
+    "LatentDiffusionModel",
+    "LatentCrossAttentionBlock",
     # GANs
     "Generator",
     "Discriminator",

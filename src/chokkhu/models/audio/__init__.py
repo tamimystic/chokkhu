@@ -29,6 +29,9 @@ from .architectures import (
     AST,
     AudioSpectrogramTransformer,
     Wav2Vec2,
+    Whisper,
+    WhisperEncoder,
+    WhisperDecoder,
 )
 
 __all__ = [
@@ -56,4 +59,7 @@ __all__ = [
     "AST",
     "AudioSpectrogramTransformer",
     "Wav2Vec2",
+    "Whisper",
+    "WhisperEncoder",
+    "WhisperDecoder",
 ]

@@ -1657,6 +1657,273 @@ print(f"Extracted Topological Feature Vector Shape: {topo_features.shape}")
 | `max_edge_length` | `float` | `inf` | Maximum filtration scale $\epsilon$ for simplex construction. |
 | `max_dimension` | `int` | `1` | Maximum homology dimension ($0$ for $H_0$, $1$ for $H_0$ and $H_1$). |
 
+---
+
+## 19. Advanced Frontier Architectures (Milestone 16)
+
+### 19.1 Hybrid Lexical-Dense Retrieval & Reciprocal Rank Fusion (`BM25Plus`, `OkapiBM25`, `HybridReranker`)
+
+```python
+import numpy as np
+from chokkhu.models.retrieval import BM25Plus, OkapiBM25, HybridReranker
+
+corpus = [
+    "quantum computing and machine learning algorithms",
+    "deep learning neural networks for computer vision",
+    "natural language processing with transformers and attention",
+    "quantum physics and quantum entanglement theory",
+]
+
+# 1. Okapi BM25 & BM25+ Sparse Retrieval
+bm25 = BM25Plus(k1=1.5, b=0.75, delta=1.0)
+bm25.fit(corpus)
+sparse_scores = bm25.get_scores("quantum computing")
+top_scores, top_indices = bm25.search("quantum computing", top_k=2)
+print(f"BM25+ Top Results: Indices={top_indices}, Scores={top_scores}")
+
+# 2. Hybrid Reranking (RRF & Convex Score Blending)
+dense_scores = np.array([0.92, 0.45, 0.68, 0.12])
+reranker = HybridReranker(rrf_k=60, alpha=0.6)
+blended_scores = reranker.blend_scores(dense_scores, sparse_scores, alpha=0.6)
+fused_rankings = reranker.reciprocal_rank_fusion([[0, 2, 1, 3], top_indices], top_k=2)
+print(f"Fused Hybrid Rankings (RRF): {fused_rankings}")
+```
+
+#### Parameter Breakdown: `BM25Plus` & `OkapiBM25`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `k1` | `float` | `1.5` | Term frequency saturation non-linear scaling parameter. |
+| `b` | `float` | `0.75` | Document length normalization penalty parameter ($0 \le b \le 1$). |
+| `delta` | `float` | `1.0` | Lower-bound tuning parameter in BM25+ to prevent excessive length penalties ($0.0$ for standard Okapi BM25). |
+
+#### Parameter Breakdown: `HybridReranker`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `rrf_k` | `int` | `60` | Constant dampening factor in Reciprocal Rank Fusion ($1 / (k + \text{rank})$). |
+| `alpha` | `float` | `0.5` | Convex combination weight for dense scores vs sparse lexical scores ($\alpha \cdot S_{\text{dense}} + (1 - \alpha) \cdot S_{\text{sparse}}$). |
+
+---
+
+### 19.2 Mechanistic Interpretability & Actionable Counterfactuals (`AttentionRollout`, `DirectLogitAttribution`, `WachterCounterfactualExplainer`, `TCAV`)
+
+```python
+import numpy as np
+from chokkhu.explainability import (
+    AttentionRollout,
+    DirectLogitAttribution,
+    WachterCounterfactualExplainer,
+    TCAV,
+)
+
+# 1. Mechanistic Attention Rollout across transformer layers
+rollout = AttentionRollout(discard_ratio=0.1, head_reduction="mean")
+layers_attn = [np.random.rand(4, 6, 6) for _ in range(3)]
+layers_attn = [a / a.sum(axis=-1, keepdims=True) for a in layers_attn]
+rollout_matrix = rollout.compute(layers_attn)
+print(f"Attention Rollout Matrix Shape: {rollout_matrix.shape}")
+
+# 2. Direct Logit Attribution (DLA) on residual streams
+unembedding = np.random.randn(16, 50)
+dla = DirectLogitAttribution(unembedding_matrix=unembedding)
+residual_hidden_states = np.random.randn(4, 16)
+layer_attributions = dla.attribute(residual_hidden_states, target_token_id=5)
+print(f"Layer-wise Logit Attributions for Token #5: {layer_attributions}")
+
+# 3. Wachter Optimization-Based Counterfactual Explainer
+def predict_fn(x: np.ndarray) -> np.ndarray:
+    return 1.0 / (1.0 + np.exp(-np.dot(x, np.array([1.5, 1.2]))))
+
+explainer = WachterCounterfactualExplainer(predict_fn=predict_fn, lr=0.1, max_iter=100)
+cf_summary = explainer.explain(np.array([-1.0, -0.5]), target_prediction=0.8)
+print(f"Discovered Counterfactual Input: {cf_summary['counterfactual']}, Distance={cf_summary['l2_distance']:.4f}")
+
+# 4. Testing with Concept Activation Vectors (TCAV)
+tcav = TCAV(seed=42)
+cav = tcav.compute_cav(np.random.randn(20, 16) + 2.0, np.random.randn(20, 16) - 2.0)
+tcav_result = tcav.compute_tcav_score(lambda a: np.dot(a, cav)[:, None], np.random.randn(10, 16))
+print(f"Quantitative Concept Sensitivity (TCAV Score): {tcav_result['tcav_score']:.4f}")
+```
+
+#### Parameter Breakdown: `AttentionRollout` & `DirectLogitAttribution`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `discard_ratio` | `float` | `0.0` | Fraction of lowest attention weights to zero out per layer ($0.0 \le r < 1.0$). |
+| `head_reduction` | `str` | `"mean"` | Aggregation strategy across attention heads (`"mean"`, `"max"`, or `"min"`). |
+| `unembedding_matrix` | `np.ndarray` | *Required* | Final output projection matrix $W_U$ mapping hidden state $D \to V$. |
+
+#### Parameter Breakdown: `WachterCounterfactualExplainer` & `TCAV`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `predict_fn` | `Callable` | *Optional* | Black-box predictor or scoring function $f(x)$. |
+| `lambda_1` | `float` | `0.01` | $L_1$ sparsity regularizer penalty weight. |
+| `lambda_2` | `float` | `0.05` | $L_2$ proximity regularizer penalty weight. |
+| `lr` | `float` | `0.05` | Learning rate for Adam perturbation optimizer. |
+| `max_iter` | `int` | `300` | Maximum inner gradient descent iterations. |
+| `tolerance` | `float` | `0.05` | Target outcome convergence tolerance threshold. |
+| `seed` | `int` | `42` | Random seed for concept activation separation. |
+
+---
+
+### 19.3 Dense & Promptable Computer Vision (`DeepLabV3Plus`, `SegmentAnythingModel`)
+
+```python
+import numpy as np
+from chokkhu.models.vision.architectures import DeepLabV3Plus, SegmentAnythingModel
+
+# 1. DeepLabV3+ with Atrous Spatial Pyramid Pooling (ASPP)
+deeplab = DeepLabV3Plus(
+    in_channels=3,
+    num_classes=3,
+    backbone_channels=8,
+    aspp_channels=8,
+    seed=42,
+)
+img_batch = np.random.randn(2, 3, 16, 16).astype(np.float32)
+logits = deeplab.forward(img_batch)
+masks = deeplab.predict(img_batch)
+print(f"DeepLabV3+ Segmentation Logits Shape: {logits.shape}, Predicted Mask Map: {masks.shape}")
+
+# 2. Segment Anything Model (SAM) Promptable Mask Decoder
+sam = SegmentAnythingModel(embed_dim=16, num_heads=2, num_mask_tokens=3, seed=42)
+img_embeddings = np.random.randn(1, 16, 8, 8).astype(np.float32)
+point_coords = np.array([[[2.0, 3.0], [5.0, 6.0]]], dtype=np.float32)
+point_labels = np.array([[1, 0]], dtype=np.int32)
+pred_masks, iou_scores = sam.forward(img_embeddings, points=point_coords, labels=point_labels)
+print(f"SAM Decoded Masks Shape: {pred_masks.shape}, Predicted IoU Quality: {iou_scores}")
+```
+
+#### Parameter Breakdown: `DeepLabV3Plus`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_channels` | `int` | `3` | Number of image input color channels (e.g. RGB=3). |
+| `num_classes` | `int` | `2` | Number of target semantic segmentation classes. |
+| `backbone_channels` | `int` | `32` | Number of feature filters in convolutional stem. |
+| `aspp_channels` | `int` | `32` | Channel width for dilated ASPP pyramid branches. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+#### Parameter Breakdown: `SegmentAnythingModel`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `embed_dim` | `int` | `64` | Transformer embedding dimensionality $D$. |
+| `num_heads` | `int` | `4` | Number of multi-head two-way attention heads. |
+| `num_mask_tokens` | `int` | `3` | Number of multi-scale promptable mask hypotheses generated. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+---
+
+### 19.4 Contrastive Language-Audio Pretraining (`CLAP`)
+
+```python
+import numpy as np
+from chokkhu.models.multimodal import CLAP
+
+clap = CLAP(embed_dim=16, n_mels=16, vocab_size=50, init_temperature=0.07, seed=42)
+
+# Paired audio spectrograms (B, n_mels, time_steps) and text token sequences (B, seq_len)
+audio_spectrograms = np.random.randn(2, 16, 32).astype(np.float32)
+text_tokens = np.random.randint(0, 50, size=(2, 8))
+
+# Joint multimodal forward pass & contrastive loss
+audio_emb, text_emb, loss = clap.forward(audio_spectrograms, text_tokens)
+similarity_matrix = clap.predict_similarity(audio_spectrograms, text_tokens)
+print(f"CLAP Multimodal Loss: {loss:.4f}, Zero-Shot Audio-Text Cosine Similarity:\n{similarity_matrix}")
+```
+
+#### Parameter Breakdown: `CLAP`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `embed_dim` | `int` | `64` | Joint multimodal shared latent space dimension. |
+| `n_mels` | `int` | `64` | Number of mel-spectrogram frequency filterbank bins. |
+| `vocab_size` | `int` | `500` | Text tokenizer vocabulary size. |
+| `init_temperature` | `float` | `0.07` | Learnable InfoNCE contrastive temperature scale $\tau$. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+---
+
+### 19.5 Speech Recognition & Autoregressive Decoding (`Whisper`)
+
+```python
+import numpy as np
+from chokkhu.models.audio.architectures import Whisper
+
+whisper = Whisper(
+    n_mels=16,
+    vocab_size=25,
+    d_model=16,
+    n_heads=2,
+    n_encoder_layers=1,
+    n_decoder_layers=1,
+    seed=42,
+)
+
+# Audio mel-spectrogram and target token sequences
+mel_input = np.random.randn(2, 16, 32).astype(np.float32)
+target_tokens = np.array([[1, 5, 2], [1, 7, 2]], dtype=np.int32)
+
+# 1. Forward teacher-forced cross-entropy logits
+logits = whisper.forward(mel_input, target_tokens)
+print(f"Whisper Logits Shape: {logits.shape}")
+
+# 2. Autoregressive Speech Transcription Generation
+transcribed_tokens = whisper.generate(mel_input, max_len=4, prompt_tokens=[1])
+print(f"Generated Transcription Sequence: {transcribed_tokens}")
+```
+
+#### Parameter Breakdown: `Whisper`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_mels` | `int` | `80` | Number of mel-frequency channels in input audio spectrogram. |
+| `vocab_size` | `int` | `500` | Vocabulary size for speech tokens and special symbols. |
+| `d_model` | `int` | `64` | Transformer hidden dimension $D$. |
+| `n_heads` | `int` | `4` | Number of parallel attention heads. |
+| `n_encoder_layers` | `int` | `2` | Number of audio transformer encoder blocks. |
+| `n_decoder_layers` | `int` | `2` | Number of causal cross-attention decoder blocks. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+---
+
+### 19.6 Latent Diffusion & Cross-Attention Conditioning (`LatentDiffusionModel`)
+
+```python
+import numpy as np
+from chokkhu.models.generative import LatentDiffusionModel
+
+ldm = LatentDiffusionModel(
+    latent_dim=8,
+    context_dim=8,
+    num_timesteps=50,
+    beta_start=0.0001,
+    beta_end=0.02,
+    num_heads=2,
+    seed=42,
+)
+
+# Clean latent state z_0 and conditioning context vector
+z_0 = np.random.randn(2, 8).astype(np.float32)
+timesteps = np.array([5, 20], dtype=np.int32)
+
+# 1. Forward diffusion: add calibrated Gaussian noise at timestep t
+z_t, injected_noise = ldm.q_sample(z_0, timesteps)
+
+# 2. Reverse noise prediction conditioned on cross-attention context
+predicted_noise = ldm.predict_noise(z_t, timesteps, context=z_0)
+
+# 3. Deterministic DDIM fast generation sampling from pure Gaussian noise
+generated_latents = ldm.sample(shape=(2, 8), context=z_0, n_steps=5)
+print(f"Generated Latent Representations Shape: {generated_latents.shape}")
+```
+
+#### Parameter Breakdown: `LatentDiffusionModel`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `latent_dim` | `int` | `32` | Dimension of compressed VAE latent state $z$. |
+| `context_dim` | `int` | `64` | Dimension of conditioning prompt/text representations. |
+| `num_timesteps` | `int` | `1000` | Total number of discrete forward diffusion noise steps $T$. |
+| `beta_start` | `float` | `1e-4` | Initial variance schedule value $\beta_1$. |
+| `beta_end` | `float` | `0.02` | Terminal variance schedule value $\beta_T$. |
+| `num_heads` | `int` | `4` | Number of heads in cross-attention conditioning block. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

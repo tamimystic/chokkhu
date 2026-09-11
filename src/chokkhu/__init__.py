@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean
@@ -48,7 +48,12 @@ from .models import (
     RealNVP,
     LoRALinear,
     LoRAAdapter,
+    LatentDiffusionModel,
+    LatentCrossAttentionBlock,
     Wav2Vec2,
+    Whisper,
+    WhisperEncoder,
+    WhisperDecoder,
     AudioSpectrogramTransformer,
     AST,
     ConformerConvModule,
@@ -142,6 +147,8 @@ from .models import (
     SwinT,
     DeiT,
     DeiTTiny,
+    DeepLabV3Plus,
+    SegmentAnythingModel,
     UNet,
     VGG11,
     VGG13,
@@ -215,6 +222,10 @@ from .explainability import (
     IntegratedGradients,
     SmoothGrad,
     DeepLIFT,
+    AttentionRollout,
+    DirectLogitAttribution,
+    WachterCounterfactualExplainer,
+    TCAV,
 )
 
 from .pipeline import PipelineResult, TransformationState, pipeline
@@ -315,6 +326,9 @@ from .models.retrieval import (
     MinHashLSH,
     DenseRetriever,
     reciprocal_rank_fusion,
+    BM25Plus,
+    OkapiBM25,
+    HybridReranker,
 )
 
 from .models.recommendation import (
@@ -372,6 +386,9 @@ from .models.multimodal import (
     LLaVALinearProjector,
     LLaVAMLPProjector,
     PerceiverResampler,
+    CLAP,
+    CLAPAudioEncoder,
+    CLAPTextEncoder,
 )
 
 from .models.sciml import (
@@ -485,7 +502,12 @@ __all__ = [
     "RealNVP",
     "LoRALinear",
     "LoRAAdapter",
+    "LatentDiffusionModel",
+    "LatentCrossAttentionBlock",
     "Wav2Vec2",
+    "Whisper",
+    "WhisperEncoder",
+    "WhisperDecoder",
     "AudioSpectrogramTransformer",
     "AST",
     "ConformerConvModule",
@@ -544,6 +566,10 @@ __all__ = [
     "IntegratedGradients",
     "SmoothGrad",
     "DeepLIFT",
+    "AttentionRollout",
+    "DirectLogitAttribution",
+    "WachterCounterfactualExplainer",
+    "TCAV",
     "ExplanationResult",
     "pipeline",
     "PipelineResult",
@@ -615,6 +641,8 @@ __all__ = [
     "UNet",
     "FCN",
     "FCN8s",
+    "DeepLabV3Plus",
+    "SegmentAnythingModel",
     "VisionTransformer",
     "ViT",
     "ViTTiny",
@@ -728,6 +756,9 @@ __all__ = [
     "MinHashLSH",
     "DenseRetriever",
     "reciprocal_rank_fusion",
+    "BM25Plus",
+    "OkapiBM25",
+    "HybridReranker",
     # Recommendation Systems
     "SVDRecommender",
     "SVDPlusPlus",
@@ -769,7 +800,7 @@ __all__ = [
     "concordance_index",
     "brier_score_loss",
     "integrated_brier_score",
-    # Multi-Modal Vision-Language
+    # Multi-Modal Vision-Language & Audio-Language
     "CLIP",
     "CLIPVisionEncoder",
     "CLIPTextEncoder",
@@ -777,6 +808,9 @@ __all__ = [
     "LLaVALinearProjector",
     "LLaVAMLPProjector",
     "PerceiverResampler",
+    "CLAP",
+    "CLAPAudioEncoder",
+    "CLAPTextEncoder",
     # Scientific Machine Learning & PINNs
     "PINN",
     "BurgersPINN",

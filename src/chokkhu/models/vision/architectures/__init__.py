@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from .swin import SwinBase, SwinSmall, SwinT, SwinTransformer
-from .deit import DeiT, DeiTBase, DeiTSmall, DeiTTiny
-from .lenet import LeNet5
 from .alexnet import AlexNet, ZFNet
-from .vgg import VGG11, VGG13, VGG16, VGG19
+from .convnext import ConvNeXt, ConvNeXtBlock, ConvNeXtTiny
+from .deeplab import ASPPModule, DeepLabV3Plus
+from .deit import DeiT, DeiTBase, DeiTSmall, DeiTTiny
+from .densenet import DenseBlock, DenseNet121, DenseNet169, DenseNet201, TransitionBlock
+from .efficientnet import EfficientNetB0, MBConv
+from .fcn import FCN, FCN8s
 from .inception import GoogLeNet, InceptionModule, InceptionV1, InceptionV3
+from .lenet import LeNet5
+from .mobilenet import InvertedResidual, MobileNetV1, MobileNetV2, MobileNetV3
 from .resnet import (
     BottleneckResidualBlock,
     ResidualBlock,
@@ -16,14 +20,12 @@ from .resnet import (
     ResNet152,
 )
 from .resnext import ResNeXt50, ResNeXt101
-from .densenet import DenseBlock, DenseNet121, DenseNet169, DenseNet201, TransitionBlock
-from .squeezenet import FireModule, SqueezeNet
-from .mobilenet import InvertedResidual, MobileNetV1, MobileNetV2, MobileNetV3
+from .sam import SAMTwoWayAttentionBlock, SegmentAnythingModel
 from .shufflenet import ChannelShuffle, ShuffleNetV1, ShuffleNetV2
-from .efficientnet import EfficientNetB0, MBConv
-from .convnext import ConvNeXt, ConvNeXtBlock, ConvNeXtTiny
+from .squeezenet import FireModule, SqueezeNet
+from .swin import SwinBase, SwinSmall, SwinT, SwinTransformer
 from .unet import UNet
-from .fcn import FCN, FCN8s
+from .vgg import VGG11, VGG13, VGG16, VGG19
 from .vit import PatchEmbedding, VisionTransformer, ViT, ViTBase, ViTTiny
 
 __all__ = [
@@ -69,6 +71,10 @@ __all__ = [
     "UNet",
     "FCN",
     "FCN8s",
+    "DeepLabV3Plus",
+    "ASPPModule",
+    "SegmentAnythingModel",
+    "SAMTwoWayAttentionBlock",
     "PatchEmbedding",
     "VisionTransformer",
     "ViT",
