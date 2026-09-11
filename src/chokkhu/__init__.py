@@ -1,4 +1,10 @@
 from __future__ import annotations
+from .privacy import (
+    SISARetraining,
+    FisherScrubbing,
+    SCRUB,
+    NullspaceConceptScrubbing,
+)
 from .models.merging import (
     TIESMerging,
     DARE,
@@ -1167,4 +1173,8 @@ __all__ = [
     "SLERP",
     "RegMean",
     "FrankWolfeEnsemble",
+    "SISARetraining",
+    "FisherScrubbing",
+    "SCRUB",
+    "NullspaceConceptScrubbing",
 ]
