@@ -15,6 +15,10 @@ from chokkhu.models.causal.potential_outcomes import (
 )
 from chokkhu.models.causal.doubly_robust import DoublyRobustLearner
 from chokkhu.models.causal.meta_learners import SLearner, TLearner, XLearner
+from chokkhu.models.causal.discovery import (
+    NOTEARSCausalDiscovery,
+    PCAlgorithm,
+)
 from chokkhu.models.causal.uplift import (
     ClassTransformationUplift,
     TwoModelUplift,
@@ -38,4 +42,6 @@ __all__ = [
     "qini_score",
     "cumulative_gain_curve",
     "uplift_at_k",
+    "NOTEARSCausalDiscovery",
+    "PCAlgorithm",
 ]

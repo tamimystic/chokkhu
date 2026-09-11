@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -45,6 +45,7 @@ from .models import (
     CycleGAN,
     CycleGANGenerator,
     PatchGANDiscriminator,
+    DiscreteTextDiffusion,
     VectorQuantizer,
     VQVAE,
     VAE,
@@ -373,6 +374,8 @@ from .models.causal import (
     SLearner,
     TLearner,
     XLearner,
+    NOTEARSCausalDiscovery,
+    PCAlgorithm,
     TwoModelUplift,
     ClassTransformationUplift,
     qini_curve,
@@ -407,6 +410,7 @@ from .models.multimodal import (
 
 from .models.sciml import (
     PINN,
+    DifferentiableParticleFluid,
     BurgersPINN,
     HeatPINN,
     WavePINN,
@@ -532,6 +536,7 @@ from .models.robotics import (
     DiffusionPolicy,
     RecurrentWorldModel,
     MPPITrajectoryOptimizer,
+    RobotArmKinematics,
 )
 from .models.marl import (
     QMIX,
@@ -552,6 +557,15 @@ from .hdc import (
     HyperdimensionalVector,
     HDCClassifier,
 )
+from .safety import (
+    StatisticalTextWatermark,
+    RefusalDirectionProbe,
+)
+from .geometry import (
+    PoincareBallEmbedding,
+    LorentzManifold,
+)
+
 
 __all__ = [
     "Discriminator",
@@ -1004,4 +1018,13 @@ __all__ = [
     "TransE",
     "HyperdimensionalVector",
     "HDCClassifier",
+    "DiscreteTextDiffusion",
+    "RobotArmKinematics",
+    "DifferentiableParticleFluid",
+    "StatisticalTextWatermark",
+    "RefusalDirectionProbe",
+    "NOTEARSCausalDiscovery",
+    "PCAlgorithm",
+    "PoincareBallEmbedding",
+    "LorentzManifold",
 ]

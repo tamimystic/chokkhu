@@ -3,7 +3,7 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as f:
     long_description=f.read()
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 REPO_NAME="chokkhu"
 AUTHOR_USER_NAME="tamimystic"
@@ -20,8 +20,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url=f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}",
     project_urls={
-        "Bug Tracker": f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}/issues",
+        "Homepage": f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}",
+        "Documentation": f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}#readme",
         "Source Code": f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}",
+        "Bug Tracker": f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}/issues",
+        "Release Notes": f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}/releases",
     },
     classifiers=[
         "Programming Language :: Python :: 3",

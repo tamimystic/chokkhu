@@ -15,6 +15,7 @@ from .pinn import (
 )
 from .symbolic_regression import SymbolicRegressor
 from .neural_ode import NeuralODE
+from .fluid import DifferentiableParticleFluid
 
 __all__ = [
     "PINN",
@@ -24,4 +25,5 @@ __all__ = [
     "HarmonicOscillatorPINN",
     "SymbolicRegressor",
     "NeuralODE",
+    "DifferentiableParticleFluid",
 ]

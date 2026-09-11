@@ -40,7 +40,12 @@
 19. [Sovereign Explainable AI (XAI)](#16-sovereign-explainable-ai-xai)
 20. [Next-Gen Generative AI, LoRA, Conformal & Stacking (Milestone 14)](#17-next-gen-generative-ai-lora-conformal--stacking-milestone-14)
 21. [Privacy, Quantum ML, Geo-Spatial, NAS & TDA (Milestone 15)](#18-privacy-quantum-ml-geo-spatial-nas--tda-milestone-15)
-22. [License & Citation](#license--citation)
+22. [Spiking Neural Networks, Equilibrium Models & GFlowNets (Milestone 16)](#19-advanced-frontier-architectures-milestone-16)
+23. [Production Generative AI, Audio Codecs & Genetic AutoML (Milestone 17)](#20-sovereign-production-generative-ai-audio-codecs-speculative-llms--genetic-automl)
+24. [Edge Serving, State-Space Models & Optimal Transport (Milestone 18)](#21-sovereign-edge-to-cloud-serving-hybrid-state-space-continual-learning--optimal-transport-milestone-18)
+25. [Robotics, World Models, Multi-Agent RL, Genomic AI & HDC (Milestone 19)](#22-robotics-world-models-multi-agent-rl-genomic-ai--hyperdimensional-computing-milestone-19)
+26. [The Grand Frontier: Discrete Diffusion, Physics, Safety, Causal DAGs & Hyperbolic (Milestone 20)](#23-the-grand-frontier-discrete-diffusion-differentiable-physics-llm-safety-causal-dags--hyperbolic-geometry-milestone-20)
+27. [License & Citation](#license--citation)
 
 ---
 
@@ -2705,6 +2710,187 @@ print(f"HDC Associative Memory Training Accuracy: {acc:.1%}")
 | `dim` | `int` | `5000` | Dimensionality of hypervector cognitive space ($D$). |
 | `num_levels` | `int` | `32` | Number of continuous feature quantization level vectors. |
 | `seed` | `int` | `42` | Random seed for orthogonal basis vectors. |
+
+---
+
+## 23. The Grand Frontier: Discrete Diffusion, Differentiable Physics, LLM Safety, Causal DAGs & Hyperbolic Geometry (Milestone 20)
+
+### 23.1 Discrete Text Diffusion Models (`DiscreteTextDiffusion`)
+
+```python
+import numpy as np
+from chokkhu import DiscreteTextDiffusion
+
+# 1. Initialize Discrete Absorbing-State Categorical Diffusion Model
+model = DiscreteTextDiffusion(
+    vocab_size=500,
+    max_seq_len=32,
+    num_timesteps=20,
+    d_model=64,
+    num_heads=4,
+    num_layers=2,
+    schedule="linear",
+    seed=42
+)
+
+# 2. Forward Categorical Token Masking & ELBO Loss Calculation
+x_clean = np.random.randint(0, 500, size=(2, 16))
+timesteps = np.array([5, 12])
+x_corrupted = model.q_sample(x_clean, timesteps)
+loss = model.compute_loss(x_clean, timesteps)
+print(f"Corrupted Tokens Shape: {x_corrupted.shape}, Variational Loss: {loss:.4f}")
+
+# 3. Ancestral Iterative Reverse Sampling from All [MASK] to Clean Text
+generated_tokens = model.sample(batch_size=2, seq_len=12, num_steps=10, temperature=0.8)
+print(f"Generated Token Sequences: {generated_tokens.shape}")
+```
+
+#### Parameter Breakdown: `DiscreteTextDiffusion`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `vocab_size` | `int` | `1000` | Total discrete vocabulary size. |
+| `max_seq_len` | `int` | `64` | Maximum allowable sequence token length. |
+| `num_timesteps` | `int` | `50` | Total diffusion Markov chain step count ($T$). |
+| `mask_token_id` | `Optional[int]` | `None` | Absorbing mask token ID (defaults to `vocab_size`). |
+| `d_model` | `int` | `64` | Bidirectional transformer hidden dimension. |
+| `num_heads` | `int` | `4` | Number of self-attention heads. |
+| `num_layers` | `int` | `2` | Number of transformer encoder layers. |
+| `schedule` | `str` | `"linear"` | Noise transition schedule: `"linear"` or `"cosine"`. |
+
+---
+
+### 23.2 Differentiable Physics & Robotics Kinematics (`RobotArmKinematics`, `DifferentiableParticleFluid`)
+
+```python
+import numpy as np
+from chokkhu import RobotArmKinematics, DifferentiableParticleFluid
+
+# 1. 2-Link Planar Robot Arm Forward & Damped Least Squares (DLS) Inverse Kinematics
+arm = RobotArmKinematics.planar_2d(link_lengths=[1.0, 1.0])
+target_pos = np.array([1.0, 1.0, 0.0])
+solved_angles, converged, iters = arm.inverse_kinematics(target_position=target_pos, tolerance=1e-3)
+actual_pos = arm.get_end_effector_position(solved_angles)
+print(f"IK Solved Angles: {solved_angles}, Target: {target_pos[:2]}, Reached: {actual_pos[:2]}")
+
+# 2. Smoothed Particle Hydrodynamics (SPH) Differentiable Fluid Dynamics
+fluid = DifferentiableParticleFluid(
+    num_particles=30, dim=2, rest_density=1000.0, stiffness=150.0, viscosity=0.05, dt=0.005, seed=42
+)
+pos_init = np.random.uniform(-0.4, 0.4, size=(30, 2))
+pos_hist, vel_hist = fluid.simulate(pos_init, num_steps=20)
+print(f"Fluid Particle Trajectory History: {pos_hist.shape}")
+```
+
+#### Parameter Breakdown: `RobotArmKinematics` & `DifferentiableParticleFluid`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `dh_params` | `np.ndarray` | *Required* | Denavit-Hartenberg parameter table `(N, 4)`: `[a, alpha, d, theta_offset]`. |
+| `joint_limits` | `Optional[List[Tuple[float, float]]]` | `None` | Per-joint rotation angle bounds $[-\pi, \pi]$. |
+| `num_particles` | `int` | `100` | Total simulated fluid particle count. |
+| `rest_density` | `float` | `1000.0` | Equilibrium rest mass density $\rho_0$ ($\text{kg/m}^3$). |
+| `stiffness` | `float` | `200.0` | Tait equation of state gas stiffness constant $k$. |
+| `viscosity` | `float` | `0.1` | Dynamic viscosity coefficient $\mu$. |
+
+---
+
+### 23.3 AI Safety & LLM Watermarking (`StatisticalTextWatermark`, `RefusalDirectionProbe`)
+
+```python
+import numpy as np
+from chokkhu import StatisticalTextWatermark, RefusalDirectionProbe
+
+# 1. Statistical Token Watermarking & Z-Score Hypothesis Testing
+watermark = StatisticalTextWatermark(vocab_size=1000, gamma=0.5, delta=3.0, hash_key=15485863)
+prefix = np.array([42, 108])
+logits = np.random.randn(1000)
+biased_logits = watermark.apply_watermark_bias(logits, prefix)
+det_result = watermark.detect(np.array([42, 108, 205, 312, 401]))
+print(f"Watermark Detection Z-Score: {det_result['z_score']:.2f}, Is Watermarked: {det_result['is_watermarked']}")
+
+# 2. Refusal Direction Probe & Representation Steering
+probe = RefusalDirectionProbe(dim=64)
+harmful_acts = np.random.randn(20, 64) + 1.5
+harmless_acts = np.random.randn(20, 64) - 1.5
+probe.fit(harmful_acts, harmless_acts)
+steered_acts = probe.steer(harmless_acts[:2], alpha=1.0)
+ablated_acts = probe.ablate(harmful_acts[:2])
+print(f"Refusal Intent Score (Harmful): {probe.score_refusal_intent(harmful_acts[:2])}")
+```
+
+#### Parameter Breakdown: `StatisticalTextWatermark` & `RefusalDirectionProbe`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `vocab_size` | `int` | `1000` | LLM token vocabulary size. |
+| `gamma` | `float` | `0.5` | Fraction of vocabulary partitioned into the green list ($\gamma \in (0, 1)$). |
+| `delta` | `float` | `2.0` | Logit perturbation bias injected into green tokens ($\delta > 0$). |
+| `hash_key` | `int` | `15485863` | Cryptographic prime seed for deterministic pseudo-random hashing. |
+| `dim` | `int` | `64` | Residual stream activation embedding dimensionality. |
+
+---
+
+### 23.4 Causal DAG Discovery (`NOTEARSCausalDiscovery`, `PCAlgorithm`)
+
+```python
+import numpy as np
+from chokkhu import NOTEARSCausalDiscovery, PCAlgorithm
+
+# 1. Continuous Structure Learning with Smooth Matrix Exponential Acyclicity (NOTEARS)
+rng = np.random.RandomState(42)
+n_samples = 300
+x0 = rng.randn(n_samples)
+x1 = 0.7 * x0 + 0.3 * rng.randn(n_samples)
+x2 = 0.8 * x1 + 0.2 * rng.randn(n_samples)
+X_causal = np.column_stack([x0, x1, x2])
+
+notears = NOTEARSCausalDiscovery(lambda1=0.05, max_iter=25, w_threshold=0.2)
+notears.fit(X_causal)
+print(f"NOTEARS Learned DAG Matrix:\n{notears.adjacency_matrix_}\nIs Strict DAG: {notears.is_dag()}")
+
+# 2. Constraint-Based Conditional Independence Discovery (PC Algorithm)
+pc = PCAlgorithm(alpha=0.05)
+pc.fit(X_causal)
+print(f"PC Algorithm Discovered CPDAG Edges: {pc.get_edges()}")
+```
+
+#### Parameter Breakdown: `NOTEARSCausalDiscovery` & `PCAlgorithm`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `lambda1` | `float` | `0.1` | $L_1$ sparsity penalty coefficient on DAG adjacency weights. |
+| `max_iter` | `int` | `100` | Maximum Augmented Lagrangian outer optimization iterations. |
+| `h_tol` | `float` | `1e-8` | Matrix exponential acyclicity trace tolerance $h(W) = \text{tr}(e^{W \odot W}) - d$. |
+| `w_threshold` | `float` | `0.3` | Threshold for pruning spurious small edges. |
+| `alpha` | `float` | `0.05` | Statistical significance level for partial correlation Fisher $z$-tests. |
+
+---
+
+### 23.5 Hyperbolic Manifold Geometry (`PoincareBallEmbedding`, `LorentzManifold`)
+
+```python
+import numpy as np
+from chokkhu import PoincareBallEmbedding, LorentzManifold
+
+# 1. Poincaré Ball Model & Riemannian Graph Representation Learning
+poincare = PoincareBallEmbedding(dim=3, c=1.0, seed=42)
+u = np.array([0.2, 0.1, -0.3])
+v = np.array([-0.1, 0.4, 0.2])
+geo_dist = poincare.distance(u, v)
+mob_sum = poincare.mobius_add(u, v)
+print(f"Poincare Geodesic Distance: {geo_dist:.4f}, Mobius Addition Norm: {np.linalg.norm(mob_sum):.4f}")
+
+# 2. Lorentz Hyperboloid Model & Isomorphic Diffeomorphisms
+lorentz = LorentzManifold(dim=2, c=1.0)
+x_poincare = np.array([0.3, -0.2])
+x_lorentz = lorentz.poincare_to_lorentz(x_poincare)
+minkowski_norm = lorentz.minkowski_dot(x_lorentz, x_lorentz)
+print(f"Lorentz Coordinates: {x_lorentz}, Minkowski Constraint <x, x>_L: {minkowski_norm:.4f}")
+```
+
+#### Parameter Breakdown: `PoincareBallEmbedding` & `LorentzManifold`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `dim` | `int` | `2` | Hyperbolic manifold spatial embedding dimension $d$. |
+| `c` | `float` | `1.0` | Negative sectional curvature parameter ($\kappa = -c$). |
+| `eps` | `float` | `1e-5` | Boundary safety margin for numerical ball projection $\|x\| \le 1/\sqrt{c} - \epsilon$. |
 
 ---
 

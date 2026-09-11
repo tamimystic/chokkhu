@@ -26,6 +26,7 @@ from .generative import (
     CycleGAN,
     CycleGANGenerator,
     PatchGANDiscriminator,
+    DiscreteTextDiffusion,
 )
 from .audio import (
     stft,
@@ -371,6 +372,8 @@ from .recommendation import (
 )
 
 from .causal import (
+    NOTEARSCausalDiscovery,
+    PCAlgorithm,
     PropensityModel,
     PropensityScoreMatching,
     InverseProbabilityWeighting,
@@ -411,6 +414,7 @@ from .multimodal import (
 )
 
 from .sciml import (
+    DifferentiableParticleFluid,
     PINN,
     BurgersPINN,
     HeatPINN,

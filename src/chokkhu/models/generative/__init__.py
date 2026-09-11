@@ -45,6 +45,9 @@ from .normalizing_flows import (
     AffineCouplingLayer,
     RealNVP,
 )
+from .discrete_diffusion import (
+    DiscreteTextDiffusion,
+)
 
 __all__ = [
     # Autoencoders
@@ -78,4 +81,6 @@ __all__ = [
     # LoRA
     "LoRALinear",
     "LoRAAdapter",
+    # Discrete Diffusion
+    "DiscreteTextDiffusion",
 ]
