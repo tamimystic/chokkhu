@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.5.4"
+__version__ = "1.5.5"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -391,6 +391,8 @@ from .models.causal import (
     qini_score,
     cumulative_gain_curve,
     uplift_at_k,
+    TwoStageLeastSquares,
+    InstrumentalGMM,
 )
 
 from .models.survival import (
@@ -426,6 +428,8 @@ from .models.sciml import (
     HarmonicOscillatorPINN,
     SymbolicRegressor,
     NeuralODE,
+    SpectralConv2d,
+    FourierNeuralOperator2D,
 )
 
 from .fairness import (
@@ -508,6 +512,7 @@ from .tda import (
     VietorisRipsComplex,
     PersistenceDiagram,
     PersistenceLandscape,
+    PersistenceImage,
     bottleneck_distance,
 )
 
@@ -588,6 +593,8 @@ from .geometry import (
 from .ranking import (
     NeuralSort,
     DifferentiableRankingLoss,
+    LambdaMART,
+    ListNet,
 )
 from .explainability import (
     ActivationPatchingEngine,
@@ -611,6 +618,8 @@ from .information import (
 from .models.energy import (
     EnergyBasedModel,
     SlicedScoreMatching,
+    ScoreMatchingEBM,
+    AnnealedLangevinDynamics,
 )
 from .models.trees import (
     M5ModelTree,
@@ -1117,4 +1126,13 @@ __all__ = [
     "GoalConditionedDQN",
     "ConformalizedQuantileRegression",
     "QuantileRegressor",
+    "SpectralConv2d",
+    "FourierNeuralOperator2D",
+    "TwoStageLeastSquares",
+    "InstrumentalGMM",
+    "LambdaMART",
+    "ListNet",
+    "ScoreMatchingEBM",
+    "AnnealedLangevinDynamics",
+    "PersistenceImage",
 ]

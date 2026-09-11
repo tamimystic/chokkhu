@@ -4,6 +4,7 @@ Pure NumPy implementations of:
 - PINN, BurgersPINN, HeatPINN, WavePINN, HarmonicOscillatorPINN
 - SymbolicRegressor: Sparse equation discovery (SINDy)
 - NeuralODE: Continuous-depth ordinary differential equation models
+- SpectralConv2d, FourierNeuralOperator2D: 2D Fourier Neural Operator for PDEs
 """
 
 from .pinn import (
@@ -16,6 +17,7 @@ from .pinn import (
 from .symbolic_regression import SymbolicRegressor
 from .neural_ode import NeuralODE
 from .fluid import DifferentiableParticleFluid
+from .fno import SpectralConv2d, FourierNeuralOperator2D
 
 __all__ = [
     "PINN",
@@ -26,4 +28,6 @@ __all__ = [
     "SymbolicRegressor",
     "NeuralODE",
     "DifferentiableParticleFluid",
+    "SpectralConv2d",
+    "FourierNeuralOperator2D",
 ]

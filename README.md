@@ -3645,6 +3645,202 @@ print(f"CQR Empirical Coverage: {metrics['empirical_coverage']:.1%} (Target: {me
 | `max_iter` | `int` | `100` | Maximum iterations for quantile regression solvers. |
 
 
+
+
+---
+
+## 28. SciML Fourier Neural Operators, Instrumental Variables, Learning-to-Rank, Score Matching & TDA Vectorization (Milestone 25)
+
+### 28.1 Fourier Neural Operator for Parametric PDEs (`FourierNeuralOperator2D`, `SpectralConv2d`)
+
+Operator learning over infinite-dimensional function spaces mapping input parameter fields to PDE solutions across arbitrary grid resolutions (Li et al. ICLR 2021):
+$$v_{t+1}(x) = \text{GELU}\left( W v_t(x) + \mathcal{F}^{-1}\left( R \cdot \mathcal{F}(v_t) \right)(x) \right)$$
+
+```python
+import numpy as np
+from chokkhu import FourierNeuralOperator2D, SpectralConv2d
+
+# 1. 2D Spectral Convolution Layer
+conv = SpectralConv2d(in_channels=1, out_channels=16, modes1=8, modes2=8)
+x_grid = np.random.randn(2, 32, 32, 1).astype(np.float32)
+h_spectral = conv.forward(x_grid)
+print(f"Spectral Convolution Output Shape: {h_spectral.shape}")
+
+# 2. Fourier Neural Operator (FNO-2D) Pipeline
+fno = FourierNeuralOperator2D(
+    in_channels=1,
+    out_channels=1,
+    modes1=8,
+    modes2=8,
+    hidden_dim=16,
+    num_layers=2,
+    include_grid=True
+)
+u_solution = fno.forward(x_grid)
+print(f"FNO-2D Predicted PDE Solution Field: {u_solution.shape}")
+```
+
+#### Parameter Breakdown: `FourierNeuralOperator2D`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_channels` | `int` | `1` | Number of physical channels in input field. |
+| `out_channels` | `int` | `1` | Number of output channels in PDE solution field. |
+| `modes1` | `int` | `12` | Maximum retained low-frequency Fourier modes along axis 1. |
+| `modes2` | `int` | `12` | Maximum retained low-frequency Fourier modes along axis 2. |
+| `hidden_dim` | `int` | `32` | Latent channel dimension of lifted spectral representation. |
+| `num_layers` | `int` | `4` | Number of stacked Fourier spectral convolution blocks. |
+| `include_grid` | `bool` | `True` | Whether to concatenate normalized $(x, y) \in [0, 1]^2$ spatial grid. |
+
+---
+
+### 28.2 Instrumental Variables Regression: 2SLS & IV-GMM (`TwoStageLeastSquares`, `InstrumentalGMM`)
+
+Resolves endogeneity, omitted variable bias, and measurement errors in causal econometric modeling (Angrist & Imbens Nobel Prize 2021, Hansen 1982):
+$$\hat{\beta}_{\text{2SLS}} = (X^T P_Z X)^{-1} X^T P_Z Y, \quad P_Z = Z (Z^T Z)^{-1} Z^T$$
+
+```python
+import numpy as np
+from chokkhu import TwoStageLeastSquares, InstrumentalGMM
+
+# Simulated Endogenous Data with Confounder u
+z1, z2 = np.random.randn(200), np.random.randn(200)
+Z = np.column_stack([z1, z2]) # Valid exogenous instruments
+u = np.random.randn(200)       # Unobserved confounder
+x = 1.2 * z1 + 0.9 * z2 + 1.5 * u + np.random.randn(200) * 0.2 # Endogenous regressor
+y = 2.0 + 3.0 * x + 2.0 * u + np.random.randn(200) * 0.5       # True causal effect beta = 3.0
+
+# 1. Two-Stage Least Squares (2SLS) with Robust Standard Errors
+iv_model = TwoStageLeastSquares(fit_intercept=True, robust=True)
+iv_model.fit(x, y, Z)
+print(f"2SLS Causal Est: beta={iv_model.coef_[0]:.3f} (SE: {iv_model.se_[0]:.3f})")
+print(f"First-Stage F-Statistic: {iv_model.first_stage_f_stat_:.2f} | Sargan p-val: {iv_model.sargan_p_val_:.4f}")
+
+# 2. Generalized Method of Moments (IV-GMM) with Hansen's J-Test
+gmm_model = InstrumentalGMM(fit_intercept=True)
+gmm_model.fit(x, y, Z)
+print(f"GMM Causal Est: beta={gmm_model.coef_[0]:.3f} | Hansen J-stat: {gmm_model.j_stat_:.3f}")
+```
+
+#### Parameter Breakdown: `TwoStageLeastSquares` & `InstrumentalGMM`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `fit_intercept` | `bool` | `True` | Whether to include intercept in first and second stage models. |
+| `robust` | `bool` | `True` | Whether to compute White/Huber heteroskedasticity-robust covariance. |
+
+---
+
+### 28.3 Learning-to-Rank: LambdaMART & ListNet (`LambdaMART`, `ListNet`)
+
+Industry-standard gradient-boosted trees directly optimizing non-smooth listwise rank metrics ($\Delta\text{NDCG}@k$) and Plackett-Luce top-1 cross-entropy ranking (Burges 2010, Cao et al. 2007):
+$$\lambda_{ij} = \frac{-\sigma}{1 + e^{\sigma (s_i - s_j)}} |\Delta \text{NDCG}_{ij}|$$
+
+```python
+import numpy as np
+from chokkhu import LambdaMART, ListNet, ndcg_at_k
+
+# 4 Queries with 6 documents each
+query_ids = np.repeat(np.arange(4), 6)
+y_relevance = np.random.choice([0, 1, 2, 3], size=24)
+X_features = y_relevance[:, None] * 1.5 + np.random.randn(24, 4) * 0.5
+
+# 1. LambdaMART Tree Ensemble
+lmart = LambdaMART(n_estimators=15, learning_rate=0.1, max_depth=3, ndcg_k=6)
+lmart.fit(X_features, y_relevance, query_ids)
+pred_scores = lmart.predict(X_features)
+print(f"LambdaMART Predictions Shape: {pred_scores.shape}")
+
+# 2. ListNet Top-1 Cross-Entropy Ranking
+listnet = ListNet(lr=0.05, epochs=50)
+listnet.fit(X_features, y_relevance, query_ids)
+listnet_scores = listnet.predict(X_features)
+print(f"ListNet Predictions Shape: {listnet_scores.shape}")
+```
+
+#### Parameter Breakdown: `LambdaMART`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_estimators` | `int` | `20` | Number of boosting regression trees. |
+| `learning_rate` | `float` | `0.1` | Step size shrinkage parameter. |
+| `max_depth` | `int` | `3` | Maximum tree depth per weak learner. |
+| `sigma` | `float` | `1.0` | Sigmoid pairwise temperature. |
+| `ndcg_k` | `int` | `10` | Truncation rank $k$ for $\Delta\text{NDCG}@k$ calculations. |
+
+---
+
+### 28.4 Score-Based Energy Modeling & Annealed Langevin Dynamics (`ScoreMatchingEBM`, `AnnealedLangevinDynamics`)
+
+Directly models unnormalized distributions via score matching and generates synthetic samples across geometric noise schedules (Hyvärinen 2005, Song & Ermon NeurIPS 2019):
+$$\mathcal{L}_{\text{DSM}}(\theta) = \frac{1}{2} \mathbb{E}_{x, \tilde{x}} \left[ \left\| s_\theta(\tilde{x}) + \frac{\tilde{x} - x}{\sigma^2} \right\|_2^2 \right]$$
+
+```python
+import numpy as np
+from chokkhu import ScoreMatchingEBM, AnnealedLangevinDynamics
+
+# 2D Point Cloud Distribution
+X_points = np.random.randn(100, 2) * 0.5
+
+# 1. Train Score-Based EBM with Denoising Score Matching (DSM)
+ebm = ScoreMatchingEBM(input_dim=2, hidden_dim=32, method="dsm", sigma=0.1, lr=1e-2)
+ebm.fit(X_points, epochs=20, batch_size=25)
+
+# Evaluate score gradient at test point
+test_score = ebm.score(np.array([1.0, 1.0]))
+print(f"Score Vector at (1.0, 1.0): {test_score}")
+
+# 2. Annealed Langevin Dynamics Sampling
+sampler = AnnealedLangevinDynamics(ebm, n_steps_per_sigma=10, n_sigmas=5, step_lr=2e-5)
+gen_samples = sampler.sample(n_samples=8)
+print(f"Generated Synthetic Samples Shape: {gen_samples.shape}")
+```
+
+#### Parameter Breakdown: `ScoreMatchingEBM` & `AnnealedLangevinDynamics`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `input_dim` | `int` | *Required* | Dimensionality of input feature space. |
+| `method` | `str` | `"dsm"` | Training loss: `"dsm"` (Denoising) or `"ssm"` (Sliced). |
+| `sigma` | `float` | `0.1` | Noise level for Denoising Score Matching perturbation. |
+| `n_steps_per_sigma` | `int` | `20` | Number of Langevin MCMC steps per noise level. |
+| `n_sigmas` | `int` | `10` | Number of geometric noise scales. |
+
+---
+
+### 28.5 Topological Data Analysis Vectorization: Landscapes & Images (`PersistenceLandscape`, `PersistenceImage`)
+
+Transforms persistent homology birth-death diagrams into stable metric feature representations for machine learning pipelines (Bubenik 2015, Adams et al. JMLR 2017):
+$$\lambda_k(t) = k\text{-max}_{i=1}^n \max(0, \min(t - b_i, d_i - t)), \quad \rho(x, y) = \sum_i w(b_i, p_i) \mathcal{N}\left( (x, y); (b_i, p_i), \sigma^2 I \right)$$
+
+```python
+import numpy as np
+from chokkhu import PersistenceLandscape, PersistenceImage
+
+# Persistence Diagram with (birth, death) pairs
+diagram = np.array([
+    [0.1, 0.9],
+    [0.2, 0.7],
+    [0.3, 0.6],
+])
+
+# 1. Persistence Landscapes Functional Vectorizer
+pl = PersistenceLandscape(n_landscapes=3, n_bins=50, t_min=0.0, t_max=1.0)
+landscape_vector = pl.transform_single(diagram)
+print(f"Persistence Landscape Shape: {landscape_vector.shape} (3 layers x 50 bins)")
+
+# 2. Persistence Image 2D Density Surface
+pi = PersistenceImage(pixels=(20, 20), sigma=0.1, weight_power=1.0)
+img_surface = pi.transform_single(diagram)
+print(f"Persistence Image Pixel Grid: {img_surface.shape} (20 x 20)")
+```
+
+#### Parameter Breakdown: `PersistenceLandscape` & `PersistenceImage`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_landscapes` | `int` | `5` | Number of landscape layers ($k=1, \dots, K$). |
+| `n_bins` | `int` | `100` | Number of 1D discretization grid points. |
+| `pixels` | `tuple[int, int]` | `(20, 20)` | 2D resolution $(N_x, N_y)$ of the persistence image grid. |
+| `sigma` | `float` | `0.1` | Gaussian smoothing kernel standard deviation. |
+| `weight_power` | `float` | `1.0` | Persistence ramp weighting exponent $r$ for $w(b, p) = (p / p_{\max})^r$. |
+
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

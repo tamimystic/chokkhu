@@ -6,6 +6,7 @@ Sovereign pure NumPy implementations of:
 - Meta-Learners: SLearner, TLearner, XLearner
 - Uplift Modeling: TwoModelUplift, ClassTransformationUplift
 - Uplift Evaluation: qini_curve, qini_score, cumulative_gain_curve, uplift_at_k
+- Instrumental Variables: TwoStageLeastSquares (2SLS), InstrumentalGMM
 """
 
 from chokkhu.models.causal.potential_outcomes import (
@@ -27,6 +28,10 @@ from chokkhu.models.causal.uplift import (
     qini_score,
     uplift_at_k,
 )
+from chokkhu.models.causal.instrumental import (
+    TwoStageLeastSquares,
+    InstrumentalGMM,
+)
 
 __all__ = [
     "PropensityModel",
@@ -44,4 +49,6 @@ __all__ = [
     "uplift_at_k",
     "NOTEARSCausalDiscovery",
     "PCAlgorithm",
+    "TwoStageLeastSquares",
+    "InstrumentalGMM",
 ]

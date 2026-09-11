@@ -7,6 +7,8 @@ from .geometric import (
 from .energy import (
     EnergyBasedModel,
     SlicedScoreMatching,
+    ScoreMatchingEBM,
+    AnnealedLangevinDynamics,
 )
 from .trees import (
     M5ModelTree,
@@ -843,4 +845,6 @@ __all__ = [
     "UnscentedKalmanFilter",
     "HindsightExperienceReplay",
     "GoalConditionedDQN",
+    "ScoreMatchingEBM",
+    "AnnealedLangevinDynamics",
 ]
