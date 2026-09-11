@@ -1,4 +1,9 @@
 from __future__ import annotations
+from .explainability import (
+    TopKSAE,
+    JumpReLU,
+    ActivationPatching,
+)
 from .privacy import (
     SISARetraining,
     FisherScrubbing,
@@ -1177,4 +1182,7 @@ __all__ = [
     "FisherScrubbing",
     "SCRUB",
     "NullspaceConceptScrubbing",
+    "TopKSAE",
+    "JumpReLU",
+    "ActivationPatching",
 ]

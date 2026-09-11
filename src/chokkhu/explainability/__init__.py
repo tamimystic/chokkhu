@@ -4,7 +4,13 @@ from .counterfactuals import WachterCounterfactualExplainer
 from .circuits import ActivationPatchingEngine
 from .engine import ExplanationResult, explain
 from .importance import permutation_feature_importance
-from .mechanistic import AttentionRollout, DirectLogitAttribution
+from .mechanistic import (
+    AttentionRollout,
+    DirectLogitAttribution,
+    TopKSAE,
+    JumpReLU,
+    ActivationPatching,
+)
 from .neural import DeepLIFT, IntegratedGradients, SmoothGrad
 from .pdp import partial_dependence
 from .shap import kernel_shap
@@ -21,6 +27,9 @@ __all__ = [
     "DeepLIFT",
     "AttentionRollout",
     "DirectLogitAttribution",
+    "TopKSAE",
+    "JumpReLU",
+    "ActivationPatching",
     "WachterCounterfactualExplainer",
     "TCAV",
     "ActivationPatchingEngine",
