@@ -1241,6 +1241,120 @@ chokkhu/
 
 ---
 
+### 4.16 Model Merging, Weight Surgery & Task Arithmetic (`models/merging/`)
+- **TIES-Merging (Trimming, Electing Sign, Disjoint Merge)**:
+  Resolves parameter interference across multi-task fine-tuned checkpoints $\theta_1, \dots, \theta_M$ relative to base weights $\theta_{\text{base}}$:
+  $$\Delta \theta_m = \theta_m - \theta_{\text{base}}, \quad \hat{\Delta}_m = \text{Trim}(\Delta \theta_m, \text{top } k\%)$$
+  $$\text{Sign} = \text{sign}\left(\sum_{m=1}^M \hat{\Delta}_m\right), \quad \Delta \theta_{\text{merged}} = \frac{1}{M} \sum_{m=1}^M \hat{\Delta}_m \odot (\text{sign}(\hat{\Delta}_m) == \text{Sign})$$
+- **DARE (Drop And REscale)**:
+  Stochastic magnitude pruning with unbiased expectation preservation:
+  $$m \sim \text{Bernoulli}(1 - p), \quad \Delta \theta_{\text{DARE}} = \frac{m \odot \Delta \theta}{1 - p}$$
+- **SLERP (Spherical Linear Interpolation)**:
+  Non-linear geometric weight interpolation on hyperspherical manifold:
+  $$\theta(t) = \frac{\sin((1-t)\Omega)}{\sin \Omega}\theta_1 + \frac{\sin(t\Omega)}{\sin \Omega}\theta_2, \quad \cos \Omega = \frac{\langle \theta_1, \theta_2 \rangle}{\|\theta_1\|_2 \|\theta_2\|_2}$$
+- **Task Vectors & RegMean**:
+  Regression Mean optimal linear layer fusion minimizing reconstruction loss:
+  $$\arg\min_W \sum_{k=1}^K \|X_k W - X_k W_k\|_F^2 \implies W^* = \left(\sum_{k=1}^K X_k^\top X_k\right)^{-1} \sum_{k=1}^K X_k^\top X_k W_k$$
+
+### 4.17 Machine Unlearning & Representation Scrubbing (`privacy/unlearning.py`)
+- **SISA Exact Unlearning**:
+  Sharded, Isolated, Sliced, Aggregated retraining pipeline with deterministic state snapshotting across isolated dataset partitions.
+- **Influence Function Approximate Unlearning**:
+  Newton-step parameter removal using inverse Hessian-vector products:
+  $$\Delta \theta = - H_{\theta^*}^{-1} \nabla_\theta \mathcal{L}(z_{\text{forget}}; \theta^*), \quad H_{\theta^*} = \frac{1}{N}\sum_{i=1}^N \nabla_\theta^2 \mathcal{L}(z_i; \theta^*)$$
+- **Representation Degeneration & SCRUB**:
+  Student-Teacher KL divergence minimization on retain set $\mathcal{D}_r$ while maximizing divergence on forget set $\mathcal{D}_f$:
+  $$\mathcal{L}_{\text{SCRUB}} = \alpha D_{\text{KL}}(P_S(x) \parallel P_T(x))_{x \in \mathcal{D}_r} - \beta D_{\text{KL}}(P_S(x) \parallel P_T(x))_{x \in \mathcal{D}_f} + \gamma \|\theta_S - \theta_T\|_2^2$$
+- **Nullspace Activation Projection (Concept Scrubbing)**:
+  Removes sensitive concept directions $V_c$ from intermediate activation spaces:
+  $$P_{\perp} = I - V_c (V_c^\top V_c)^{-1} V_c^\top, \quad h' = P_\perp h$$
+
+### 4.18 Mechanistic Interpretability & Sparse Autoencoders (`explainability/mechanistic.py`)
+- **Sparse Autoencoders (SAE & Top-K / JumpReLU SAE)**:
+  Extracts disentangled, monosemantic feature dictionaries from transformer residual streams $x \in \mathbb{R}^d$:
+  $$f(x) = \text{TopK}(\text{ReLU}(W_e (x - b_{\text{dec}}) + b_e), k), \quad \hat{x} = W_d f(x) + b_{\text{dec}}$$
+  $$\mathcal{L}_{\text{SAE}} = \|x - \hat{x}\|_2^2 + \lambda \sum_i \|W_{d, i}\|_2 \cdot |f_i(x)|$$
+- **Direct Logit Attribution (DLA) & Induction Head Tracking**:
+  Exact additive decomposition of output logits across individual attention heads and MLP layers:
+  $$\text{logit}(y) = W_U \left( x_0 + \sum_{l=1}^L \sum_{h=1}^H \text{head}_{l,h} + \sum_{l=1}^L \text{mlp}_l \right)$$
+- **Activation Patching & Interchange Interventions**:
+  Causal tracing measuring direct/indirect effect of internal representations by substituting corrupted activations with clean run activations:
+  $$\text{Indirect Effect}(h_{l, i}) = \mathbb{E}[\text{logit}(y)_{\text{clean}} - \text{logit}(y)_{h_{l,i} \leftarrow h_{l,i}^{\text{corrupt}}}]$$
+
+### 4.19 Test-Time Search, Process Reward Models & Self-Play (`models/nlp/reasoning/`)
+- **Monte Carlo Tree Search (MCTS) for LLM Reasoning**:
+  Tree-search reasoning guiding step generation via Upper Confidence bounds for Trees (UCT):
+  $$a^* = \arg\max_a \left( Q(s, a) + c_{\text{puct}} P(s, a) \frac{\sqrt{\sum_b N(s, b)}}{1 + N(s, a)} \right)$$
+- **Process Reward Models (PRMs) & Step-Level Verifiers**:
+  Evaluates correctness of intermediate reasoning steps $s_t$:
+  $$r(s_1, \dots, s_T) = \prod_{t=1}^T \sigma(\text{PRM}(s_1, \dots, s_t))$$
+- **Self-Taught Reasoner (STaR) & Quiet-STaR**:
+  Iterative self-play reasoning generating internal thought tokens $\tau$ before emitting final response $y$, verified by execution checks.
+
+### 4.20 Consistency Models & Reflow Matching (`models/generative/consistency.py`)
+- **Consistency Models (Continuous & Discrete Time)**:
+  Single-step generative sampling via boundary self-consistency along probability flow trajectories:
+  $$f_\theta(x_t, t) = c_{\text{skip}}(t) x_t + c_{\text{out}}(t) F_\theta(x_t, t), \quad f_\theta(x_t, t) = f_\theta(x_{t'}, t')$$
+- **2-Rectified Flow (Reflow Straightening)**:
+  Trains velocity field $v_\theta(x, t)$ on paired $(x_0, x_1)$ from 1-RF trajectory to straighten ODE paths into deterministic 1-step sampling.
+- **Diffuser Trajectory Planning**:
+  Diffusion models over full robot state-action trajectories $\tau = (s_0, a_0, s_1, a_1, \dots, s_T, a_T)$ conditioned on reward maximization.
+
+### 4.21 Equivariant GNNs, Geometric Sheaves & Clifford Algebras (`models/geometric/`, `geometry/sheaf.py`)
+- **E(n) / SE(3) Equivariant Graph Neural Networks (EGNN)**:
+  Coordinate and scalar feature updates strictly invariant to translations, rotations, and reflections in 3D Euclidean space:
+  $$m_{ij} = \phi_e(h_i, h_j, \|x_i - x_j\|^2, a_{ij}), \quad x_i^{(l+1)} = x_i^{(l)} + \sum_{j \in \mathcal{N}(i)} (x_i - x_j) \phi_x(m_{ij})$$
+  $$h_i^{(l+1)} = \phi_h\left(h_i^{(l)}, \sum_{j \in \mathcal{N}(i)} m_{ij}\right)$$
+- **Cellular Sheaf Neural Networks**:
+  Associating vector spaces $\mathcal{F}(v)$ with restriction maps $\mathcal{F}_{v \trianglelefteq e}: \mathcal{F}(v) \to \mathcal{F}(e)$ and Sheaf Laplacian:
+  $$\Delta_{\mathcal{F}} = D_{\mathcal{F}} - A_{\mathcal{F}}, \quad h^{(l+1)} = \sigma\left((I - \Delta_{\mathcal{F}}) h^{(l)} W\right)$$
+  Natively eliminates over-smoothing and models heterophilic relations.
+- **Clifford Geometric Algebra Neural Networks (GANN)**:
+  Multivector algebra over $\mathcal{C}\ell(p, q, r)$ with grade-preserving geometric product $u v = u \cdot v + u \wedge v$.
+
+### 4.22 Vision-Language-Action (VLA) & Embodied Transformers (`models/robotics/vla.py`)
+- **Action Tokenization & VLA Policy (OpenVLA / RT-2 style)**:
+  Continuous 7-DoF end-effector actions $(x, y, z, \text{roll}, \text{pitch}, \text{yaw}, \text{gripper})$ discretized into $K=256$ vocabulary tokens, integrated natively into multimodal autoregressive generation.
+- **Action Chunking Transformer (ACT) with CVAE**:
+  Predicts temporal chunks of continuous action sequences $a_{t:t+k}$ conditioned on visual tokens and joint angles, regularized via latent variable $z \sim \mathcal{N}(\mu, \Sigma)$.
+- **Learned Energy Model Predictive Path Integral (MPPI)**:
+  Differentiable trajectory optimization sampling control perturbations $\epsilon_k \sim \mathcal{N}(0, \Sigma)$ weighted by exponential costs.
+
+### 4.23 Biologically Plausible Learning & Direct Feedback Alignment (`models/dl/biological.py`)
+- **Direct Feedback Alignment (DFA)**:
+  Eliminates the weight transport problem by projecting top-layer error $e = \hat{y} - y$ directly to hidden layer activations via fixed random matrices $B_l$:
+  $$\delta h_l = (e B_l^\top) \odot \sigma'(a_l)$$
+- **Difference Target Propagation (DTP)**:
+  Computes layer-wise target values $\hat{h}_l = h_l - g_l(\hat{h}_{l+1}) + g_l(h_{l+1})$ using trained layer inverse mappings $g_l$.
+- **Decoupled Neural Interfaces (Synthetic Gradients)**:
+  Auxiliary neural modules predicting future gradients $\hat{\nabla}_{h_l} \mathcal{L}$ enabling asynchronous forward-backward passes.
+- **Spike-Timing-Dependent Plasticity (STDP)**:
+  Synaptic weight modulation based on pre- and post-synaptic spike arrival times:
+  $$\Delta w = \begin{cases} A_+ \exp(-\Delta t / \tau_+), & \Delta t > 0 \\ -A_- \exp(\Delta t / \tau_-), & \Delta t < 0 \end{cases}$$
+
+### 4.24 Data Valuation, Core-set Selection & Distribution Shift (`evaluation/drift.py`, `data/valuation.py`)
+- **Data Shapley & Beta Shapley**:
+  Quantifies marginal utility of individual training samples across subset permutations:
+  $$\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|! (|D| - |S| - 1)!}{|D|!} \left( V(S \cup \{i\}) - V(S) \right)$$
+- **Core-set Selection & Dataset Condensation**:
+  Submodular facility location and gradient matching synthesizing minimal synthetic representative datasets.
+- **Maximum Mean Discrepancy (MMD) & Kernel Drift Detectors**:
+  Detects non-parametric covariate and concept drift between distributions $P$ and $Q$:
+  $$\text{MMD}^2(P, Q) = \mathbb{E}[k(x, x')] - 2\mathbb{E}[k(x, y)] + \mathbb{E}[k(y, y')]$$
+- **Tabular Conditional Diffusion (TabDDPM & CTGAN)**:
+  Mixed continuous-discrete conditional score-matching for synthetic tabular generation with differential privacy guarantees.
+
+### 4.25 Information Bottleneck, Meta-Learning & Quality Diversity (`information/bottleneck.py`, `models/meta/`)
+- **Information Bottleneck (IB) Principle**:
+  Finding minimal sufficient representation $T$:
+  $$\mathcal{L}_{\text{IB}} = I(X; T) - \beta I(T; Y)$$
+- **Model-Agnostic Meta-Learning (MAML) & Reptile**:
+  Bi-level gradient optimization across task distributions $\mathcal{T}_i$:
+  $$\theta' = \theta - \alpha \nabla_\theta \mathcal{L}_{\mathcal{T}_i}(f_\theta), \quad \theta \leftarrow \theta - \beta \nabla_\theta \sum_{\mathcal{T}_i} \mathcal{L}_{\mathcal{T}_i}(f_{\theta'})$$
+- **Quality Diversity (MAP-Elites) & CMA-ES**:
+  Multi-dimensional Archive of Phenotypic Elites maintaining diverse, high-performing behavioral repertoires.
+
+
 ## 5. The Grand Unified Universal Pipeline Engine (`chokkhu.pipeline`)
 
 The Central Universal Pipeline Engine (`src/chokkhu/pipeline/engine.py`) represents the pinnacle of Chokkhu's zero-leakage orchestration philosophy. It binds all 31 sovereign modules into a single seamless, fluent, multi-task framework.
