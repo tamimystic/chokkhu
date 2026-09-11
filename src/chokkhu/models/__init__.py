@@ -27,6 +27,8 @@ from .generative import (
     CycleGANGenerator,
     PatchGANDiscriminator,
     DiscreteTextDiffusion,
+    ClassifierFreeGuidance,
+    DiffusionInpainter,
 )
 from .audio import (
     stft,
@@ -190,6 +192,7 @@ from .vision import (
     non_maximum_suppression,
 )
 from .nlp import (
+    ByteTransformer,
     BM25Retriever,
     TfidfVectorizer,
     PorterStemmer,
@@ -308,6 +311,8 @@ from .marl import (
     QMIX,
     VDN,
     NashEquilibriumSolver,
+    ReplicatorDynamics,
+    CombinatorialAuction,
 )
 from .bio import (
     GenomicTokenizer,

@@ -122,6 +122,7 @@ from .mamba2 import (
 )
 
 __all__ = [
+    "ByteTransformer",
     # Tokenizers
     "BaseTokenizer",
     "CharacterTokenizer",
@@ -213,3 +214,5 @@ __all__ = [
     "Mamba2SSD",
     "JambaHybridBlock",
 ]
+
+from .byte_level import ByteTransformer

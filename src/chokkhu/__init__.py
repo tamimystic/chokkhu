@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -46,6 +46,8 @@ from .models import (
     CycleGANGenerator,
     PatchGANDiscriminator,
     DiscreteTextDiffusion,
+    ClassifierFreeGuidance,
+    DiffusionInpainter,
     VectorQuantizer,
     VQVAE,
     VAE,
@@ -520,6 +522,7 @@ from .transformation import (
     SymbolicProgram,
 )
 from .models.nlp import (
+    ByteTransformer,
     PagedKVCache,
     PagedAttention,
     ContinuousBatcher,
@@ -542,6 +545,8 @@ from .models.marl import (
     QMIX,
     VDN,
     NashEquilibriumSolver,
+    ReplicatorDynamics,
+    CombinatorialAuction,
 )
 from .models.bio import (
     GenomicTokenizer,
@@ -564,6 +569,13 @@ from .safety import (
 from .geometry import (
     PoincareBallEmbedding,
     LorentzManifold,
+)
+from .ranking import (
+    NeuralSort,
+    DifferentiableRankingLoss,
+)
+from .explainability import (
+    ActivationPatchingEngine,
 )
 
 
@@ -1027,4 +1039,12 @@ __all__ = [
     "PCAlgorithm",
     "PoincareBallEmbedding",
     "LorentzManifold",
+    "ReplicatorDynamics",
+    "CombinatorialAuction",
+    "ActivationPatchingEngine",
+    "ClassifierFreeGuidance",
+    "DiffusionInpainter",
+    "ByteTransformer",
+    "NeuralSort",
+    "DifferentiableRankingLoss",
 ]

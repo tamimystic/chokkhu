@@ -5,9 +5,12 @@ from __future__ import annotations
 from .qmix import QMIX
 from .vdn import VDN
 from .game_theory import NashEquilibriumSolver
+from .economy import ReplicatorDynamics, CombinatorialAuction
 
 __all__ = [
     "QMIX",
     "VDN",
     "NashEquilibriumSolver",
+    "ReplicatorDynamics",
+    "CombinatorialAuction",
 ]

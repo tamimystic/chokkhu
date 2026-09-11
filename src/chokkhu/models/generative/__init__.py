@@ -48,6 +48,10 @@ from .normalizing_flows import (
 from .discrete_diffusion import (
     DiscreteTextDiffusion,
 )
+from .guidance import (
+    ClassifierFreeGuidance,
+    DiffusionInpainter,
+)
 
 __all__ = [
     # Autoencoders
@@ -83,4 +87,7 @@ __all__ = [
     "LoRAAdapter",
     # Discrete Diffusion
     "DiscreteTextDiffusion",
+    # Guidance & Inpainting
+    "ClassifierFreeGuidance",
+    "DiffusionInpainter",
 ]

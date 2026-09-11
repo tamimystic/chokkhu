@@ -96,6 +96,7 @@ pip install -e .
 | **Frontier LLMs** | `RWKV6` (Linear Attention), `RetNet` (Multi-Scale Retention), `Mamba` (S6 SSM), `DeepSeekV3` (MLA + MoE + MTP), `Qwen2_5`, `BitNet158` (1.58b ternary), `DPOTrainer`, `KTOTrainer`, `ORPOTrainer` |
 | **2D Vision & Audio** | ResNet, ConvNeXt, SwinTransformer, DeiT, ViT, YOLO, Faster R-CNN, RetinaNet; STFT, MelSpectrogram, MFCC, Conformer, AST, Wav2Vec2 |
 | **Explainable AI (XAI)** | `IntegratedGradients`, `SmoothGrad`, `DeepLIFT`, `KernelSHAP`, `PermutationImportance`, `PartialDependence` |
+| **Multi-Agent Economy & XAI Circuits** | Replicator-Mutator Dynamics, VCG Combinatorial Auctions, Causal Activation Patching, CFG Guided Diffusion Inpainting, Raw Byte Transformers, NeuralSort |
 
 ---
 
@@ -2893,6 +2894,226 @@ print(f"Lorentz Coordinates: {x_lorentz}, Minkowski Constraint <x, x>_L: {minkow
 | `eps` | `float` | `1e-5` | Boundary safety margin for numerical ball projection $\|x\| \le 1/\sqrt{c} - \epsilon$. |
 
 ---
+
+
+---
+
+## 24. Multi-Agent Economy, Mechanistic Interpretability, Guided Diffusion Inpainting, Byte Transformers & Differentiable Ranking
+
+### 24.1 Replicator Dynamics & Evolutionary Game Theory (`ReplicatorDynamics`)
+
+Models continuous-time frequency-dependent evolutionary selection and mutator dynamics in multi-agent game-theoretic populations $\dot{x}_i = x_i (f_i(x) - ar{f}(x)) + \sum_j (\mu_{ji} x_j - \mu_{ij} x_i)$ integrated via 4th-order Runge-Kutta (RK4) projected onto the probability simplex.
+
+```python
+import numpy as np
+from chokkhu import ReplicatorDynamics
+
+# 1. Classical Hawk-Dove Game Simulation
+# Payoff: V=2.0 (resource value), C=4.0 (fight cost) -> Evolutionary Stable Strategy (ESS) = [0.5, 0.5]
+hd = ReplicatorDynamics.hawks_doves(v=2.0, c=4.0, dt=0.01)
+initial_population = np.array([0.9, 0.1])  # 90% Hawks, 10% Doves
+pop_trajectory = hd.simulate(initial_population, num_steps=200)
+print(f"Hawk-Dove Initial: {initial_population} -> Final ESS: {pop_trajectory[-1]}")
+
+# 2. Rock-Paper-Scissors Cyclic Dynamics
+rps = ReplicatorDynamics.rock_paper_scissors(dt=0.01)
+rps_trajectory = rps.simulate(np.array([0.5, 0.3, 0.2]), num_steps=100)
+print(f"RPS Step 100 Distribution: {rps_trajectory[-1]}")
+```
+
+#### Parameter Breakdown: `ReplicatorDynamics`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `payoff_matrix` | `np.ndarray` | *Required* | Square payoff matrix $A \in \mathbb{R}^{K 	imes K}$ where $A_{ij}$ is payoff of strategy $i$ against $j$. |
+| `mutation_rate` | `float` | `0.0` | Uniform mutation probability $\mu \in [0, 1)$ between strategies. |
+| `dt` | `float` | `0.01` | Continuous numerical integration step size for the RK4 solver. |
+
+---
+
+### 24.2 Combinatorial Bundle Auctions & VCG Mechanism (`CombinatorialAuction`)
+
+Implements the generalized Vickrey-Clarke-Groves (VCG) mechanism for combinatorial multi-item auctions, guaranteeing dominant-strategy incentive compatibility (DSIC / truth-telling) and social welfare maximization with Clarke pivot rule taxation.
+
+```python
+from chokkhu import CombinatorialAuction
+
+# Create combinatorial auction for spectrum frequency bands A and B
+auction = CombinatorialAuction(items=["A", "B"], bidders=["Alice", "Bob", "Charlie"])
+
+# Agents submit bids over item combinations
+auction.add_bid("Alice", ["A", "B"], 10.0)  # Alice bids $10 for the combined bundle {A, B}
+auction.add_bid("Bob", ["A"], 6.0)           # Bob bids $6 for band A alone
+auction.add_bid("Charlie", ["B"], 5.0)       # Charlie bids $5 for band B alone
+
+# Solve Winner Determination Problem (WDP) & compute Clarke pivot payments
+result = auction.solve()
+print(f"Winning Allocations: {result['allocations']}")
+print(f"Clarke Pivot Payments: {result['payments']}")
+print(f"Total Social Welfare: {result['social_welfare']}")
+```
+
+#### Parameter Breakdown: `CombinatorialAuction`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `items` | `List[str]` | *Required* | List of distinct item and good identifiers up for auction. |
+| `bidders` | `List[str]` | *Required* | List of participating agent/bidder identifiers. |
+
+---
+
+### 24.3 Mechanistic Interpretability & Interventional Causal Patching (`ActivationPatchingEngine`)
+
+Performs interventional causal tracing and activation patching across transformer layers and attention heads to localize factual knowledge circuits without backpropagation.
+
+```python
+import numpy as np
+from chokkhu import ActivationPatchingEngine
+
+# Define forward pass with activation caching hook
+def model_forward_with_cache(x, patch_dict=None):
+    layer_1 = x * 2.0
+    if patch_dict and "layer_1" in patch_dict:
+        layer_1 = patch_dict["layer_1"]
+    logits = np.sum(layer_1, axis=-1, keepdims=True)
+    cache = {"layer_1": x * 2.0}
+    return logits, cache
+
+engine = ActivationPatchingEngine(model_forward_with_cache)
+clean_prompt = np.array([[5.0, 5.0]])
+corrupted_prompt = np.array([[1.0, 1.0]])
+
+# Measure normalized causal recovery ratio of patching layer_1
+causal_effect = engine.compute_causal_effect(clean_prompt, corrupted_prompt, "layer_1")
+print(f"Layer 1 Causal Mediation Effect: {causal_effect:.4f}")
+
+# Full circuit sweep across all model layers
+circuit_map = engine.trace_circuit(clean_prompt, corrupted_prompt, ["layer_1"])
+print(f"Circuit Trace Attribution: {circuit_map}")
+```
+
+#### Parameter Breakdown: `ActivationPatchingEngine`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `forward_with_cache` | `Callable` | *Required* | Function accepting `(x, patch_dict)` returning `(logits, cache)`. |
+| `clean_input` | `np.ndarray` | *Required* | Clean prompt input that produces correct ground-truth outputs. |
+| `corrupted_input` | `np.ndarray` | *Required* | Corrupted/perturbed input where factual recall fails. |
+| `layer_name` | `str` | *Required* | Hook identifier of the layer/head activation tensor to intervene upon. |
+
+---
+
+### 24.4 Classifier-Free Guidance & Masked Diffusion Inpainting (`ClassifierFreeGuidance`, `DiffusionInpainter`)
+
+Enables controllable generation via Classifier-Free Guidance (CFG) score extrapolation $	ilde{\epsilon}_	heta(x_t, c) = \epsilon_	heta(x_t, \emptyset) + s (\epsilon_	heta(x_t, c) - \epsilon_	heta(x_t, \emptyset))$ and RePaint masked diffusion inpainting with boundary time-travel harmonization.
+
+```python
+import numpy as np
+from chokkhu import ClassifierFreeGuidance, DiffusionInpainter
+
+# 1. Classifier-Free Guidance (CFG) Noise Extrapolation
+cfg = ClassifierFreeGuidance(guidance_scale=3.5)
+unconditional_noise = np.array([0.1, 0.2])
+conditional_noise = np.array([0.5, 0.8])
+guided_noise = cfg.combine_scores(unconditional_noise, conditional_noise)
+print(f"CFG Extrapolated Noise Estimate: {guided_noise}")
+
+# 2. RePaint Masked Diffusion Inpainting Engine
+class DiffusionScoreModel:
+    num_timesteps = 10
+    alphas_cumprod = np.linspace(0.99, 0.05, 10)
+    def predict_noise(self, x_t, t): return 0.05 * x_t
+
+inpainter = DiffusionInpainter(DiffusionScoreModel(), num_resample_steps=2, seed=42)
+clean_image = np.ones((1, 8, 8))
+mask = np.ones((1, 8, 8))
+mask[:, 2:6, 2:6] = 0.0  # Mask out central 4x4 hole (0.0 = hole to inpaint)
+
+inpainted_result = inpainter.inpaint(clean_image, mask, num_steps=5)
+print(f"Inpainted Image Output Shape: {inpainted_result.shape}")
+```
+
+#### Parameter Breakdown: `ClassifierFreeGuidance` & `DiffusionInpainter`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `guidance_scale` | `float` | `3.0` | Conditioning scale multiplier $s$ ($s > 1.0$ amplifies conditional steering). |
+| `ddpm_model` | `Any` | *Required* | Base diffusion model providing noise schedule and score evaluation. |
+| `num_resample_steps` | `int` | `1` | Time-travel resampling passes per reverse timestep for boundary harmonization. |
+
+---
+
+### 24.5 Token-Free Raw UTF-8 Byte Transformer (`ByteTransformer`)
+
+Operates directly on raw binary byte streams ($0 - 255$) with zero tokenization artifacts, eliminating out-of-vocabulary failures via local patch convolutional pooling, multi-head self-attention, and byte-level unpooling.
+
+```python
+import numpy as np
+from chokkhu import ByteTransformer
+
+# Initialize Sovereign Byte Transformer (ByT5 / MambaByte architecture)
+byte_model = ByteTransformer(
+    d_model=32, patch_size=2, num_heads=2, num_layers=1, max_seq_len=64, seed=42
+)
+
+# Encode arbitrary raw UTF-8 string directly into uint8 byte array
+text = "Hello Sovereign AI! 🇧🇩"
+byte_array = ByteTransformer.text_to_bytes(text)
+print(f"Raw UTF-8 Bytes: {byte_array[:6]}... Decoded: {ByteTransformer.bytes_to_text(byte_array)}")
+
+# Next-byte probability distribution prediction
+logits = byte_model.forward(np.array([byte_array[:8]]))
+print(f"Next-Byte Output Logits Tensor: {logits.shape}")
+
+# Autoregressive generation directly in raw byte space
+generated_str = byte_model.generate("AI", max_new_bytes=4, temperature=0.8)
+print(f"Generated Continuation: {repr(generated_str)}")
+```
+
+#### Parameter Breakdown: `ByteTransformer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `d_model` | `int` | `64` | Internal transformer representation dimensionality. |
+| `patch_size` | `int` | `4` | Local byte compression factor per patch projection. |
+| `num_heads` | `int` | `4` | Number of multi-head self-attention heads. |
+| `num_layers` | `int` | `2` | Number of stacked transformer layers. |
+| `max_seq_len` | `int` | `256` | Maximum allowable raw byte sequence length. |
+
+---
+
+### 24.6 Differentiable Neural Sorting & Soft Ranking Losses (`NeuralSort`, `DifferentiableRankingLoss`)
+
+Provides continuous relaxations of the non-differentiable $	ext{argsort}$ operator via temperature-controlled doubly-stochastic permutation matrices $P_	au(s)$ alongside differentiable Spearman rank correlation and Soft NDCG losses for Learning-to-Rank (LTR).
+
+```python
+import numpy as np
+from chokkhu import NeuralSort, DifferentiableRankingLoss
+
+# 1. NeuralSort Continuous Relaxed Permutations
+sorter = NeuralSort(tau=0.5)
+continuous_scores = np.array([12.0, 45.0, 23.0])
+
+# Compute continuous 1-based soft ranks
+soft_ranks = sorter.soft_ranks(continuous_scores)
+print(f"Soft Continuous Ranks: {soft_ranks}")
+
+# Differentiable soft sort
+values = np.array([100.0, 500.0, 200.0])
+sorted_values = sorter.soft_sort(values, scores=continuous_scores)
+print(f"Softly Sorted Output: {sorted_values}")
+
+# 2. Differentiable Surrogate Ranking Losses
+pred_scores = np.array([10.0, 50.0, 20.0])
+ground_truth_relevance = np.array([1.0, 3.0, 2.0])
+
+spearman_loss = DifferentiableRankingLoss.spearman_loss(pred_scores, ground_truth_relevance, tau=0.5)
+ndcg_loss = DifferentiableRankingLoss.soft_ndcg_loss(pred_scores, ground_truth_relevance, tau=0.5)
+print(f"Differentiable Spearman Loss: {spearman_loss:.4f} | Soft NDCG Loss: {ndcg_loss:.4f}")
+```
+
+#### Parameter Breakdown: `NeuralSort` & `DifferentiableRankingLoss`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `tau` | `float` | `1.0` | Temperature relaxation parameter ($	au 	o 0$ approaches exact discrete hard sort). |
+| `pred_scores` | `np.ndarray` | *Required* | Model output relevance score predictions. |
+| `true_relevance` | `np.ndarray` | *Required* | Ground-truth relevance or ranking labels. |
+
 
 ## License & Citation
 

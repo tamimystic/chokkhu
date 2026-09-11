@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .counterfactuals import WachterCounterfactualExplainer
+from .circuits import ActivationPatchingEngine
 from .engine import ExplanationResult, explain
 from .importance import permutation_feature_importance
 from .mechanistic import AttentionRollout, DirectLogitAttribution
@@ -22,4 +23,5 @@ __all__ = [
     "DirectLogitAttribution",
     "WachterCounterfactualExplainer",
     "TCAV",
+    "ActivationPatchingEngine",
 ]
