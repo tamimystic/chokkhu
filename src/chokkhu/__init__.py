@@ -29,10 +29,19 @@ from .models.generative import (
     OptimalTransportFlowMatching,
     ReflowMatching,
 )
+from .geometry import (
+    CellularSheaf,
+    SheafNeuralNetwork,
+)
+from .models.geometric import (
+    EnEquivariantGNN,
+    CliffordMultivector,
+    CliffordGANN,
+)
 
 from typing import Any, Optional
 
-__version__ = "1.5.8"
+__version__ = "1.5.9"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
