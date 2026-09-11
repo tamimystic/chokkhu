@@ -1,4 +1,11 @@
 from __future__ import annotations
+from .models.nlp.reasoning import (
+    MCTSNode,
+    MonteCarloTreeSearchReasoning,
+    ProcessRewardModel,
+    STaR,
+    ReflexionLoop,
+)
 from .explainability import (
     TopKSAE,
     JumpReLU,
@@ -1185,4 +1192,9 @@ __all__ = [
     "TopKSAE",
     "JumpReLU",
     "ActivationPatching",
+    "MCTSNode",
+    "MonteCarloTreeSearchReasoning",
+    "ProcessRewardModel",
+    "STaR",
+    "ReflexionLoop",
 ]
