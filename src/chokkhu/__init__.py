@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -527,6 +527,32 @@ from .models.gnn import (
     SpatioTemporalGCN,
 )
 
+
+from .models.robotics import (
+    DiffusionPolicy,
+    RecurrentWorldModel,
+    MPPITrajectoryOptimizer,
+)
+from .models.marl import (
+    QMIX,
+    VDN,
+    NashEquilibriumSolver,
+)
+from .models.bio import (
+    GenomicTokenizer,
+    GenomicBERT,
+    ProteinContactMap,
+)
+from .models.neurosymbolic import (
+    DifferentiableLogicEngine,
+    RotatE,
+    TransE,
+)
+from .hdc import (
+    HyperdimensionalVector,
+    HDCClassifier,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -964,4 +990,18 @@ __all__ = [
     "wasserstein_barycenter",
     "SymbolicFeatureSynthesizer",
     "SymbolicProgram",
+    "DiffusionPolicy",
+    "RecurrentWorldModel",
+    "MPPITrajectoryOptimizer",
+    "QMIX",
+    "VDN",
+    "NashEquilibriumSolver",
+    "GenomicTokenizer",
+    "GenomicBERT",
+    "ProteinContactMap",
+    "DifferentiableLogicEngine",
+    "RotatE",
+    "TransE",
+    "HyperdimensionalVector",
+    "HDCClassifier",
 ]

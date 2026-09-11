@@ -2514,6 +2514,200 @@ print(f"Discovered Formulas: {synthesizer.get_feature_names()}")
 
 ---
 
+## 22. Robotics, World Models, Multi-Agent RL, Genomic AI & Hyperdimensional Computing (Milestone 19)
+
+### 22.1 Robotics, Diffusion Policy & Latent World Models (`DiffusionPolicy`, `RecurrentWorldModel`, `MPPITrajectoryOptimizer`)
+
+```python
+import numpy as np
+from chokkhu import DiffusionPolicy, RecurrentWorldModel, MPPITrajectoryOptimizer
+
+# 1. Diffusion Policy for Continuous Action Trajectory Generation
+policy = DiffusionPolicy(action_dim=4, pred_horizon=6, obs_dim=8, num_timesteps=20, hidden_dim=32, seed=42)
+obs_state = np.random.randn(2, 8).astype(np.float32)
+action_traj = policy.sample(obs_state, n_samples=2)
+print(f"Generated Action Trajectory Shape: {action_traj.shape}")
+
+# 2. Recurrent World Model (RSSM Imagination Rollouts)
+world_model = RecurrentWorldModel(obs_dim=8, action_dim=2, deter_dim=16, stoch_dim=8, seed=42)
+h0, z0 = world_model.initial_state(batch_size=2)
+rollouts = world_model.imagine_trajectory(h0, z0, lambda h, z: np.random.randn(len(h), 2).astype(np.float32), horizon=5)
+print(f"Imagined Trajectory Latent States Shape: {rollouts['h'].shape}, Rewards: {rollouts['rewards'].shape}")
+
+# 3. Model Predictive Path Integral (MPPI) Trajectory Optimizer
+mppi = MPPITrajectoryOptimizer(action_dim=2, horizon=8, num_samples=32, temperature=1.0, seed=42)
+best_action, planned_traj = mppi.optimize(np.zeros(4), lambda s, a: np.mean((a - np.array([1.0, -0.5]))**2, axis=(1, 2)))
+print(f"MPPI Optimal Control Action: {best_action}, Planned Horizon Shape: {planned_traj.shape}")
+```
+
+#### Parameter Breakdown: `DiffusionPolicy`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `action_dim` | `int` | `4` | Dimensionality of robotic action control vector ($D_a$). |
+| `pred_horizon` | `int` | `8` | Lookahead planning horizon ($T_a$). |
+| `obs_dim` | `int` | `16` | Observation feature conditioning dimensionality. |
+| `num_timesteps` | `int` | `50` | Number of reverse diffusion denoising steps. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+#### Parameter Breakdown: `RecurrentWorldModel`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `obs_dim` | `int` | `16` | Observation feature dimensionality. |
+| `action_dim` | `int` | `4` | Continuous control action dimension. |
+| `deter_dim` | `int` | `32` | Deterministic GRU recurrent state size ($h_t$). |
+| `stoch_dim` | `int` | `16` | Stochastic latent Gaussian state size ($z_t$). |
+| `seed` | `int` | `42` | Random seed for latent transition parameters. |
+
+#### Parameter Breakdown: `MPPITrajectoryOptimizer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `action_dim` | `int` | *Required* | Dimensionality of control action vector. |
+| `horizon` | `int` | `15` | Trajectory planning lookahead steps ($T$). |
+| `num_samples` | `int` | `64` | Number of parallel perturbation rollouts ($K$). |
+| `temperature` | `float` | `1.0` | Return weighting temperature ($\lambda$). |
+| `noise_sigma` | `float` | `0.5` | Exploration perturbation standard deviation. |
+
+---
+
+### 22.2 Multi-Agent Reinforcement Learning & Game Theory (`QMIX`, `VDN`, `NashEquilibriumSolver`)
+
+```python
+import numpy as np
+from chokkhu import QMIX, VDN, NashEquilibriumSolver
+
+# 1. QMIX Monotonic Value Factorization
+qmix = QMIX(n_agents=3, state_dim=12, mixing_embed_dim=16, seed=42)
+agent_qs = np.random.randn(4, 3).astype(np.float32)
+global_states = np.random.randn(4, 12).astype(np.float32)
+q_tot = qmix.forward(agent_qs, global_states)
+print(f"QMIX Centralized Joint Q_tot Shape: {q_tot.shape}")
+
+# 2. VDN Additive Utility Decomposition
+vdn = VDN(n_agents=3)
+vdn_tot = vdn.forward(agent_qs)
+print(f"VDN Joint Team Value: {vdn_tot[:2].flatten()}")
+
+# 3. Game-Theoretic Nash Equilibrium Solver (Zero-Sum & General-Sum)
+solver = NashEquilibriumSolver(max_iter=500)
+rps_payoff = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]])
+p_row, p_col, val = solver.solve_zero_sum(rps_payoff)
+print(f"Nash Equilibrium Mixed Strategy: Row={p_row.round(2)}, Col={p_col.round(2)}, Value={val:.2f}")
+```
+
+#### Parameter Breakdown: `QMIX` & `VDN`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_agents` | `int` | `4` | Number of cooperative agents in multi-agent team. |
+| `state_dim` | `int` | `32` | Global environmental state dimension ($S$). |
+| `mixing_embed_dim` | `int` | `32` | Internal hypernetwork mixing capacity. |
+| `seed` | `int` | `42` | Random seed for hypernetwork weights. |
+
+---
+
+### 22.3 Genomic & Bio-Molecular Sequence AI (`GenomicTokenizer`, `GenomicBERT`, `ProteinContactMap`)
+
+```python
+import numpy as np
+from chokkhu import GenomicTokenizer, GenomicBERT, ProteinContactMap
+
+# 1. DNA/RNA k-mer Tokenization & Reverse Complement
+tok = GenomicTokenizer(k=3, stride=1, is_rna=False)
+dna_seq = "ATGCGATCG"
+token_ids = tok.encode(dna_seq, add_special_tokens=True)
+rev_comp = GenomicTokenizer.reverse_complement("ATGC")
+print(f"Encoded Token IDs: {token_ids}, Reverse Complement: {rev_comp}")
+
+# 2. GenomicBERT Sequence Modeling & Variant Effect Scoring
+gen_bert = GenomicBERT(vocab_size=len(tok.vocab), d_model=32, num_heads=4, num_layers=2, max_len=32, num_classes=2, seed=42)
+hidden, cls_logits, mlm_logits = gen_bert.forward(np.array([token_ids]))
+var_score = gen_bert.score_variant(np.array([token_ids]), np.array([token_ids]))
+print(f"GenomicBERT Sequence Embeddings: {hidden.shape}, Variant Effect Score: {var_score:.4f}")
+
+# 3. Protein Residue Contact Map via Direct Coupling Analysis (DCA)
+dca = ProteinContactMap(pseudocount_weight=0.5, apc=True)
+dummy_msa = np.random.randint(0, 20, size=(25, 12))
+contact_map = dca.compute_contact_map(dummy_msa)
+print(f"Residue Contact Matrix Shape: {contact_map.shape}, Symmetric: {np.allclose(contact_map, contact_map.T)}")
+```
+
+#### Parameter Breakdown: `GenomicTokenizer` & `GenomicBERT`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `k` | `int` | `6` | Length of contiguous nucleotide $k$-mer tokens. |
+| `stride` | `int` | `1` | Tokenization sliding window step. |
+| `is_rna` | `bool` | `False` | Toggle between DNA (T) and RNA (U) alphabets. |
+| `d_model` | `int` | `64` | Transformer representation width. |
+| `num_heads` | `int` | `4` | Number of self-attention heads. |
+| `num_layers` | `int` | `2` | Number of bidirectional encoder layers. |
+
+---
+
+### 22.4 Neuro-Symbolic Reasoning & Knowledge Graph Embeddings (`DifferentiableLogicEngine`, `RotatE`, `TransE`)
+
+```python
+import numpy as np
+from chokkhu import DifferentiableLogicEngine, RotatE, TransE
+
+# 1. Continuous Fuzzy Differentiable Logic Engine
+engine = DifferentiableLogicEngine(t_norm="product")
+a_truth = np.array([0.9, 0.4])
+b_truth = np.array([0.8, 0.7])
+and_val = engine.conjunction(a_truth, b_truth)
+implies_val = engine.implication(a_truth, b_truth)
+sat_loss = engine.satisfaction_loss(implies_val)
+print(f"Fuzzy Conjunction: {and_val}, Implication: {implies_val}, Satisfaction Loss: {sat_loss:.4f}")
+
+# 2. RotatE & TransE Knowledge Graph Embeddings
+rotate = RotatE(num_entities=20, num_relations=5, embedding_dim=16, gamma=12.0, seed=42)
+transe = TransE(num_entities=20, num_relations=5, embedding_dim=16, margin=1.0, seed=42)
+h_ids, r_ids, t_ids = np.array([0, 1]), np.array([2, 3]), np.array([4, 5])
+rot_scores = rotate.score_triplets(h_ids, r_ids, t_ids)
+trans_scores = transe.score_triplets(h_ids, r_ids, t_ids)
+print(f"RotatE Triplet Distance Scores: {rot_scores}, TransE: {trans_scores}")
+```
+
+#### Parameter Breakdown: `RotatE` & `TransE`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `num_entities` | `int` | *Required* | Total number of entities in knowledge graph. |
+| `num_relations` | `int` | *Required* | Total number of relation types. |
+| `embedding_dim` | `int` | `64` | Latent space dimensionality. |
+| `gamma` / `margin` | `float` | `12.0` / `1.0` | Distance margin parameter for contrastive ranking loss. |
+
+---
+
+### 22.5 Hyperdimensional Computing & Vector Symbolic Architectures (`HyperdimensionalVector`, `HDCClassifier`)
+
+```python
+import numpy as np
+from chokkhu import HyperdimensionalVector, HDCClassifier
+
+# 1. Hypervector Primitive Algebra (Binding, Bundling, Permutation)
+v1 = HyperdimensionalVector.random_bipolar(dim=2000, seed=42)
+v2 = HyperdimensionalVector.random_bipolar(dim=2000, seed=43)
+bound = v1.bind(v2)
+bundled = HyperdimensionalVector.bundle([v1, v2], binarize=True)
+permuted = v1.permute(shift=2)
+print(f"HDC Similarity (v1 vs v2): {v1.similarity(v2):.4f}, (v1 vs bundled): {v1.similarity(bundled):.4f}")
+
+# 2. Zero-Gradient One-Shot HDC Associative Memory Classifier
+hdc_clf = HDCClassifier(dim=2000, num_levels=16, seed=42)
+X_train = np.random.randn(20, 4)
+y_train = (X_train[:, 0] + X_train[:, 1] > 0).astype(int)
+hdc_clf.fit(X_train, y_train)
+acc = hdc_clf.score(X_train, y_train)
+print(f"HDC Associative Memory Training Accuracy: {acc:.1%}")
+```
+
+#### Parameter Breakdown: `HDCClassifier`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `dim` | `int` | `5000` | Dimensionality of hypervector cognitive space ($D$). |
+| `num_levels` | `int` | `32` | Number of continuous feature quantization level vectors. |
+| `seed` | `int` | `42` | Random seed for orthogonal basis vectors. |
+
+---
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

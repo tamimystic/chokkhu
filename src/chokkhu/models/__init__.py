@@ -297,6 +297,28 @@ from .gnn import (
     SpatioTemporalGCN,
 )
 
+
+from .robotics import (
+    DiffusionPolicy,
+    RecurrentWorldModel,
+    MPPITrajectoryOptimizer,
+)
+from .marl import (
+    QMIX,
+    VDN,
+    NashEquilibriumSolver,
+)
+from .bio import (
+    GenomicTokenizer,
+    GenomicBERT,
+    ProteinContactMap,
+)
+from .neurosymbolic import (
+    DifferentiableLogicEngine,
+    RotatE,
+    TransE,
+)
+
 from .timeseries import (
     decompose_series,
     create_lag_matrix,
@@ -758,4 +780,16 @@ __all__ = [
     "JambaHybridBlock",
     "HeteroGCN",
     "SpatioTemporalGCN",
+    "DiffusionPolicy",
+    "RecurrentWorldModel",
+    "MPPITrajectoryOptimizer",
+    "QMIX",
+    "VDN",
+    "NashEquilibriumSolver",
+    "GenomicTokenizer",
+    "GenomicBERT",
+    "ProteinContactMap",
+    "DifferentiableLogicEngine",
+    "RotatE",
+    "TransE",
 ]
