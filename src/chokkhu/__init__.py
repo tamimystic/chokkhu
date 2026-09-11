@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.5.2"
+__version__ = "1.5.3"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -511,11 +511,15 @@ from .continual import (
     DarkExperienceReplay,
     DERPlusPlus,
 )
+from .clustering import (
+    SpectralGraphClusterer,
+)
 from .optimal_transport import (
     SinkhornOptimalTransport,
     sinkhorn_distance,
     WassersteinBarycenter,
     wasserstein_barycenter,
+    SinkhornDivergence,
 )
 from .transformation import (
     SymbolicFeatureSynthesizer,
@@ -553,10 +557,14 @@ from .models.bio import (
     GenomicBERT,
     ProteinContactMap,
 )
+from .models.anomaly import (
+    SupportVectorDataDescription,
+)
 from .models.neurosymbolic import (
     DifferentiableLogicEngine,
     RotatE,
     TransE,
+    DifferentiableILP,
 )
 from .hdc import (
     HyperdimensionalVector,
@@ -586,6 +594,7 @@ from .models.geometric import (
 from .optimization import (
     FollowTheRegularizedLeader,
     HedgeAlgorithm,
+    OptNet,
 )
 from .information import (
     KraskovMutualInformation,
@@ -1081,4 +1090,9 @@ __all__ = [
     "M5ModelTree",
     "RuleFitRegressor",
     "RuleFitClassifier",
+    "OptNet",
+    "SinkhornDivergence",
+    "SupportVectorDataDescription",
+    "SpectralGraphClusterer",
+    "DifferentiableILP",
 ]

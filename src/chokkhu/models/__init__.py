@@ -329,6 +329,9 @@ from .marl import (
     ReplicatorDynamics,
     CombinatorialAuction,
 )
+from .anomaly import (
+    SupportVectorDataDescription,
+)
 from .bio import (
     GenomicTokenizer,
     GenomicBERT,
@@ -338,6 +341,7 @@ from .neurosymbolic import (
     DifferentiableLogicEngine,
     RotatE,
     TransE,
+    DifferentiableILP,
 )
 
 from .timeseries import (
@@ -823,4 +827,6 @@ __all__ = [
     "M5ModelTree",
     "RuleFitRegressor",
     "RuleFitClassifier",
+    "SupportVectorDataDescription",
+    "DifferentiableILP",
 ]

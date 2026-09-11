@@ -1,19 +1,13 @@
-"""Geometric Optimal Transport, Wasserstein Metrics, and Sinkhorn Barycenters for Chokkhu."""
+"""Optimal Transport, Sinkhorn Algorithms, and Barycenters."""
 
-from __future__ import annotations
-
-from .sinkhorn import (
-    SinkhornOptimalTransport,
-    sinkhorn_distance,
-)
-from .barycenter import (
-    WassersteinBarycenter,
-    wasserstein_barycenter,
-)
+from .barycenter import WassersteinBarycenter, wasserstein_barycenter
+from .divergence import SinkhornDivergence
+from .sinkhorn import SinkhornOptimalTransport, sinkhorn_distance
 
 __all__ = [
     "SinkhornOptimalTransport",
     "sinkhorn_distance",
     "WassersteinBarycenter",
     "wasserstein_barycenter",
+    "SinkhornDivergence",
 ]

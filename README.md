@@ -3293,6 +3293,184 @@ print(f"RuleFit Classification Probabilities: {rf_cls.predict_proba(X[:3])[:, 1]
 | `alpha` | `float` | `0.01` | $L_1$ Lasso regularization penalty for rule selection. |
 
 
+---
+
+## 26. Differentiable Optimization, Debiased Optimal Transport, One-Class SVDD, Spectral Graph Partitioning & Differentiable ILP
+
+### 26.1 OptNet: Differentiable Quadratic Programming & Implicit Layer Differentiation (`OptNet`)
+
+Implements convex quadratic optimization layers solvable via primal-dual interior point methods with exact analytical backward parameter differentiation through Karush-Kuhn-Tucker (KKT) implicit optimality conditions:
+$$\min_z \frac{1}{2} z^T Q z + p^T z \quad \text{s.t.} \quad A z = b, \quad G z \le h$$
+$$\begin{bmatrix} Q & A^T & G^T \\ A & 0 & 0 \\ \text{diag}(\lambda^*) G & 0 & \text{diag}(G z^* - h) \end{bmatrix} \begin{bmatrix} \text{d}z \\ \text{d}\nu \\ \text{d}\lambda \end{bmatrix} = - \begin{bmatrix} \nabla_z \mathcal{L} \\ 0 \\ 0 \end{bmatrix}$$
+
+```python
+import numpy as np
+from chokkhu import OptNet
+
+# Minimize 1/2 x^T Q x + p^T x s.t. G x <= h
+Q = 2.0 * np.eye(2)
+p = np.array([-2.0, -2.0])
+G = np.array([[1.0, 1.0], [-1.0, 0.0], [0.0, -1.0]])
+h = np.array([1.0, 0.0, 0.0])
+
+# 1. Forward Primal-Dual Interior Point QP Solve
+optnet = OptNet(max_iter=50, tol=1e-6)
+x_opt = optnet.forward(Q=Q, p=p, G=G, h=h)
+print(f"OptNet Constrained Optimal Solution x*: {x_opt}")
+
+# 2. Backward Pass via KKT Implicit Linear Differentiation
+grad_loss = x_opt - np.array([1.0, 0.0])
+grads = optnet.backward(grad_loss)
+print(f"OptNet Analytical Gradients: dQ shape={grads['dQ'].shape}, dp shape={grads['dp'].shape}")
+```
+
+#### Parameter Breakdown: `OptNet`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `max_iter` | `int` | `50` | Maximum primal-dual interior point Newton iterations. |
+| `tol` | `float` | `1e-6` | Primal-dual duality gap convergence tolerance threshold. |
+| `eps_reg` | `float` | `1e-7` | Diagonal Tikhonov regularization for positive definiteness. |
+
+---
+
+### 26.2 Debiased Sinkhorn Divergence & Optimal Transport Metric (`SinkhornDivergence`)
+
+Eliminates entropic blur and positive bias from regularized optimal transport, guaranteeing metric positive definiteness $S_\epsilon(\alpha, \beta) \ge 0$ and identity of indiscernibles $S_\epsilon(\alpha, \alpha) = 0$:
+$$S_\epsilon(\alpha, \beta) = \text{OT}_\epsilon(\alpha, \beta) - \frac{1}{2} \text{OT}_\epsilon(\alpha, \alpha) - \frac{1}{2} \text{OT}_\epsilon(\beta, \beta)$$
+
+```python
+import numpy as np
+from chokkhu import SinkhornDivergence
+
+# Empirical probability point clouds
+np.random.seed(42)
+cloud_a = np.random.randn(20, 2)
+cloud_b = np.random.randn(20, 2) + 2.0
+
+# Compute debiased, positive-definite Sinkhorn divergence
+sinkhorn_div = SinkhornDivergence(epsilon=0.1, max_iter=100)
+div_ab = sinkhorn_div.compute(cloud_a, cloud_b)
+div_self = sinkhorn_div(cloud_a, cloud_a)
+print(f"Sinkhorn Divergence S_eps(A, B): {div_ab:.4f} | S_eps(A, A): {div_self:.6f}")
+```
+
+#### Parameter Breakdown: `SinkhornDivergence`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `epsilon` | `float` | `0.1` | Entropic regularization temperature coefficient $\epsilon$. |
+| `max_iter` | `int` | `100` | Maximum Sinkhorn fixed-point dual potential iterations. |
+| `tol` | `float` | `1e-6` | Dual potential convergence tolerance threshold. |
+
+---
+
+### 26.3 Support Vector Data Description (SVDD) One-Class Anomaly Detector (`SupportVectorDataDescription`)
+
+Constructs the minimal enclosing hypersphere in reproducing kernel Hilbert space (RKHS) to distinguish normal operational data from outliers and novelties:
+$$\min_{R, a, \xi} R^2 + C \sum_{i=1}^N \xi_i \quad \text{s.t.} \quad \|\phi(x_i) - a\|^2 \le R^2 + \xi_i, \quad \xi_i \ge 0$$
+
+```python
+import numpy as np
+from chokkhu import SupportVectorDataDescription
+
+# Normal training observations (inliers cloud)
+X_normal = np.random.randn(60, 2) * 0.5
+X_test = np.array([[0.1, -0.1], [6.0, 6.0]])
+
+# Fit Kernel Minimum Enclosing Ball (MEB)
+svdd = SupportVectorDataDescription(C=0.1, kernel="rbf", gamma=0.5)
+svdd.fit(X_normal)
+
+# Predict anomalies (0 = normal inlier, 1 = anomaly/outlier)
+predictions = svdd.predict(X_test)
+boundary_scores = svdd.decision_function(X_test)
+print(f"SVDD Predictions: {predictions} | Signed Boundary Distances: {boundary_scores}")
+```
+
+#### Parameter Breakdown: `SupportVectorDataDescription`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `C` | `float` | `0.1` | Outlier penalty slack trade-off parameter ($C \in (0, 1]$). |
+| `kernel` | `str` | `"rbf"` | Kernel function: `"rbf"`, `"poly"`, or `"linear"`. |
+| `gamma` | `Optional[float]` | `None` | RBF scale parameter $\gamma = 1 / (2\sigma^2)$ (defaults to $1/d$). |
+| `degree` | `int` | `3` | Polynomial kernel degree. |
+| `max_iter` | `int` | `200` | Maximum SMO dual optimization iterations. |
+
+---
+
+### 26.4 Spectral Graph Partitioning & Normalized Laplacians (`SpectralGraphClusterer`)
+
+Partitions graphs and complex non-convex manifolds by minimizing Normalized Cut (NCut) via normalized symmetric ($L_{\text{sym}} = I - D^{-1/2} A D^{-1/2}$) and random-walk ($L_{\text{rw}} = I - D^{-1} A$) Laplacian eigen-decomposition:
+
+```python
+import numpy as np
+from chokkhu import SpectralGraphClusterer
+
+# Clustered dataset on non-linear metric space
+c1 = np.random.randn(20, 2) + np.array([-4.0, 0.0])
+c2 = np.random.randn(20, 2) + np.array([4.0, 0.0])
+X_graph = np.vstack([c1, c2])
+
+# Multi-way spectral graph clustering
+spectral = SpectralGraphClusterer(n_clusters=2, affinity="rbf", gamma=0.1, laplacian_type="symmetric", seed=42)
+cluster_labels = spectral.fit_predict(X_graph)
+ncut_val = spectral.normalized_cut(X_graph)
+print(f"Spectral Cluster Labels: {cluster_labels[:5]}... | Normalized Cut (NCut): {ncut_val:.4f}")
+```
+
+#### Parameter Breakdown: `SpectralGraphClusterer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_clusters` | `int` | `2` | Number of target partition clusters $K$. |
+| `laplacian_type` | `str` | `"symmetric"` | Graph Laplacian formulation: `"symmetric"`, `"random_walk"`, or `"unnormalized"`. |
+| `affinity` | `str` | `"precomputed"` | Affinity matrix source: `"precomputed"` (adjacency) or `"rbf"`. |
+| `gamma` | `float` | `1.0` | Gaussian affinity scaling parameter. |
+| `seed` | `int` | `42` | Random seed for spectral assignment. |
+
+---
+
+### 26.5 Differentiable Inductive Logic Programming ($\partial$ILP) & Rule Induction (`DifferentiableILP`)
+
+Learns explainable first-order symbolic Horn clause rules from relational background facts and positive/negative examples via continuous immediate consequence operator $T_P$ deductions:
+$$v_{t+1} = v_t \oplus \bigoplus_{C \in \text{Rules}} w_C \cdot \bigotimes_{b \in \text{body}(C)} v_t(b)$$
+
+```python
+import numpy as np
+from chokkhu import DifferentiableILP
+
+# Define symbolic domain ontology
+predicates = ["parent", "ancestor"]
+constants = ["alice", "bob", "charlie"]
+
+dilp = DifferentiableILP(
+    predicates=predicates,
+    constants=constants,
+    max_steps=2,
+    learning_rate=0.1
+)
+
+# Relational background knowledge & examples
+bg_facts = [("parent", "alice", "bob"), ("parent", "bob", "charlie")]
+pos_examples = [("ancestor", "alice", "bob"), ("ancestor", "bob", "charlie"), ("ancestor", "alice", "charlie")]
+neg_examples = [("ancestor", "charlie", "alice")]
+
+# Gradient-based rule induction
+dilp.fit(bg_facts, pos_examples, neg_examples, epochs=5)
+
+# Query inferred confidence truth degree
+truth_degree = dilp.predict_atom(bg_facts, ("ancestor", "alice", "charlie"))
+print(f"Differentiable ILP Confidence for ancestor(alice, charlie): {truth_degree:.4f}")
+```
+
+#### Parameter Breakdown: `DifferentiableILP`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `predicates` | `List[str]` | *Required* | List of domain relational predicate symbols. |
+| `constants` | `List[str]` | *Required* | List of domain entities/constants. |
+| `max_steps` | `int` | `3` | Number of forward continuous $T_P$ deduction steps. |
+| `learning_rate` | `float` | `0.1` | Gradient descent step size for rule clause weights. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
