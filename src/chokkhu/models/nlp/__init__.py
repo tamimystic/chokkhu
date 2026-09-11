@@ -110,6 +110,17 @@ from .generation import (
     StructuredJSONDecoder,
 )
 
+from .paged_attention import (
+    PagedKVCache,
+    PagedAttention,
+    ContinuousBatcher,
+)
+
+from .mamba2 import (
+    Mamba2SSD,
+    JambaHybridBlock,
+)
+
 __all__ = [
     # Tokenizers
     "BaseTokenizer",
@@ -189,10 +200,16 @@ __all__ = [
     "Qwen2_5",
     "BitLinear",
     "BitNet158",
-    # Generation & Accelerated Decoding
+    # Generation & Accelerated Serving
     "GenerationConfig",
     "sample_next_token",
     "TextGenerator",
     "SpeculativeDecoder",
     "StructuredJSONDecoder",
+    "PagedKVCache",
+    "PagedAttention",
+    "ContinuousBatcher",
+    # Mamba-2 & Jamba
+    "Mamba2SSD",
+    "JambaHybridBlock",
 ]

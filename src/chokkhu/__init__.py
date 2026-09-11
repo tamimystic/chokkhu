@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -498,6 +498,35 @@ from .tda import (
     bottleneck_distance,
 )
 
+
+from .continual import (
+    ElasticWeightConsolidation,
+    EWC,
+    DarkExperienceReplay,
+    DERPlusPlus,
+)
+from .optimal_transport import (
+    SinkhornOptimalTransport,
+    sinkhorn_distance,
+    WassersteinBarycenter,
+    wasserstein_barycenter,
+)
+from .transformation import (
+    SymbolicFeatureSynthesizer,
+    SymbolicProgram,
+)
+from .models.nlp import (
+    PagedKVCache,
+    PagedAttention,
+    ContinuousBatcher,
+    Mamba2SSD,
+    JambaHybridBlock,
+)
+from .models.gnn import (
+    HeteroGCN,
+    SpatioTemporalGCN,
+)
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -918,4 +947,21 @@ __all__ = [
     "PersistenceDiagram",
     "PersistenceLandscape",
     "bottleneck_distance",
+    "PagedKVCache",
+    "PagedAttention",
+    "ContinuousBatcher",
+    "Mamba2SSD",
+    "JambaHybridBlock",
+    "ElasticWeightConsolidation",
+    "EWC",
+    "DarkExperienceReplay",
+    "DERPlusPlus",
+    "HeteroGCN",
+    "SpatioTemporalGCN",
+    "SinkhornOptimalTransport",
+    "sinkhorn_distance",
+    "WassersteinBarycenter",
+    "wasserstein_barycenter",
+    "SymbolicFeatureSynthesizer",
+    "SymbolicProgram",
 ]

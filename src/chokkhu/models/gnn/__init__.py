@@ -24,6 +24,7 @@ from .layers import (
 )
 from .relational import RGCNClassifier, RGCNLayer
 from .temporal import TemporalGraphNetwork
+from .hetero import HeteroGCN, SpatioTemporalGCN
 from .utils import (
     dense_to_edge_index,
     edge_index_to_dense,
@@ -54,4 +55,6 @@ __all__ = [
     "TemporalGraphNetwork",
     "HypergraphConvolution",
     "HGNN",
+    "HeteroGCN",
+    "SpatioTemporalGCN",
 ]

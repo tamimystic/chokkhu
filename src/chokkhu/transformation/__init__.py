@@ -20,6 +20,7 @@ from .resampling import (
 )
 from .tsne import TSNE
 from .umap import UMAP
+from .symbolic_features import SymbolicFeatureSynthesizer, SymbolicProgram
 
 LDA = LinearDiscriminantAnalysis
 
@@ -262,4 +263,6 @@ __all__ = [
     "PolynomialFeatures",
     "LogTransformer",
     "BinningTransformer",
+    "SymbolicFeatureSynthesizer",
+    "SymbolicProgram",
 ]

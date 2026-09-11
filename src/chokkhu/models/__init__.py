@@ -262,7 +262,13 @@ from .nlp import (
     BitNet158,
     SpeculativeDecoder,
     StructuredJSONDecoder,
+    PagedKVCache,
+    PagedAttention,
+    ContinuousBatcher,
+    Mamba2SSD,
+    JambaHybridBlock,
 )
+
 
 from .gnn import (
     GCN,
@@ -277,6 +283,18 @@ from .gnn import (
     dense_to_edge_index,
     edge_index_to_dense,
     global_pool,
+    LaplacianPositionalEncoding,
+    GraphormerLayer,
+    Graphormer,
+    RGCNLayer,
+    RGCNClassifier,
+    EGNNLayer,
+    EGNN,
+    TemporalGraphNetwork,
+    HypergraphConvolution,
+    HGNN,
+    HeteroGCN,
+    SpatioTemporalGCN,
 )
 
 from .timeseries import (
@@ -380,26 +398,6 @@ from .sciml import (
     NeuralODE,
 )
 
-from .gnn import (
-    GAT,
-    GCN,
-    GIN,
-    GraphSAGE,
-    GATLayer,
-    GCNLayer,
-    GINLayer,
-    GraphSAGELayer,
-    LaplacianPositionalEncoding,
-    GraphormerLayer,
-    Graphormer,
-    RGCNLayer,
-    RGCNClassifier,
-    EGNNLayer,
-    EGNN,
-    TemporalGraphNetwork,
-    HypergraphConvolution,
-    HGNN,
-)
 
 __all__ = [
     "Discriminator",
@@ -753,4 +751,11 @@ __all__ = [
     "TemporalGraphNetwork",
     "HypergraphConvolution",
     "HGNN",
+    "PagedKVCache",
+    "PagedAttention",
+    "ContinuousBatcher",
+    "Mamba2SSD",
+    "JambaHybridBlock",
+    "HeteroGCN",
+    "SpatioTemporalGCN",
 ]

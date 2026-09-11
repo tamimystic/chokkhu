@@ -2252,6 +2252,268 @@ print(f"EllipticEnvelope Detected Outliers Count: {np.sum(ee_labels == -1)}")
 | `metric` | `str` | `'euclidean'` | Distance metric (`'euclidean'`, `'manhattan'`, `'cosine'`). |
 | `novelty` | `bool` | `False` | Enable prediction and scoring on unseen testing data. |
 
+## 21. Sovereign Edge-to-Cloud Serving, Hybrid State-Space, Continual Learning & Optimal Transport (Milestone 18)
+
+### 21.1 Sovereign Edge-to-Cloud Serving & Paged Attention (`PagedKVCache`, `PagedAttention`, `ContinuousBatcher`)
+
+```python
+import numpy as np
+from chokkhu import PagedKVCache, PagedAttention, ContinuousBatcher
+from chokkhu.core.tensor import Tensor
+
+# 1. Paged KV Memory Pool (vLLM-style non-contiguous block allocation)
+cache = PagedKVCache(num_blocks=32, block_size=4, num_heads=4, head_dim=16)
+seq_id = "seq_42"
+cache.allocate_sequence(seq_id, num_tokens=0)
+
+# Simulate streaming KV writes
+for t in range(10):
+    k_t = np.random.randn(4, 16).astype(np.float32)
+    v_t = np.random.randn(4, 16).astype(np.float32)
+    cache.append_token(seq_id, k_t, v_t)
+
+# 2. Paged Attention Kernel Computation
+attn = PagedAttention()
+query = np.random.randn(4, 16).astype(np.float32)
+context = attn.forward(query, seq_id, cache)
+print(f"Paged Attention Output Context Shape: {context.shape}")
+stats = cache.memory_usage()
+print(f"Cache Utilization: {stats['utilization']:.1%}, Used Blocks: {stats['used_blocks']}")
+
+# 3. Continuous Batching Iteration Loop
+class MockTokenizer:
+    def encode(self, text, bos=True): return [1, 5, 8]
+    def decode(self, tokens, skip_special_tokens=True): return "Generated response text."
+
+def mock_llm(tensor_in):
+    return Tensor(np.random.randn(1, 1, 50).astype(np.float32), requires_grad=False)
+
+batcher = ContinuousBatcher(model=mock_llm, tokenizer=MockTokenizer(), max_batch_size=4)
+req1 = batcher.add_request("Explain quantum gravity", max_new_tokens=4)
+req2 = batcher.add_request("Write python quicksort", max_new_tokens=3)
+batch_results = batcher.generate_all()
+print(f"Continuous Batching Completed {len(batch_results)} Requests.")
+```
+
+#### Parameter Breakdown: `PagedKVCache`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `num_blocks` | `int` | `128` | Total number of preallocated physical memory blocks in the global pool. |
+| `block_size` | `int` | `16` | Number of token slots per physical memory block. |
+| `num_heads` | `int` | `4` | Number of attention key/value heads. |
+| `head_dim` | `int` | `32` | Dimensionality per attention head. |
+
+#### Parameter Breakdown: `ContinuousBatcher`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `model` | `Any` | *Required* | Causal language model callable accepting input token tensors. |
+| `tokenizer` | `Any` | *Required* | Tokenizer instance providing `encode` and `decode` methods. |
+| `cache` | `PagedKVCache | None` | `None` | Optional preallocated `PagedKVCache` instance. |
+| `max_batch_size` | `int` | `8` | Maximum concurrent active decoding sequences scheduled per iteration. |
+
+---
+
+### 21.2 Structured State-Space Duality & Hybrid LLM Architectures (`Mamba2SSD`, `JambaHybridBlock`)
+
+```python
+import numpy as np
+from chokkhu import Mamba2SSD, JambaHybridBlock
+
+# 1. Mamba-2 Structured State Space Duality (SSD) Layer
+mamba2 = Mamba2SSD(d_model=32, d_state=16, d_conv=4, expand=2, seed=42)
+tokens_emb = np.random.randn(2, 8, 32).astype(np.float32)
+mamba_out = mamba2.forward(tokens_emb)
+print(f"Mamba-2 SSD Forward Output Shape: {mamba_out.shape}")
+
+# 2. Jamba Hybrid (Mamba-2 SSM + MHA + Sparse MoE FFN)
+jamba = JambaHybridBlock(d_model=32, num_heads=4, num_experts=4, top_k=2, seed=42)
+jamba_out = jamba.forward(tokens_emb)
+print(f"Jamba Hybrid Layer Output Shape: {jamba_out.shape}")
+```
+
+#### Parameter Breakdown: `Mamba2SSD`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `d_model` | `int` | `64` | Model input and output feature dimensionality. |
+| `d_state` | `int` | `64` | Latent SSM state dimension ($N$). |
+| `d_conv` | `int` | `4` | 1D causal convolution receptive field width. |
+| `expand` | `int` | `2` | Internal hidden expansion ratio ($d_{inner} = d_{model} 	imes 	ext{expand}$). |
+| `chunk_size` | `int` | `8` | Block chunk size for 1D SSD matrix multiplication. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+#### Parameter Breakdown: `JambaHybridBlock`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `d_model` | `int` | `64` | Input and output feature dimensionality. |
+| `num_heads` | `int` | `4` | Number of multi-head self-attention heads. |
+| `num_experts` | `int` | `4` | Number of parallel feed-forward expert MLPs. |
+| `top_k` | `int` | `2` | Number of active experts routed per token. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+---
+
+### 21.3 Continual Lifelong Learning & Catastrophic Forgetting Mitigation (`ElasticWeightConsolidation`, `DarkExperienceReplay`)
+
+```python
+import numpy as np
+from chokkhu import ElasticWeightConsolidation, DarkExperienceReplay
+
+# 1. Elastic Weight Consolidation (Fisher Quadratic Constraint)
+class SimpleClassifier:
+    def __init__(self):
+        self.weights = np.random.randn(4, 2).astype(np.float32)
+    def predict(self, x):
+        return np.dot(x, self.weights)
+
+model_cont = SimpleClassifier()
+X_task1 = np.random.randn(30, 4).astype(np.float32)
+y_task1 = np.random.randint(0, 2, size=30)
+
+ewc = ElasticWeightConsolidation(importance=50.0)
+ewc.register_task(model_cont, X_task1, y_task1)
+
+# Compute EWC consolidation loss after slight parameter update
+model_cont.weights += 0.05
+pen_loss = ewc.penalty_loss(model_cont)
+print(f"EWC Regularization Penalty: {pen_loss:.4f}")
+
+# 2. Dark Experience Replay (DER++ Knowledge Distillation)
+der = DarkExperienceReplay(buffer_capacity=100, alpha=0.5, beta=0.5)
+logits_task1 = model_cont.predict(X_task1)
+der.add_batch(X_task1, y_task1, logits_task1)
+
+# Sample mini-batch of past exemplars and calculate DER++ loss
+buf_x, buf_y, buf_logits = der.sample(batch_size=8)
+student_logits = model_cont.predict(buf_x)
+total_loss = der.compute_loss(current_task_loss=0.85, student_replay_logits=student_logits, teacher_replay_logits=buf_logits)
+print(f"DER++ Total Regularized Loss: {total_loss:.4f}")
+```
+
+#### Parameter Breakdown: `ElasticWeightConsolidation`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `importance` | `float` | `100.0` | Quadratic penalty multiplier ($\lambda$) weighting historical Fisher Information. |
+
+#### Parameter Breakdown: `DarkExperienceReplay`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `buffer_capacity` | `int` | `500` | Maximum number of exemplar samples and teacher logits stored in reservoir memory. |
+| `alpha` | `float` | `0.5` | Weight multiplier for MSE logit distillation loss. |
+| `beta` | `float` | `0.5` | Weight multiplier for historical replay classification loss. |
+| `seed` | `int` | `42` | Random seed for reservoir replacement sampling. |
+
+---
+
+### 21.4 Heterogeneous & Spatio-Temporal Graph Networks (`HeteroGCN`, `SpatioTemporalGCN`)
+
+```python
+import numpy as np
+from chokkhu import HeteroGCN, SpatioTemporalGCN
+
+# 1. HeteroGCN Multi-Relational Message Passing
+in_dims = {"user": 8, "item": 16}
+relations = [("user", "buys", "item"), ("item", "bought_by", "user")]
+hetero = HeteroGCN(in_channels_dict=in_dims, out_channels=16, relations=relations, seed=42)
+
+x_nodes = {"user": np.random.randn(6, 8).astype(np.float32), "item": np.random.randn(4, 16).astype(np.float32)}
+edge_indices = {
+    ("user", "buys", "item"): np.array([[0, 1, 2, 3], [0, 1, 2, 3]]),
+    ("item", "bought_by", "user"): np.array([[0, 1, 2, 3], [0, 1, 2, 3]]),
+}
+node_embeddings = hetero.forward(x_nodes, edge_indices)
+print(f"HeteroGCN User Embeddings: {node_embeddings['user'].shape}, Item: {node_embeddings['item'].shape}")
+
+# 2. SpatioTemporalGCN Spatial Graph & 1D Temporal Convolutions
+st_gcn = SpatioTemporalGCN(in_channels=3, out_channels=8, temporal_kernel_size=3, seed=42)
+st_tensor = np.random.randn(2, 10, 5, 3).astype(np.float32)  # (Batch, Time, Nodes, Channels)
+adj_graph = np.eye(5) + 0.2
+st_out = st_gcn.forward(st_tensor, adj_graph)
+print(f"Spatio-Temporal Output Tensor Shape: {st_out.shape}")
+```
+
+#### Parameter Breakdown: `HeteroGCN`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_channels_dict` | `Dict[str, int]` | *Required* | Mapping of node type identifiers to their input feature dimensions. |
+| `out_channels` | `int` | *Required* | Output representation dimension for all node types. |
+| `relations` | `Sequence[Tuple[str, str, str]]` | *Required* | List of relational triplets: `(src_node_type, relation_type, dst_node_type)`. |
+| `aggregate` | `str` | `"sum"` | Message aggregation strategy across multiple relation types (`"sum"` or `"mean"`). |
+| `seed` | `int` | `42` | Random seed for relational transformation matrices. |
+
+#### Parameter Breakdown: `SpatioTemporalGCN`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_channels` | `int` | *Required* | Input feature dimensionality per graph node. |
+| `out_channels` | `int` | *Required* | Output feature dimensionality per graph node. |
+| `temporal_kernel_size` | `int` | `9` | Kernel width across the sequence time dimension. |
+| `stride` | `int` | `1` | Stride step for temporal convolution. |
+| `seed` | `int` | `42` | Random seed for spatial and temporal convolution weights. |
+
+---
+
+### 21.5 Geometric Optimal Transport & Wasserstein Barycenters (`SinkhornOptimalTransport`, `WassersteinBarycenter`)
+
+```python
+import numpy as np
+from chokkhu import SinkhornOptimalTransport, WassersteinBarycenter, sinkhorn_distance, wasserstein_barycenter
+
+# 1. Entropic Regularized Optimal Transport Coupling & Distance
+X_source = np.random.randn(15, 2)
+X_target = np.random.randn(20, 2)
+w_dist = sinkhorn_distance(X_source, X_target, reg=0.05)
+print(f"Sinkhorn Regularized Wasserstein Distance: {w_dist:.4f}")
+
+# 2. Wasserstein Geometric Barycenter (Frechet Mean of Distributions)
+grid = np.linspace(0, 1, 25)
+p1 = np.exp(-((grid - 0.2)**2) / 0.02)
+p2 = np.exp(-((grid - 0.8)**2) / 0.02)
+bary = wasserstein_barycenter([p1, p2], (grid[:, None] - grid[None, :])**2, weights=[0.5, 0.5], reg=0.02)
+print(f"Wasserstein Barycenter Computed: Shape={bary.shape}, Sum={np.sum(bary):.2f}")
+```
+
+#### Parameter Breakdown: `SinkhornOptimalTransport`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `reg` | `float` | `0.05` | Entropic regularization coefficient ($\epsilon$). |
+| `max_iter` | `int` | `100` | Maximum Sinkhorn-Knopp scaling iterations. |
+| `tol` | `float` | `1e-6` | Marginal error convergence tolerance. |
+
+#### Parameter Breakdown: `WassersteinBarycenter`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `reg` | `float` | `0.01` | Entropic regularization strength ($\epsilon$). |
+| `max_iter` | `int` | `50` | Maximum iterative barycentric scaling iterations. |
+| `tol` | `float` | `1e-5` | Convergence tolerance for barycenter updates. |
+
+---
+
+### 21.6 Automated Symbolic Feature Synthesis (`SymbolicFeatureSynthesizer`, `SymbolicProgram`)
+
+```python
+import numpy as np
+from chokkhu import SymbolicFeatureSynthesizer
+
+X_data = np.random.randn(40, 4)
+y_target = X_data[:, 0] * X_data[:, 1] + np.sin(X_data[:, 2])
+
+synthesizer = SymbolicFeatureSynthesizer(n_features=3, generations=3, population_size=15, random_state=42)
+synthesizer.fit(X_data, y_target, feature_names=["f1", "f2", "f3", "f4"])
+evolved_features = synthesizer.transform(X_data)
+print(f"Synthesized Features Shape: {evolved_features.shape}")
+print(f"Discovered Formulas: {synthesizer.get_feature_names()}")
+```
+
+#### Parameter Breakdown: `SymbolicFeatureSynthesizer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_features` | `int` | `5` | Number of top synthesized feature columns retained. |
+| `generations` | `int` | `4` | Number of evolutionary genetic programming generations. |
+| `population_size` | `int` | `20` | Candidate expression trees per generation. |
+| `tournament_size` | `int` | `3` | Size of Pareto tournament selection pool. |
+| `random_state` | `int | None` | `42` | Random seed for evolution reproducibility. |
+
+---
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
