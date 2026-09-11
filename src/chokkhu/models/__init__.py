@@ -1,4 +1,11 @@
 from __future__ import annotations
+from .merging import (
+    TIESMerging,
+    DARE,
+    SLERP,
+    RegMean,
+    FrankWolfeEnsemble,
+)
 
 from .geometric import (
     SphericalHarmonics,
@@ -847,4 +854,9 @@ __all__ = [
     "GoalConditionedDQN",
     "ScoreMatchingEBM",
     "AnnealedLangevinDynamics",
+    "TIESMerging",
+    "DARE",
+    "SLERP",
+    "RegMean",
+    "FrankWolfeEnsemble",
 ]

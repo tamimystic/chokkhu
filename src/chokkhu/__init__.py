@@ -1,4 +1,11 @@
 from __future__ import annotations
+from .models.merging import (
+    TIESMerging,
+    DARE,
+    SLERP,
+    RegMean,
+    FrankWolfeEnsemble,
+)
 
 from typing import Any, Optional
 
@@ -1155,4 +1162,9 @@ __all__ = [
     "GRACE",
     "ProgramSynthesizer",
     "DSLGrammar",
+    "TIESMerging",
+    "DARE",
+    "SLERP",
+    "RegMean",
+    "FrankWolfeEnsemble",
 ]
