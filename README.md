@@ -60,7 +60,13 @@
 
 ## Installation
 
-Install Chokkhu effortlessly via pip:
+Install Chokkhu via pip:
+
+```bash
+pip install chokkhu
+```
+
+To upgrade an existing installation to the latest release:
 
 ```bash
 pip install --upgrade chokkhu
