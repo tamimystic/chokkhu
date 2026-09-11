@@ -97,6 +97,7 @@ pip install -e .
 | **2D Vision & Audio** | ResNet, ConvNeXt, SwinTransformer, DeiT, ViT, YOLO, Faster R-CNN, RetinaNet; STFT, MelSpectrogram, MFCC, Conformer, AST, Wav2Vec2 |
 | **Explainable AI (XAI)** | `IntegratedGradients`, `SmoothGrad`, `DeepLIFT`, `KernelSHAP`, `PermutationImportance`, `PartialDependence` |
 | **Multi-Agent Economy & XAI Circuits** | Replicator-Mutator Dynamics, VCG Combinatorial Auctions, Causal Activation Patching, CFG Guided Diffusion Inpainting, Raw Byte Transformers, NeuralSort |
+| **Geometric DL & Online Optimization** | `SphericalHarmonics`, `SE3EquivariantConv`, `FollowTheRegularizedLeader` (FTRL), `HedgeAlgorithm`, `KraskovMutualInformation` (KSG), `MultivariateKDE`, `EnergyBasedModel` (SGLD), `SlicedScoreMatching`, `M5ModelTree`, `RuleFitRegressor` |
 
 ---
 
@@ -3113,6 +3114,183 @@ print(f"Differentiable Spearman Loss: {spearman_loss:.4f} | Soft NDCG Loss: {ndc
 | `tau` | `float` | `1.0` | Temperature relaxation parameter ($	au 	o 0$ approaches exact discrete hard sort). |
 | `pred_scores` | `np.ndarray` | *Required* | Model output relevance score predictions. |
 | `true_relevance` | `np.ndarray` | *Required* | Ground-truth relevance or ranking labels. |
+
+
+
+---
+
+## 25. Geometric Deep Learning, Online Optimization, Information Theory, Energy Models & Model Trees
+
+### 25.1 Spherical Harmonics & SE(3) Equivariant Steerable Convolutions (`SphericalHarmonics`, `SE3EquivariantConv`)
+
+Implements continuous $SO(3)$-steerable spherical harmonic basis expansions $Y_l^m(\hat{r})$ and radial basis message passing for 3D atomic structures, crystal lattices, and equivariant point clouds:
+$$f_{\text{out}}(i) = \sum_{j \in \mathcal{N}(i)} W_{\text{radial}}(\|r_{ij}\|) \left( Y_l^m(\hat{r}_{ij}) \otimes f_{\text{in}}(j) \right) + b$$
+
+```python
+import numpy as np
+from chokkhu import SphericalHarmonics, SE3EquivariantConv
+
+# 1. Real Spherical Harmonics Basis (l=0, 1, 2)
+direction_vectors = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+Y_harmonics = SphericalHarmonics.compute(direction_vectors, max_l=2)
+print(f"Real Spherical Harmonics Basis Evaluations Shape: {Y_harmonics.shape}")
+
+# 2. SE(3) Equivariant Steerable Point Convolution
+conv = SE3EquivariantConv(in_dim=4, out_dim=8, max_l=1, cutoff_radius=5.0, seed=42)
+atom_coords = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+atom_features = np.ones((3, 4))
+
+out_features = conv.forward(atom_coords, atom_features)
+print(f"SE(3) Equivariant Transformed Atom Features: {out_features.shape}")
+```
+
+#### Parameter Breakdown: `SphericalHarmonics` & `SE3EquivariantConv`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_dim` | `int` | *Required* | Input node/atom feature dimension. |
+| `out_dim` | `int` | *Required* | Output representation dimension. |
+| `max_l` | `int` | `1` | Maximum spherical harmonic degree ($l \in \{0, 1, 2\}$). |
+| `num_radial_bases` | `int` | `8` | Number of Gaussian radial basis functions for radial distance filtering. |
+| `cutoff_radius` | `float` | `5.0` | Spatial neighborhood interaction cutoff distance. |
+
+---
+
+### 25.2 Follow-The-Regularized-Leader (FTRL-Proximal) & Hedge Algorithm (`FollowTheRegularizedLeader`, `HedgeAlgorithm`)
+
+Enables web-scale online learning with $L_1 / L_2$ sparse proximal soft-thresholding alongside minimax-optimal multi-expert decision making.
+
+```python
+import numpy as np
+from chokkhu import FollowTheRegularizedLeader, HedgeAlgorithm
+
+# 1. FTRL-Proximal Online Logistic Regression for Streaming CTR Prediction
+ftrl = FollowTheRegularizedLeader(alpha=0.1, beta=1.0, lambda1=0.01, lambda2=0.1, loss="logistic")
+X_stream = np.random.randn(100, 10)
+y_stream = (X_stream[:, 0] > 0.0).astype(float)
+
+for i in range(len(X_stream)):
+    ftrl.update_one(X_stream[i], y_stream[i])
+
+click_prob = ftrl.predict(X_stream[:3])
+print(f"FTRL Streaming Click Probability: {click_prob}")
+
+# 2. Hedge Multi-Expert Minimax Regret Minimization
+hedge = HedgeAlgorithm(num_experts=3, time_horizon=50)
+expert_losses = np.array([0.1, 0.4, 0.7])  # Round losses suffered by 3 candidate models
+round_loss, regret = hedge.update(expert_losses)
+print(f"Hedge Multi-Expert Allocation: {hedge.predict_distribution()} | Cumulative Regret: {regret:.4f}")
+```
+
+#### Parameter Breakdown: `FollowTheRegularizedLeader` & `HedgeAlgorithm`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `alpha` | `float` | `0.1` | Per-coordinate learning rate scale $\alpha$. |
+| `beta` | `float` | `1.0` | Learning rate denominator smoothing parameter. |
+| `lambda1` | `float` | `0.1` | $L_1$ sparsity-inducing regularization penalty. |
+| `lambda2` | `float` | `1.0` | $L_2$ shrinkage regularization penalty. |
+| `num_experts` | `int` | *Required* | Number of participating experts $K$. |
+
+---
+
+### 25.3 Non-Parametric Information Theory & Continuous Density Estimation (`KraskovMutualInformation`, `MultivariateKDE`)
+
+Estimates continuous non-parametric mutual information $I(X; Y) = \psi(k) - \frac{1}{N}\sum [\psi(n_x + 1) + \psi(n_y + 1)] + \psi(N)$ and multidimensional kernel densities without assuming Gaussianity.
+
+```python
+import numpy as np
+from chokkhu import KraskovMutualInformation, MultivariateKDE
+
+# 1. KSG k-NN Continuous Mutual Information
+ksg = KraskovMutualInformation(k=3)
+X = np.random.randn(200, 1)
+Y = np.sin(X * 2.0) + 0.1 * np.random.randn(200, 1)
+mi = ksg.estimate(X, Y)
+print(f"Non-Linear Continuous Mutual Information I(X; Y): {mi:.4f} nats")
+
+# 2. Multivariate Kernel Density Estimator (KDE)
+kde = MultivariateKDE(bandwidth="silverman", kernel="gaussian")
+kde.fit(np.hstack([X, Y]))
+log_density = kde.score_samples(np.hstack([X[:3], Y[:3]]))
+generated_points = kde.sample(n_samples=5)
+print(f"Log Prob Density: {log_density} | Sampled Points Shape: {generated_points.shape}")
+```
+
+#### Parameter Breakdown: `KraskovMutualInformation` & `MultivariateKDE`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `k` | `int` | `3` | Number of nearest neighbors in joint Chebyshev metric space. |
+| `bandwidth` | `Union[str, float]` | `"silverman"` | Bandwidth selection rule (`"silverman"`, `"scott"`, or explicit float $h$). |
+| `kernel` | `str` | `"gaussian"` | Smoothing kernel function (`"gaussian"`, `"epanechnikov"`, `"box"`). |
+
+---
+
+### 25.4 Energy-Based Models & Sliced Score Matching (`EnergyBasedModel`, `SlicedScoreMatching`)
+
+Parameterizes unnormalized Boltzmann densities $p_\theta(x) \propto e^{-E_\theta(x)}$ with Stochastic Gradient Langevin Dynamics (SGLD) sampling and Hutchinson sliced score matching.
+
+```python
+import numpy as np
+from chokkhu import EnergyBasedModel, SlicedScoreMatching
+
+# 1. Continuous Energy-Based Model & SGLD MCMC Sampling
+ebm = EnergyBasedModel(in_dim=4, hidden_dim=32, seed=42)
+data_points = np.random.randn(50, 4)
+energy_values = ebm.energy(data_points[:3])
+langevin_samples = ebm.sample_sgld(n_samples=10, num_steps=20, step_size=0.01)
+print(f"Evaluated Energy: {energy_values} | SGLD Generated Samples: {langevin_samples.shape}")
+
+# 2. Sliced Score Matching (Hutchinson Random Vector Trace Estimator)
+score_model = lambda x: -0.5 * x  # Score vector estimator nabla_x log p(x)
+ssm = SlicedScoreMatching(score_fn=score_model, num_projections=4)
+matching_loss = ssm.compute_loss(data_points)
+print(f"Sliced Score Matching Loss: {matching_loss:.4f}")
+```
+
+#### Parameter Breakdown: `EnergyBasedModel` & `SlicedScoreMatching`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_dim` | `int` | *Required* | Input feature space dimensionality. |
+| `hidden_dim` | `int` | `64` | Energy network hidden layer width. |
+| `step_size` | `float` | `0.05` | Langevin diffusion step size $\epsilon$. |
+| `num_projections` | `int` | `4` | Number of random Hutchinson directional projections per sample. |
+
+---
+
+### 25.5 Piecewise Linear Model Trees & Interpretable RuleFit (`M5ModelTree`, `RuleFitRegressor`, `RuleFitClassifier`)
+
+Implements the M5 algorithm combining decision tree partitions with leaf multivariate Ridge regressions, and RuleFit sparse Lasso rule ensembles.
+
+```python
+import numpy as np
+from chokkhu import M5ModelTree, RuleFitRegressor, RuleFitClassifier
+
+X = np.random.uniform(-2.0, 2.0, size=(100, 3))
+y_reg = np.where(X[:, 0] <= 0.0, 2.0 * X[:, 0] + 1.0, -3.0 * X[:, 0] + 1.0)
+y_cls = (y_reg > 0.0).astype(int)
+
+# 1. M5 Piecewise Linear Model Tree
+m5 = M5ModelTree(max_depth=4, min_samples_split=5, smoothing=5.0)
+m5.fit(X, y_reg)
+m5_predictions = m5.predict(X[:3])
+print(f"M5 Piecewise Linear Predictions: {m5_predictions}")
+
+# 2. RuleFit Sparse Rule Ensembles
+rf_reg = RuleFitRegressor(num_trees=5, max_depth=2, alpha=0.01, seed=42)
+rf_reg.fit(X, y_reg)
+print(f"RuleFit Regression Predictions: {rf_reg.predict(X[:3])}")
+
+rf_cls = RuleFitClassifier(num_trees=5, max_depth=2, alpha=0.01, seed=42)
+rf_cls.fit(X, y_cls)
+print(f"RuleFit Classification Probabilities: {rf_cls.predict_proba(X[:3])[:, 1]}")
+```
+
+#### Parameter Breakdown: `M5ModelTree` & `RuleFitRegressor`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `max_depth` | `int` | `5` | Maximum tree depth. |
+| `min_samples_split` | `int` | `10` | Minimum samples required to partition an internal node. |
+| `smoothing` | `float` | `15.0` | Leaf-parent model prediction smoothing constant $k$. |
+| `alpha` | `float` | `0.01` | $L_1$ Lasso regularization penalty for rule selection. |
 
 
 ## License & Citation

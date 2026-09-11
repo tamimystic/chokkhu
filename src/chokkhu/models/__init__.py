@@ -1,5 +1,20 @@
 from __future__ import annotations
 
+from .geometric import (
+    SphericalHarmonics,
+    SE3EquivariantConv,
+)
+from .energy import (
+    EnergyBasedModel,
+    SlicedScoreMatching,
+)
+from .trees import (
+    M5ModelTree,
+    RuleFitRegressor,
+    RuleFitClassifier,
+)
+
+
 from .generative import (
     VAE,
     VQVAE,
@@ -801,4 +816,11 @@ __all__ = [
     "DifferentiableLogicEngine",
     "RotatE",
     "TransE",
+    "SphericalHarmonics",
+    "SE3EquivariantConv",
+    "EnergyBasedModel",
+    "SlicedScoreMatching",
+    "M5ModelTree",
+    "RuleFitRegressor",
+    "RuleFitClassifier",
 ]

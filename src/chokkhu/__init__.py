@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -579,6 +579,29 @@ from .explainability import (
 )
 
 
+from .models.geometric import (
+    SphericalHarmonics,
+    SE3EquivariantConv,
+)
+from .optimization import (
+    FollowTheRegularizedLeader,
+    HedgeAlgorithm,
+)
+from .information import (
+    KraskovMutualInformation,
+    MultivariateKDE,
+)
+from .models.energy import (
+    EnergyBasedModel,
+    SlicedScoreMatching,
+)
+from .models.trees import (
+    M5ModelTree,
+    RuleFitRegressor,
+    RuleFitClassifier,
+)
+
+
 __all__ = [
     "Discriminator",
     "Generator",
@@ -1047,4 +1070,15 @@ __all__ = [
     "ByteTransformer",
     "NeuralSort",
     "DifferentiableRankingLoss",
+    "SphericalHarmonics",
+    "SE3EquivariantConv",
+    "FollowTheRegularizedLeader",
+    "HedgeAlgorithm",
+    "KraskovMutualInformation",
+    "MultivariateKDE",
+    "EnergyBasedModel",
+    "SlicedScoreMatching",
+    "M5ModelTree",
+    "RuleFitRegressor",
+    "RuleFitClassifier",
 ]
