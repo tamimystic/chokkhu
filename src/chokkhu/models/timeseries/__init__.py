@@ -1,6 +1,10 @@
 """Time Series & Forecasting Subsystem from First Principles."""
 
 from __future__ import annotations
+from .kalman import (
+    ExtendedKalmanFilter,
+    UnscentedKalmanFilter,
+)
 from .transforms import (
     decompose_series,
     create_lag_matrix,
@@ -45,4 +49,6 @@ __all__ = [
     "MatrixProfile",
     "find_motifs",
     "find_discords",
+    "ExtendedKalmanFilter",
+    "UnscentedKalmanFilter",
 ]

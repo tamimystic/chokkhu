@@ -13,6 +13,10 @@ from .policy_gradient import ActorCritic, REINFORCE
 from .ppo import PPO
 from .q_learning import QLearning
 from .sac import SAC
+from .her import (
+    HindsightExperienceReplay,
+    GoalConditionedDQN,
+)
 
 __all__ = [
     "GridWorld",
@@ -31,4 +35,6 @@ __all__ = [
     "ThompsonSamplingBandit",
     "LinUCBBandit",
     "DecisionTransformer",
+    "HindsightExperienceReplay",
+    "GoalConditionedDQN",
 ]

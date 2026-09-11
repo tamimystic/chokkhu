@@ -3471,6 +3471,180 @@ print(f"Differentiable ILP Confidence for ancestor(alice, charlie): {truth_degre
 | `seed` | `int` | `42` | Random seed for weight initialization. |
 
 
+---
+
+## 27. Scaled Diffusion Transformers, K-FAC Natural Gradient, Kalman Filtering, Hindsight RL & Conformalized Quantile Regression
+
+### 27.1 Patch-Level Scaled Diffusion Transformers with Adaptive LayerNorm (`DiffusionTransformer`, `DiTBlock`, `AdaLNZero`)
+
+Implements Vision Transformer (ViT) architectures for generative diffusion modeling following Peebles & Xie (ICCV 2023), replacing convolutional UNets with visual patch tokens and Adaptive Layer Normalization (`adaLN-Zero`) modulation:
+$$\text{DiTBlock}(x) = x + \alpha_1 \cdot \text{SelfAttention}(\text{modulate}(\text{LayerNorm}(x), \gamma_1, \beta_1))$$
+$$\text{Out}(x) = \text{DiTBlock}(x) + \alpha_2 \cdot \text{MLP}(\text{modulate}(\text{LayerNorm}(\text{DiTBlock}(x)), \gamma_2, \beta_2))$$
+
+```python
+import numpy as np
+from chokkhu import DiffusionTransformer
+
+# Initialize Diffusion Transformer (DiT)
+dit = DiffusionTransformer(input_size=16, in_channels=4, patch_size=2, hidden_dim=32, depth=2)
+
+# 1. Forward noise prediction at diffusion timesteps
+noisy_latents = np.random.randn(2, 4, 16, 16)
+timesteps = np.array([10, 25])
+predicted_noise = dit.forward(noisy_latents, timesteps)
+print(f"DiT Noise Prediction Tensor Shape: {predicted_noise.shape}")
+
+# 2. Reverse diffusion generation loop
+sampled_latents = dit.sample(shape=(2, 4, 16, 16), n_steps=5)
+print(f"Sampled Latent Representation Shape: {sampled_latents.shape}")
+```
+
+#### Parameter Breakdown: `DiffusionTransformer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `input_size` | `int` | `16` | Spatial width and height of 2D input feature grid. |
+| `in_channels` | `int` | `4` | Number of input channels (e.g. latent channels). |
+| `patch_size` | `int` | `2` | Spatial patch size $p \times p$. |
+| `hidden_dim` | `int` | `64` | Transformer embedding dimensionality. |
+| `depth` | `int` | `4` | Number of cascaded DiT blocks. |
+| `num_heads` | `int` | `4` | Number of multi-head self-attention heads. |
+
+---
+
+### 27.2 Kronecker-Factored Approximate Curvature (K-FAC) Optimizer (`KFAC`)
+
+Scalable second-order Natural Gradient Descent optimizer (Martens & Grosse 2015) approximating the block-diagonal Fisher Information Matrix as Kronecker products of layer activation and gradient covariances:
+$$F_l \approx A_{l-1} \otimes S_l \implies \nabla^{\text{nat}} W_l = S_l^{-1} (\nabla_{W_l} \mathcal{L}) A_{l-1}^{-1}$$
+
+```python
+import numpy as np
+from chokkhu import KFAC
+
+# Initialize K-FAC Second-Order Optimizer
+kfac = KFAC(lr=0.01, damping=1e-3, momentum=0.9)
+
+# Register forward activations and backward pre-activation gradients
+activations = np.random.randn(10, 4)
+pre_grads = np.random.randn(10, 3)
+kfac.update_factors("layer1", activations, pre_grads)
+
+# Compute preconditioned natural gradient
+grad_W = np.random.randn(3, 4)
+nat_grad = kfac.precondition_gradient("layer1", grad_W)
+print(f"K-FAC Curvature-Preconditioned Natural Gradient: {nat_grad.shape}")
+```
+
+#### Parameter Breakdown: `KFAC`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `lr` | `float` | `0.01` | Second-order parameter update learning rate $\eta$. |
+| `damping` | `float` | `1e-3` | Tikhonov damping factor $\gamma$ ensuring positive definiteness. |
+| `momentum` | `float` | `0.9` | Velocity momentum coefficient. |
+| `ema_decay` | `float` | `0.95` | Exponential moving average decay for covariance statistics. |
+
+---
+
+### 27.3 Non-Linear Optimal State Estimation & Sensor Fusion (`ExtendedKalmanFilter`, `UnscentedKalmanFilter`)
+
+Bayesian state estimation for non-linear dynamical systems and trajectory tracking via Jacobian linearization (EKF) and deterministic sigma-point Unscented Transforms (UKF):
+
+```python
+import numpy as np
+from chokkhu import ExtendedKalmanFilter, UnscentedKalmanFilter
+
+# Non-linear motion and observation functions
+def f(x, u): return np.array([x[0] + 0.1 * np.cos(x[0])])
+def h(x): return np.array([x[0]**2])
+
+# 1. Extended Kalman Filter (EKF)
+ekf = ExtendedKalmanFilter(dim_x=1, dim_z=1, f=f, h=h)
+ekf.x = np.array([1.5])
+ekf.predict()
+x_ekf, P_ekf = ekf.update(np.array([2.25]))
+print(f"EKF State Estimate: {x_ekf} | Covariance: {P_ekf.diagonal()}")
+
+# 2. Unscented Kalman Filter (UKF)
+ukf = UnscentedKalmanFilter(dim_x=1, dim_z=1, f=f, h=h)
+ukf.x = np.array([1.5])
+ukf.predict()
+x_ukf, P_ukf = ukf.update(np.array([2.25]))
+print(f"UKF State Estimate: {x_ukf} | Covariance: {P_ukf.diagonal()}")
+```
+
+#### Parameter Breakdown: `ExtendedKalmanFilter` & `UnscentedKalmanFilter`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `dim_x` | `int` | *Required* | State vector dimensionality $L$. |
+| `dim_z` | `int` | *Required* | Measurement observation dimensionality $M$. |
+| `f` | `Callable` | *Required* | Non-linear state transition function $f(x, u)$. |
+| `h` | `Callable` | *Required* | Non-linear measurement function $h(x)$. |
+| `alpha` | `float` | `1e-3` | UKF sigma point spread parameter $\alpha$. |
+
+---
+
+### 27.4 Hindsight Experience Replay & Goal-Conditioned RL (`HindsightExperienceReplay`, `GoalConditionedDQN`)
+
+Solves sparse-reward goal-conditioned MDPs by retrospectively substituting failed goals with achieved terminal states (Andrychowicz et al. NeurIPS 2017):
+
+```python
+import numpy as np
+from chokkhu import HindsightExperienceReplay, GoalConditionedDQN
+
+# 1. Hindsight Experience Replay Buffer
+her = HindsightExperienceReplay(capacity=1000, strategy="future", k=4)
+states = [np.random.randn(2) for _ in range(6)]
+actions = [0, 1, 0, 1, 0]
+target_goal = np.array([2.0, 2.0])
+her.add_episode(states, actions, target_goal)
+
+# 2. Goal-Conditioned Deep Q-Network
+agent = GoalConditionedDQN(state_dim=2, goal_dim=2, num_actions=4, hidden_dim=16)
+loss = agent.train_step(her, batch_size=4)
+print(f"HER Synthesized Transitions: {len(her)} | Bellman Loss: {loss:.4f}")
+```
+
+#### Parameter Breakdown: `HindsightExperienceReplay` & `GoalConditionedDQN`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `strategy` | `str` | `"future"` | Goal replay strategy: `"future"`, `"final"`, or `"random"`. |
+| `k` | `int` | `4` | Number of synthesized hindsight goals per original transition. |
+| `state_dim` | `int` | *Required* | Observation space dimensionality. |
+| `goal_dim` | `int` | *Required* | Target goal space dimensionality. |
+
+---
+
+### 27.5 Conformalized Quantile Regression with Exact Finite-Sample Validity (`ConformalizedQuantileRegression`, `QuantileRegressor`)
+
+Provides distribution-free prediction intervals with mathematically guaranteed finite-sample coverage $P(Y \in \hat{C}(X)) \ge 1 - \alpha$ via pinball loss regression and split conformal calibration (Romano et al. 2019):
+$$\hat{C}(x) = [\hat{q}_{\alpha/2}(x) - \hat{Q}_{1-\alpha}(E), \; \hat{q}_{1-\alpha/2}(x) + \hat{Q}_{1-\alpha}(E)]$$
+
+```python
+import numpy as np
+from chokkhu import ConformalizedQuantileRegression
+
+# Synthetic heteroscedastic dataset
+X_tr = np.random.uniform(-2, 2, size=(80, 1))
+y_tr = 3.0 * X_tr + np.random.randn(80, 1) * 0.5
+X_cal = np.random.uniform(-2, 2, size=(40, 1))
+y_cal = 3.0 * X_cal + np.random.randn(40, 1) * 0.5
+X_te = np.random.uniform(-2, 2, size=(20, 1))
+y_te = 3.0 * X_te + np.random.randn(20, 1) * 0.5
+
+# Fit, Calibrate and Predict Intervals
+cqr = ConformalizedQuantileRegression(alpha=0.1) # 90% Target Coverage
+cqr.fit(X_tr, y_tr).calibrate(X_cal, y_cal)
+low_bound, high_bound = cqr.predict_interval(X_te)
+metrics = cqr.evaluate_coverage(X_te, y_te)
+print(f"CQR Empirical Coverage: {metrics['empirical_coverage']:.1%} (Target: {metrics['target_coverage']:.1%})")
+```
+
+#### Parameter Breakdown: `ConformalizedQuantileRegression`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `alpha` | `float` | `0.1` | Target significance error rate ($1-\alpha$ confidence level). |
+| `max_iter` | `int` | `100` | Maximum iterations for quantile regression solvers. |
+
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

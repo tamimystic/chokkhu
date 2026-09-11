@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.5.3"
+__version__ = "1.5.4"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -48,6 +48,9 @@ from .models import (
     DiscreteTextDiffusion,
     ClassifierFreeGuidance,
     DiffusionInpainter,
+    DiffusionTransformer,
+    DiTBlock,
+    AdaLNZero,
     VectorQuantizer,
     VQVAE,
     VAE,
@@ -307,6 +310,8 @@ from .models.rl import (
     ThompsonSamplingBandit,
     LinUCBBandit,
     DecisionTransformer,
+    HindsightExperienceReplay,
+    GoalConditionedDQN,
 )
 
 from .models.timeseries import (
@@ -321,6 +326,8 @@ from .models.timeseries import (
     MatrixProfile,
     find_motifs,
     find_discords,
+    ExtendedKalmanFilter,
+    UnscentedKalmanFilter,
 )
 
 from .automl import (
@@ -595,6 +602,7 @@ from .optimization import (
     FollowTheRegularizedLeader,
     HedgeAlgorithm,
     OptNet,
+    KFAC,
 )
 from .information import (
     KraskovMutualInformation,
@@ -608,6 +616,10 @@ from .models.trees import (
     M5ModelTree,
     RuleFitRegressor,
     RuleFitClassifier,
+)
+from .uncertainty import (
+    ConformalizedQuantileRegression,
+    QuantileRegressor,
 )
 
 
@@ -1095,4 +1107,14 @@ __all__ = [
     "SupportVectorDataDescription",
     "SpectralGraphClusterer",
     "DifferentiableILP",
+    "DiffusionTransformer",
+    "DiTBlock",
+    "AdaLNZero",
+    "KFAC",
+    "ExtendedKalmanFilter",
+    "UnscentedKalmanFilter",
+    "HindsightExperienceReplay",
+    "GoalConditionedDQN",
+    "ConformalizedQuantileRegression",
+    "QuantileRegressor",
 ]

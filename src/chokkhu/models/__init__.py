@@ -44,6 +44,9 @@ from .generative import (
     DiscreteTextDiffusion,
     ClassifierFreeGuidance,
     DiffusionInpainter,
+    DiffusionTransformer,
+    DiTBlock,
+    AdaLNZero,
 )
 from .audio import (
     stft,
@@ -105,6 +108,8 @@ from .rl import (
     ThompsonSamplingBandit,
     LinUCBBandit,
     DecisionTransformer,
+    HindsightExperienceReplay,
+    GoalConditionedDQN,
 )
 from .dl import (
     Adam,
@@ -361,6 +366,8 @@ from .timeseries import (
     MatrixProfile,
     find_motifs,
     find_discords,
+    ExtendedKalmanFilter,
+    UnscentedKalmanFilter,
 )
 
 from .retrieval import (
@@ -829,4 +836,11 @@ __all__ = [
     "RuleFitClassifier",
     "SupportVectorDataDescription",
     "DifferentiableILP",
+    "DiffusionTransformer",
+    "DiTBlock",
+    "AdaLNZero",
+    "ExtendedKalmanFilter",
+    "UnscentedKalmanFilter",
+    "HindsightExperienceReplay",
+    "GoalConditionedDQN",
 ]

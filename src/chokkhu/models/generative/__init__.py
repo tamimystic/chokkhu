@@ -17,6 +17,11 @@ from .cyclegan import (
     CycleGANGenerator,
     PatchGANDiscriminator,
 )
+from .dit import (
+    DiffusionTransformer,
+    DiTBlock,
+    AdaLNZero,
+)
 from .diffusion import (
     DDPM,
     DenoisingMLP,
@@ -90,4 +95,7 @@ __all__ = [
     # Guidance & Inpainting
     "ClassifierFreeGuidance",
     "DiffusionInpainter",
+    "DiffusionTransformer",
+    "DiTBlock",
+    "AdaLNZero",
 ]
