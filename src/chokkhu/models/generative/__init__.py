@@ -57,6 +57,12 @@ from .guidance import (
     ClassifierFreeGuidance,
     DiffusionInpainter,
 )
+from .consistency import (
+    ConsistencyModel,
+    ConsistencyMLP,
+    OptimalTransportFlowMatching,
+    ReflowMatching,
+)
 
 __all__ = [
     # Autoencoders
@@ -80,10 +86,14 @@ __all__ = [
     "CycleGAN",
     "CycleGANGenerator",
     "PatchGANDiscriminator",
-    # Flow Matching
+    # Flow Matching & Consistency Models
     "VelocityMLP",
     "FlowMatching",
     "RectifiedFlow",
+    "ConsistencyModel",
+    "ConsistencyMLP",
+    "OptimalTransportFlowMatching",
+    "ReflowMatching",
     # Normalizing Flows
     "AffineCouplingLayer",
     "RealNVP",

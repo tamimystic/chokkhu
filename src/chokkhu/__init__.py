@@ -24,10 +24,15 @@ from .models.merging import (
     RegMean,
     FrankWolfeEnsemble,
 )
+from .models.generative import (
+    ConsistencyModel,
+    OptimalTransportFlowMatching,
+    ReflowMatching,
+)
 
 from typing import Any, Optional
 
-__version__ = "1.5.7"
+__version__ = "1.5.8"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
