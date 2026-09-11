@@ -13,13 +13,17 @@ import numpy as np
 from chokkhu.models.sciml.fno import SpectralConv2d, FourierNeuralOperator2D
 from chokkhu.models.causal.instrumental import TwoStageLeastSquares, InstrumentalGMM
 from chokkhu.ranking.lambdamart import LambdaMART, ListNet, ndcg_at_k
-from chokkhu.models.energy.score_matching import ScoreMatchingEBM, AnnealedLangevinDynamics
+from chokkhu.models.energy.score_matching import (
+    ScoreMatchingEBM,
+    AnnealedLangevinDynamics,
+)
 from chokkhu.tda.vectorization import PersistenceLandscape, PersistenceImage
 
 
 # =====================================================================
 # 1. Fourier Neural Operator (FNO-2D) Tests
 # =====================================================================
+
 
 def test_spectral_conv2d_forward():
     """Test 2D Spectral Convolution layer forward pass and shapes."""
@@ -81,6 +85,7 @@ def test_fno2d_fit():
 # 2. Instrumental Variables Regression (2SLS & GMM) Tests
 # =====================================================================
 
+
 def test_twostage_least_squares_endogeneity():
     """Test 2SLS consistency under endogenous omitted variable confounding."""
     rng = np.random.RandomState(42)
@@ -141,6 +146,7 @@ def test_instrumental_gmm():
 # 3. Learning-to-Rank (LambdaMART & ListNet) Tests
 # =====================================================================
 
+
 def test_ndcg_at_k():
     """Test NDCG@k metric computation."""
     rel_perfect = np.array([3, 2, 1, 0])
@@ -168,7 +174,7 @@ def test_lambdamart_ranking():
     assert len(scores) == N
 
     # Check NDCG on query 0
-    q0_mask = (query_ids == 0)
+    q0_mask = query_ids == 0
     q0_rel = relevance[q0_mask]
     q0_scores = scores[q0_mask]
     q0_sorted_rel = q0_rel[np.argsort(q0_scores)[::-1]]
@@ -196,12 +202,15 @@ def test_listnet_ranking():
 # 4. Energy-Based Score Matching Tests
 # =====================================================================
 
+
 def test_score_matching_ebm_and_langevin():
     """Test ScoreMatchingEBM with DSM and Annealed Langevin Dynamics."""
     rng = np.random.RandomState(42)
     X = rng.randn(100, 2) * 0.5  # Zero-mean Gaussian cluster
 
-    ebm = ScoreMatchingEBM(input_dim=2, hidden_dim=32, method="dsm", sigma=0.1, lr=1e-2, seed=42)
+    ebm = ScoreMatchingEBM(
+        input_dim=2, hidden_dim=32, method="dsm", sigma=0.1, lr=1e-2, seed=42
+    )
     ebm.fit(X, epochs=15, batch_size=25)
 
     # Score vector at (0, 0) should be small
@@ -223,14 +232,17 @@ def test_score_matching_ebm_and_langevin():
 # 5. Topological Data Analysis Vectorization Tests
 # =====================================================================
 
+
 def test_persistence_landscape_vectorization():
     """Test PersistenceLandscape vectorization of persistence diagrams."""
-    diagram = np.array([
-        [0.0, 1.0],
-        [0.2, 0.8],
-        [0.3, 0.6],
-        [0.5, 0.7],
-    ])
+    diagram = np.array(
+        [
+            [0.0, 1.0],
+            [0.2, 0.8],
+            [0.3, 0.6],
+            [0.5, 0.7],
+        ]
+    )
 
     pl = PersistenceLandscape(n_landscapes=3, n_bins=50, t_min=0.0, t_max=1.0)
     single_lands = pl.transform_single(diagram)
@@ -247,11 +259,13 @@ def test_persistence_landscape_vectorization():
 
 def test_persistence_image_vectorization():
     """Test PersistenceImage 2D density surface generation."""
-    diagram = np.array([
-        [0.1, 0.9],
-        [0.3, 0.7],
-        [0.2, 0.5],
-    ])
+    diagram = np.array(
+        [
+            [0.1, 0.9],
+            [0.3, 0.7],
+            [0.2, 0.5],
+        ]
+    )
 
     pi = PersistenceImage(pixels=(15, 15), sigma=0.15, weight_power=1.0)
     img = pi.transform_single(diagram)

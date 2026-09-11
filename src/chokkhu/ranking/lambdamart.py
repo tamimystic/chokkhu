@@ -16,7 +16,7 @@ def _dcg_at_k(relevance: np.ndarray, k: int = 10) -> float:
     rel = np.asarray(relevance, dtype=np.float64)[:k]
     if len(rel) == 0:
         return 0.0
-    gains = (2.0 ** rel) - 1.0
+    gains = (2.0**rel) - 1.0
     discounts = np.log2(np.arange(len(rel)) + 2.0)
     return float(np.sum(gains / discounts))
 
@@ -61,7 +61,9 @@ class _RegressionTree:
         self.min_samples_split = min_samples_split
         self.root: Optional[_TreeNode] = None
 
-    def fit(self, X: np.ndarray, lambdas: np.ndarray, weights: np.ndarray) -> "_RegressionTree":
+    def fit(
+        self, X: np.ndarray, lambdas: np.ndarray, weights: np.ndarray
+    ) -> "_RegressionTree":
         self.root = self._build_tree(X, lambdas, weights, depth=0)
         return self
 
@@ -84,7 +86,7 @@ class _RegressionTree:
 
         total_lambda: float = float(np.sum(lambdas))
         total_weight: float = float(np.sum(weights) + 1e-12)
-        base_score = (total_lambda ** 2) / total_weight
+        base_score = (total_lambda**2) / total_weight
 
         for feat in range(n_features):
             values = np.unique(X[:, feat])
@@ -111,7 +113,9 @@ class _RegressionTree:
                 lambda_R: float = float(np.sum(lambdas[right_mask]))
                 weight_R: float = float(np.sum(weights[right_mask]) + 1e-12)
 
-                gain = ((lambda_L ** 2) / weight_L) + ((lambda_R ** 2) / weight_R) - base_score
+                gain = (
+                    ((lambda_L**2) / weight_L) + ((lambda_R**2) / weight_R) - base_score
+                )
 
                 if gain > best_gain:
                     best_gain = gain
@@ -124,8 +128,12 @@ class _RegressionTree:
         left_mask = X[:, best_feat] <= best_thresh
         right_mask = ~left_mask
 
-        left_child = self._build_tree(X[left_mask], lambdas[left_mask], weights[left_mask], depth + 1)
-        right_child = self._build_tree(X[right_mask], lambdas[right_mask], weights[right_mask], depth + 1)
+        left_child = self._build_tree(
+            X[left_mask], lambdas[left_mask], weights[left_mask], depth + 1
+        )
+        right_child = self._build_tree(
+            X[right_mask], lambdas[right_mask], weights[right_mask], depth + 1
+        )
 
         return _TreeNode(
             feature_idx=best_feat,
@@ -136,7 +144,9 @@ class _RegressionTree:
         )
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        return np.array([self._predict_single(x, self.root) for x in X], dtype=np.float64)
+        return np.array(
+            [self._predict_single(x, self.root) for x in X], dtype=np.float64
+        )
 
     def _predict_single(self, x: np.ndarray, node: Optional[_TreeNode]) -> float:
         if node is None or node.is_leaf:
@@ -227,7 +237,7 @@ class LambdaMART:
                     score_diff = self.sigma * (scores[i] - scores[j])
                     rho = 1.0 / (1.0 + np.exp(np.clip(score_diff, -30.0, 30.0)))
                     lambda_ij = self.sigma * rho * delta_ndcg
-                    w_ij = (self.sigma ** 2) * rho * (1.0 - rho) * delta_ndcg
+                    w_ij = (self.sigma**2) * rho * (1.0 - rho) * delta_ndcg
 
                     lambdas[i] += lambda_ij
                     lambdas[j] -= lambda_ij
@@ -273,7 +283,7 @@ class LambdaMART:
 
             # Compute gradients per query group
             for q in unique_queries:
-                q_mask = (q_arr == q)
+                q_mask = q_arr == q
                 q_indices = np.where(q_mask)[0]
                 q_y = y_arr[q_indices]
                 q_scores = scores[q_indices]
@@ -364,7 +374,7 @@ class ListNet:
             grad_b = 0.0
 
             for q in unique_queries:
-                mask = (q_arr == q)
+                mask = q_arr == q
                 q_X = X_arr[mask]
                 q_y = y_arr[mask]
 

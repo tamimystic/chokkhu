@@ -69,13 +69,19 @@ class ScoreMatchingEBM:
         scale1 = np.sqrt(2.0 / self.input_dim)
         scale2 = np.sqrt(2.0 / self.hidden_dim)
 
-        self.W1: np.ndarray = rng.randn(self.input_dim, self.hidden_dim).astype(np.float64) * scale1
+        self.W1: np.ndarray = (
+            rng.randn(self.input_dim, self.hidden_dim).astype(np.float64) * scale1
+        )
         self.b1: np.ndarray = np.zeros(self.hidden_dim, dtype=np.float64)
 
-        self.W2: np.ndarray = rng.randn(self.hidden_dim, self.hidden_dim).astype(np.float64) * scale2
+        self.W2: np.ndarray = (
+            rng.randn(self.hidden_dim, self.hidden_dim).astype(np.float64) * scale2
+        )
         self.b2: np.ndarray = np.zeros(self.hidden_dim, dtype=np.float64)
 
-        self.W3: np.ndarray = rng.randn(self.hidden_dim, self.input_dim).astype(np.float64) * scale2
+        self.W3: np.ndarray = (
+            rng.randn(self.hidden_dim, self.input_dim).astype(np.float64) * scale2
+        )
         self.b3: np.ndarray = np.zeros(self.input_dim, dtype=np.float64)
 
     def score(self, x: np.ndarray) -> np.ndarray:
@@ -90,7 +96,7 @@ class ScoreMatchingEBM:
         score : np.ndarray, shape matching input
         """
         x_arr = np.asarray(x, dtype=np.float64)
-        is_1d = (x_arr.ndim == 1)
+        is_1d = x_arr.ndim == 1
         if is_1d:
             x_mat = x_arr.reshape(1, -1)
         else:
@@ -105,7 +111,9 @@ class ScoreMatchingEBM:
             return out[0]
         return out
 
-    def _dsm_loss_and_grad(self, x: np.ndarray, rng: np.random.RandomState) -> Tuple[float, List[np.ndarray]]:
+    def _dsm_loss_and_grad(
+        self, x: np.ndarray, rng: np.random.RandomState
+    ) -> Tuple[float, List[np.ndarray]]:
         """Compute Denoising Score Matching loss and numerical parameter gradients."""
         N, D = x.shape
         z = rng.randn(N, D)
@@ -139,7 +147,9 @@ class ScoreMatchingEBM:
 
         return loss, [grad_W1, grad_b1, grad_W2, grad_b2, grad_W3, grad_b3]
 
-    def _ssm_loss(self, x: np.ndarray, rng: np.random.RandomState, eps: float = 1e-4) -> float:
+    def _ssm_loss(
+        self, x: np.ndarray, rng: np.random.RandomState, eps: float = 1e-4
+    ) -> float:
         """Compute Sliced Score Matching objective via Hutchinson vector projections."""
         N, D = x.shape
         v = rng.randn(N, D)
@@ -212,7 +222,9 @@ class ScoreMatchingEBM:
                 epoch_loss += loss
 
             if verbose and (epoch % max(1, epochs // 5) == 0 or epoch == epochs - 1):
-                print(f"Epoch {epoch + 1}/{epochs} - Score Loss: {epoch_loss / max(1, num_batches):.6f}")
+                print(
+                    f"Epoch {epoch + 1}/{epochs} - Score Loss: {epoch_loss / max(1, num_batches):.6f}"
+                )
 
         return self
 
@@ -260,9 +272,13 @@ class AnnealedLangevinDynamics:
         self.seed = int(seed)
 
         # Geometric noise schedule
-        self.sigmas: np.ndarray = np.geomspace(self.sigma_max, self.sigma_min, num=self.n_sigmas)
+        self.sigmas: np.ndarray = np.geomspace(
+            self.sigma_max, self.sigma_min, num=self.n_sigmas
+        )
 
-    def sample(self, n_samples: int = 10, init_x: Optional[np.ndarray] = None) -> np.ndarray:
+    def sample(
+        self, n_samples: int = 10, init_x: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         r"""Generate synthetic samples using Annealed Langevin dynamics.
 
         Parameters

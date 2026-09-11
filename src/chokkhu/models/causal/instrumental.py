@@ -77,7 +77,9 @@ class TwoStageLeastSquares:
         _, L = Z_arr.shape
 
         if L < K:
-            raise ValueError(f"Order condition failed: Number of instruments L={L} must be >= regressors K={K}")
+            raise ValueError(
+                f"Order condition failed: Number of instruments L={L} must be >= regressors K={K}"
+            )
 
         if self.fit_intercept:
             ones = np.ones((N, 1), dtype=np.float64)
@@ -106,7 +108,9 @@ class TwoStageLeastSquares:
         df_resid = max(1, N - K_eff)
 
         # Covariance of beta_2SLS
-        Xt_Pz_X_inv = np.linalg.pinv(np.dot(X_mat.T, np.dot(np.dot(Z_proj, Z_mat.T), X_mat)))
+        Xt_Pz_X_inv = np.linalg.pinv(
+            np.dot(X_mat.T, np.dot(np.dot(Z_proj, Z_mat.T), X_mat))
+        )
 
         if self.robust:
             # White heteroskedasticity-robust covariance:
@@ -151,8 +155,12 @@ class TwoStageLeastSquares:
             z_coef, _, _, _ = np.linalg.lstsq(Z_mat, reg_x, rcond=None)
             x_pred = np.dot(Z_mat, z_coef)
             x_res = reg_x - x_pred
-            r2_first = 1.0 - np.sum(x_res**2) / (np.sum((reg_x - np.mean(reg_x)) ** 2) + 1e-12)
-            f_stat = (r2_first / max(1, L)) / (max(1e-12, (1.0 - r2_first) / max(1, N - L_eff)))
+            r2_first = 1.0 - np.sum(x_res**2) / (
+                np.sum((reg_x - np.mean(reg_x)) ** 2) + 1e-12
+            )
+            f_stat = (r2_first / max(1, L)) / (
+                max(1e-12, (1.0 - r2_first) / max(1, N - L_eff))
+            )
             self.first_stage_f_stat_ = float(max(0.0, f_stat))
 
         # Sargan test of overidentifying restrictions (if L > K)
@@ -160,7 +168,9 @@ class TwoStageLeastSquares:
             # Regress residuals on all instruments Z_mat
             z_coef_e, _, _, _ = np.linalg.lstsq(Z_mat, residuals, rcond=None)
             e_pred = np.dot(Z_mat, z_coef_e)
-            r2_sargan = np.sum((e_pred - np.mean(e_pred)) ** 2) / (np.sum((residuals - np.mean(residuals)) ** 2) + 1e-12)
+            r2_sargan = np.sum((e_pred - np.mean(e_pred)) ** 2) / (
+                np.sum((residuals - np.mean(residuals)) ** 2) + 1e-12
+            )
             sargan_stat = float(N * r2_sargan)
             df_overid = L - K
             self.sargan_stat_ = sargan_stat

@@ -13,7 +13,11 @@ from typing import Tuple
 
 def _gelu(x: np.ndarray) -> np.ndarray:
     """Gaussian Error Linear Unit (GELU) activation function."""
-    return 0.5 * x * (1.0 + np.tanh(np.sqrt(2.0 / np.pi) * (x + 0.044715 * np.power(x, 3))))
+    return (
+        0.5
+        * x
+        * (1.0 + np.tanh(np.sqrt(2.0 / np.pi) * (x + 0.044715 * np.power(x, 3))))
+    )
 
 
 class SpectralConv2d:
@@ -56,18 +60,34 @@ class SpectralConv2d:
 
         # Complex weights for top and bottom frequency corners
         # Shape: (in_channels, out_channels, modes1, modes2)
-        w1_real = rng.uniform(-scale, scale, size=(self.in_channels, self.out_channels, self.modes1, self.modes2))
-        w1_imag = rng.uniform(-scale, scale, size=(self.in_channels, self.out_channels, self.modes1, self.modes2))
+        w1_real = rng.uniform(
+            -scale,
+            scale,
+            size=(self.in_channels, self.out_channels, self.modes1, self.modes2),
+        )
+        w1_imag = rng.uniform(
+            -scale,
+            scale,
+            size=(self.in_channels, self.out_channels, self.modes1, self.modes2),
+        )
         self.weights1: np.ndarray = (w1_real + 1j * w1_imag).astype(np.complex64)
 
-        w2_real = rng.uniform(-scale, scale, size=(self.in_channels, self.out_channels, self.modes1, self.modes2))
-        w2_imag = rng.uniform(-scale, scale, size=(self.in_channels, self.out_channels, self.modes1, self.modes2))
+        w2_real = rng.uniform(
+            -scale,
+            scale,
+            size=(self.in_channels, self.out_channels, self.modes1, self.modes2),
+        )
+        w2_imag = rng.uniform(
+            -scale,
+            scale,
+            size=(self.in_channels, self.out_channels, self.modes1, self.modes2),
+        )
         self.weights2: np.ndarray = (w2_real + 1j * w2_imag).astype(np.complex64)
 
         # Bypass linear transformation (W_bypass)
-        self.W_bypass: np.ndarray = rng.randn(self.in_channels, self.out_channels).astype(np.float32) * np.sqrt(
-            2.0 / self.in_channels
-        )
+        self.W_bypass: np.ndarray = rng.randn(
+            self.in_channels, self.out_channels
+        ).astype(np.float32) * np.sqrt(2.0 / self.in_channels)
         self.b_bypass: np.ndarray = np.zeros(self.out_channels, dtype=np.float32)
 
     def _compl_mul2d(self, x: np.ndarray, weights: np.ndarray) -> np.ndarray:
@@ -183,13 +203,13 @@ class FourierNeuralOperator2D:
         effective_in = self.in_channels + (2 if self.include_grid else 0)
 
         # Lifting MLP: effective_in -> hidden_dim
-        self.W_lift1: np.ndarray = rng.randn(effective_in, self.hidden_dim).astype(np.float32) * np.sqrt(
-            2.0 / effective_in
-        )
+        self.W_lift1: np.ndarray = rng.randn(effective_in, self.hidden_dim).astype(
+            np.float32
+        ) * np.sqrt(2.0 / effective_in)
         self.b_lift1: np.ndarray = np.zeros(self.hidden_dim, dtype=np.float32)
-        self.W_lift2: np.ndarray = rng.randn(self.hidden_dim, self.hidden_dim).astype(np.float32) * np.sqrt(
-            2.0 / self.hidden_dim
-        )
+        self.W_lift2: np.ndarray = rng.randn(self.hidden_dim, self.hidden_dim).astype(
+            np.float32
+        ) * np.sqrt(2.0 / self.hidden_dim)
         self.b_lift2: np.ndarray = np.zeros(self.hidden_dim, dtype=np.float32)
 
         # Spectral Convolution layers
@@ -205,13 +225,13 @@ class FourierNeuralOperator2D:
         ]
 
         # Projection MLP: hidden_dim -> hidden_dim -> out_channels
-        self.W_proj1: np.ndarray = rng.randn(self.hidden_dim, self.hidden_dim).astype(np.float32) * np.sqrt(
-            2.0 / self.hidden_dim
-        )
+        self.W_proj1: np.ndarray = rng.randn(self.hidden_dim, self.hidden_dim).astype(
+            np.float32
+        ) * np.sqrt(2.0 / self.hidden_dim)
         self.b_proj1: np.ndarray = np.zeros(self.hidden_dim, dtype=np.float32)
-        self.W_proj2: np.ndarray = rng.randn(self.hidden_dim, self.out_channels).astype(np.float32) * np.sqrt(
-            2.0 / self.hidden_dim
-        )
+        self.W_proj2: np.ndarray = rng.randn(self.hidden_dim, self.out_channels).astype(
+            np.float32
+        ) * np.sqrt(2.0 / self.hidden_dim)
         self.b_proj2: np.ndarray = np.zeros(self.out_channels, dtype=np.float32)
 
     def _get_grid(self, shape: Tuple[int, int, int]) -> np.ndarray:
@@ -239,7 +259,7 @@ class FourierNeuralOperator2D:
         out : np.ndarray, shape (B, H, W, C_out) or (H, W, C_out)
             Predicted PDE solution field.
         """
-        is_single = (x.ndim == 3)
+        is_single = x.ndim == 3
         if is_single:
             x_arr = np.expand_dims(x, axis=0)
         else:
@@ -326,11 +346,17 @@ class FourierNeuralOperator2D:
                 # Output layer gradient step
                 diff = (pred - by) / (len(bx) * np.prod(bx.shape[1:3]))
                 # Projector gradient
-                grad_proj2 = np.tensordot(self._last_proj1 if hasattr(self, "_last_proj1") else pred, diff, axes=([0, 1, 2], [0, 1, 2]))
+                grad_proj2 = np.tensordot(
+                    self._last_proj1 if hasattr(self, "_last_proj1") else pred,
+                    diff,
+                    axes=([0, 1, 2], [0, 1, 2]),
+                )
                 if grad_proj2.shape == self.W_proj2.shape:
                     self.W_proj2 -= lr * grad_proj2
 
             if verbose and (epoch % max(1, epochs // 5) == 0 or epoch == epochs - 1):
-                print(f"Epoch {epoch + 1}/{epochs} - Loss: {epoch_loss / max(1, num_batches):.6f}")
+                print(
+                    f"Epoch {epoch + 1}/{epochs} - Loss: {epoch_loss / max(1, num_batches):.6f}"
+                )
 
         return self
