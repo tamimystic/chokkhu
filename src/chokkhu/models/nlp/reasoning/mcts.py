@@ -5,7 +5,7 @@ References:
     - Yao et al., "Tree of Thoughts: Deliberate Problem Solving with Large Language Models", NeurIPS 2023.
 """
 
-from typing import List, Dict, Any, Optional, Callable, Tuple
+from typing import List, Dict, Optional, Callable, Tuple
 import numpy as np
 
 
@@ -116,7 +116,9 @@ class MonteCarloTreeSearchReasoning:
             if not node.is_terminal and depth < max_depth:
                 candidates = step_generator(node.state)
                 for step_text, prior in candidates:
-                    new_state = f"{node.state}\n{step_text}" if node.state else step_text
+                    new_state = (
+                        f"{node.state}\n{step_text}" if node.state else step_text
+                    )
                     child_node = MCTSNode(
                         state=new_state,
                         parent=node,
@@ -144,7 +146,9 @@ class MonteCarloTreeSearchReasoning:
 
         while curr.is_expanded():
             # Pick child with highest visit count
-            best_action = max(curr.children.keys(), key=lambda a: curr.children[a].visits)
+            best_action = max(
+                curr.children.keys(), key=lambda a: curr.children[a].visits
+            )
             trajectory.append(best_action)
             curr = curr.children[best_action]
             if curr.is_terminal:

@@ -1,21 +1,25 @@
 import setuptools
 
 with open("README.md", "r", encoding="utf-8") as f:
-    long_description=f.read()
+    long_description = f.read()
 
-__version__ = "1.5.6"
+__version__ = "1.5.7"
 
-REPO_NAME="chokkhu"
-AUTHOR_USER_NAME="tamimystic"
-AUTHOR_EMAIL="hossainsmtamim@gamil.com"
-SRC_REPO="chokkhu"
+REPO_NAME = "chokkhu"
+AUTHOR_USER_NAME = "tamimystic"
+AUTHOR_EMAIL = "hossainsmtamim@gamil.com"
+SRC_REPO = "chokkhu"
 
 setuptools.setup(
     name=SRC_REPO,
     version=__version__,
     author=AUTHOR_USER_NAME,
     author_email=AUTHOR_EMAIL,
-    description="Sovereign, zero-heavy-dependency Machine Learning, Deep Learning, Computer Vision, NLP, Audio, Generative AI, GNN, Time Series, XAI, and AutoML toolkit built from first principles in pure NumPy and SciPy.",
+    description=(
+        "Sovereign, zero-heavy-dependency Machine Learning, Deep Learning, Computer Vision, "
+        "NLP, Audio, Generative AI, GNN, Time Series, XAI, and AutoML toolkit built from "
+        "first principles in pure NumPy and SciPy."
+    ),
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=f"https://github.com/{AUTHOR_USER_NAME}/{REPO_NAME}",
@@ -37,7 +41,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
-        "Topic :: Scientific/Engineering :: Artificial Intelligence"
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
@@ -49,7 +53,7 @@ setuptools.setup(
         "pandas",
         "opencv-python-headless",
         "tqdm",
-        "scipy"
+        "scipy",
     ],
     extras_require={
         "dev": [
@@ -58,12 +62,12 @@ setuptools.setup(
             "flake8>=6.1",
             "mypy>=1.5",
             "black>=23.3",
-            "isort>=5.12"
+            "isort>=5.12",
         ]
     },
     entry_points={
         "console_scripts": [
             "chokkhu=chokkhu.cli:main",
         ]
-    }
+    },
 )

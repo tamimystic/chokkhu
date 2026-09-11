@@ -4,7 +4,7 @@ Reference:
     Yadav et al., "Resolving Interference When Merging Models", NeurIPS 2023.
 """
 
-from typing import Dict, List, Union, Any, Optional
+from typing import Dict, List, Any, Optional
 import numpy as np
 
 
@@ -31,7 +31,9 @@ class TIESMerging:
         self.density = float(density)
         self.scaling_factor = float(scaling_factor)
 
-    def trim_tensor(self, tensor: np.ndarray, density: Optional[float] = None) -> np.ndarray:
+    def trim_tensor(
+        self, tensor: np.ndarray, density: Optional[float] = None
+    ) -> np.ndarray:
         """Trim tensor keeping only the top k fraction by absolute magnitude."""
         d = self.density if density is None else density
         if d >= 1.0 or tensor.size == 0:
@@ -76,14 +78,18 @@ class TIESMerging:
 
         # Disjoint Merge
         signs = np.sign(stacked_deltas)
-        agree_mask = (signs == majority_sign[np.newaxis, ...]) & (majority_sign[np.newaxis, ...] != 0)
+        agree_mask = (signs == majority_sign[np.newaxis, ...]) & (
+            majority_sign[np.newaxis, ...] != 0
+        )
 
         filtered_deltas = np.where(agree_mask, stacked_deltas, 0.0)
         sum_agreeing = np.sum(filtered_deltas, axis=0)
         count_agreeing = np.sum(agree_mask, axis=0)
 
-        with np.errstate(divide='ignore', invalid='ignore'):
-            disjoint_merged = np.where(count_agreeing > 0, sum_agreeing / count_agreeing, 0.0)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            disjoint_merged = np.where(
+                count_agreeing > 0, sum_agreeing / count_agreeing, 0.0
+            )
 
         merged_tensor = base_tensor.astype(np.float64) + lam * disjoint_merged
         return merged_tensor.astype(base_tensor.dtype)
@@ -129,7 +135,10 @@ class TIESMerging:
                 task_p = [list(m.parameters())[idx] for m in task_models]
                 if hasattr(bp, "data"):
                     merged_arr = self.merge_tensors(
-                        bp.data, [p.data for p in task_p], density=density, scaling_factor=scaling_factor
+                        bp.data,
+                        [p.data for p in task_p],
+                        density=density,
+                        scaling_factor=scaling_factor,
                     )
                     bp.data = merged_arr
                 elif isinstance(bp, np.ndarray):

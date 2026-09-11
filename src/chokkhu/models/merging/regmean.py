@@ -4,7 +4,7 @@ Reference:
     Jin et al., "Dataless Knowledge Fusion by Merging Weights of Language Models", ICLR 2023.
 """
 
-from typing import Dict, List, Union, Any, Optional
+from typing import List, Optional
 import numpy as np
 
 
@@ -29,7 +29,7 @@ class RegMean:
     @staticmethod
     def compute_gram_matrix(activations: np.ndarray) -> np.ndarray:
         """Compute Gram matrix G = X^T X from input activations array (N, d_in)."""
-        X = activations.astype(np.float64)
+        X: np.ndarray = np.asarray(activations, dtype=np.float64)
         if X.ndim > 2:
             X = X.reshape(-1, X.shape[-1])
         return X.T @ X
@@ -61,11 +61,12 @@ class RegMean:
             raise ValueError("weights_list cannot be empty")
 
         regularizer = self.eps if eps is None else float(eps)
-        diag = self.diagonal_approx if diagonal_approx is None else bool(diagonal_approx)
+        diag = (
+            self.diagonal_approx if diagonal_approx is None else bool(diagonal_approx)
+        )
 
-        K = len(weights_list)
-        W0 = weights_list[0].astype(np.float64)
-        G0 = gram_matrices_list[0].astype(np.float64)
+        W0: np.ndarray = np.asarray(weights_list[0], dtype=np.float64)
+        G0: np.ndarray = np.asarray(gram_matrices_list[0], dtype=np.float64)
         d_in = G0.shape[0]
 
         # Determine orientation: (d_in, d_out) or (d_out, d_in)
@@ -92,7 +93,7 @@ class RegMean:
             sum_G = np.zeros((d_in, d_in), dtype=np.float64)
             sum_GW = np.zeros_like(weights_list[0], dtype=np.float64)
             for W, G in zip(weights_list, gram_matrices_list):
-                G_f = G.astype(np.float64)
+                G_f: np.ndarray = np.asarray(G, dtype=np.float64)
                 sum_G += G_f
                 sum_GW += G_f @ W
 

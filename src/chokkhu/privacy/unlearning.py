@@ -9,7 +9,6 @@ References:
 
 from typing import Dict, List, Union, Any, Optional, Callable, Tuple
 import numpy as np
-import copy
 
 
 class SISARetraining:
@@ -50,6 +49,7 @@ class SISARetraining:
 
     def _default_model_builder(self) -> Any:
         """Default ridge/logistic regression model if none provided."""
+
         class LinearModel:
             def __init__(self, task: str = "classification"):
                 self.task = task
@@ -63,7 +63,9 @@ class SISARetraining:
                 # Ridge regression closed form: (X^T X + lambda I)^(-1) X^T y
                 X_bias = np.hstack([X, np.ones((N, 1))])
                 lam = 1e-3
-                w_full = np.linalg.pinv(X_bias.T @ X_bias + lam * np.eye(D + 1)) @ (X_bias.T @ y)
+                w_full = np.linalg.pinv(X_bias.T @ X_bias + lam * np.eye(D + 1)) @ (
+                    X_bias.T @ y
+                )
                 self.w = w_full[:D]
                 self.b = w_full[D]
                 return self
@@ -90,7 +92,11 @@ class SISARetraining:
         y = np.asarray(y)
         N = len(X)
 
-        builder = self.model_builder if self.model_builder is not None else self._default_model_builder
+        builder = (
+            self.model_builder
+            if self.model_builder is not None
+            else self._default_model_builder
+        )
         rng = np.random.default_rng(self.seed)
         shuffled_indices = rng.permutation(N)
 
@@ -99,31 +105,35 @@ class SISARetraining:
         self.shards = []
 
         for s_idx, shard_indices in enumerate(shard_indices_list):
-            shard_dict = {"slices": [], "models": []}
+            shard_dict: Dict[str, Any] = {"slices": [], "models": []}
             # Split shard into slices
             slice_indices_list = np.array_split(shard_indices, self.num_slices)
-            
-            accumulated_X = []
-            accumulated_y = []
-            accumulated_idx = []
+
+            accumulated_X: Optional[np.ndarray] = None
+            accumulated_y: Optional[np.ndarray] = None
+            accumulated_idx: Optional[np.ndarray] = None
 
             for r_idx, slice_idx in enumerate(slice_indices_list):
                 X_s = X[slice_idx]
                 y_s = y[slice_idx]
-                shard_dict["slices"].append({
-                    "X": X_s,
-                    "y": y_s,
-                    "indices": slice_idx,
-                })
+                shard_dict["slices"].append(
+                    {
+                        "X": X_s,
+                        "y": y_s,
+                        "indices": slice_idx,
+                    }
+                )
 
-                if len(accumulated_X) == 0:
+                if accumulated_X is None:
                     accumulated_X = X_s
                     accumulated_y = y_s
                     accumulated_idx = slice_idx
                 else:
                     accumulated_X = np.concatenate([accumulated_X, X_s], axis=0)
                     accumulated_y = np.concatenate([accumulated_y, y_s], axis=0)
-                    accumulated_idx = np.concatenate([accumulated_idx, slice_idx], axis=0)
+                    accumulated_idx = np.concatenate(
+                        [accumulated_idx, slice_idx], axis=0
+                    )
 
                 # Train model up to current slice
                 model = builder()
@@ -141,7 +151,11 @@ class SISARetraining:
             raise ValueError("SISARetraining must be fitted before forget()")
 
         forget_set = set(np.asarray(forget_indices).tolist())
-        builder = self.model_builder if self.model_builder is not None else self._default_model_builder
+        builder = (
+            self.model_builder
+            if self.model_builder is not None
+            else self._default_model_builder
+        )
 
         for shard in self.shards:
             # Find earliest slice in this shard that contains a forget index
@@ -153,7 +167,9 @@ class SISARetraining:
 
                 if overlap:
                     # Remove forget indices from slice
-                    keep_mask = np.array([idx not in forget_set for idx in curr_indices], dtype=bool)
+                    keep_mask = np.array(
+                        [idx not in forget_set for idx in curr_indices], dtype=bool
+                    )
                     slice_data["X"] = slice_data["X"][keep_mask]
                     slice_data["y"] = slice_data["y"][keep_mask]
                     slice_data["indices"] = curr_indices[keep_mask]
@@ -164,28 +180,36 @@ class SISARetraining:
             # If this shard was affected, retrain from earliest slice onward
             if earliest_slice_to_retrain is not None:
                 # Accumulate data up to earliest slice
-                accumulated_X = []
-                accumulated_y = []
+                accumulated_X: Optional[np.ndarray] = None
+                accumulated_y: Optional[np.ndarray] = None
                 for r in range(earliest_slice_to_retrain):
                     s_data = shard["slices"][r]
-                    if len(accumulated_X) == 0:
+                    if accumulated_X is None:
                         accumulated_X = s_data["X"]
                         accumulated_y = s_data["y"]
                     else:
-                        accumulated_X = np.concatenate([accumulated_X, s_data["X"]], axis=0)
-                        accumulated_y = np.concatenate([accumulated_y, s_data["y"]], axis=0)
+                        accumulated_X = np.concatenate(
+                            [accumulated_X, s_data["X"]], axis=0
+                        )
+                        accumulated_y = np.concatenate(
+                            [accumulated_y, s_data["y"]], axis=0
+                        )
 
                 # Retrain from earliest slice onward
                 for r in range(earliest_slice_to_retrain, len(shard["slices"])):
                     s_data = shard["slices"][r]
-                    if len(accumulated_X) == 0:
+                    if accumulated_X is None:
                         accumulated_X = s_data["X"]
                         accumulated_y = s_data["y"]
                     else:
-                        accumulated_X = np.concatenate([accumulated_X, s_data["X"]], axis=0)
-                        accumulated_y = np.concatenate([accumulated_y, s_data["y"]], axis=0)
+                        accumulated_X = np.concatenate(
+                            [accumulated_X, s_data["X"]], axis=0
+                        )
+                        accumulated_y = np.concatenate(
+                            [accumulated_y, s_data["y"]], axis=0
+                        )
 
-                    if len(accumulated_X) > 0:
+                    if accumulated_X is not None and len(accumulated_X) > 0:
                         model = builder()
                         model.fit(accumulated_X, accumulated_y)
                         shard["models"][r] = model
@@ -233,7 +257,12 @@ class FisherScrubbing:
     where F_retain is the empirical Fisher Information Matrix over the retain dataset.
     """
 
-    def __init__(self, damping: float = 1e-4, noise_sigma: float = 0.0, seed: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        damping: float = 1e-4,
+        noise_sigma: float = 0.0,
+        seed: Optional[int] = None,
+    ) -> None:
         """Initialize FisherScrubbing.
 
         Args:
@@ -261,7 +290,7 @@ class FisherScrubbing:
         N, D = X.shape
 
         X_ext = np.hstack([X, np.ones((N, 1))])  # include bias
-        theta = np.append(w, b)
+        theta: np.ndarray = np.append(w, b)
 
         scores = X_ext @ theta
         p = 1.0 / (1.0 + np.exp(-np.clip(scores, -500, 500)))
@@ -309,7 +338,7 @@ class FisherScrubbing:
         inv_Fisher = np.linalg.pinv(Fisher + self.damping * np.eye(D_total))
 
         # 4. Parameter shift
-        delta_theta = - inv_Fisher @ grad_forget
+        delta_theta = -inv_Fisher @ grad_forget
 
         # 5. Optional DP noise
         if self.noise_sigma > 0.0:
@@ -387,10 +416,10 @@ class SCRUB:
                 # Gradient of BCE loss
                 grad_w_f = np.mean((p_student_f - y_f)[:, np.newaxis] * X_f, axis=0)
                 grad_b_f = np.mean(p_student_f - y_f)
-                
+
                 # Ascent (maximize error / entropy on forget set)
                 w_student += self.lr * self.beta * grad_w_f
-                b_student += self.lr * self.beta * grad_b_f
+                b_student = float(b_student + self.lr * self.beta * grad_b_f)
 
             # 2. Retain Step: Distillation Gradient Descent on Retain Set
             for _ in range(self.retain_steps):
@@ -398,7 +427,9 @@ class SCRUB:
                 p_student_r = 1.0 / (1.0 + np.exp(-np.clip(scores_r, -500, 500)))
 
                 # Distillation gradient: match teacher probabilities
-                grad_w_distill = np.mean((p_student_r - p_teacher_r)[:, np.newaxis] * X_r, axis=0)
+                grad_w_distill = np.mean(
+                    (p_student_r - p_teacher_r)[:, np.newaxis] * X_r, axis=0
+                )
                 grad_b_distill = np.mean(p_student_r - p_teacher_r)
 
                 # Task gradient: match ground truth labels
@@ -410,7 +441,7 @@ class SCRUB:
 
                 # Descent (minimize distance to teacher on retain set)
                 w_student -= self.lr * total_grad_w
-                b_student -= self.lr * total_grad_b
+                b_student = float(b_student - self.lr * total_grad_b)
 
         return w_student, b_student
 
@@ -448,7 +479,9 @@ class NullspaceConceptScrubbing:
 
         unique_labels = np.unique(c)
         if len(unique_labels) < 2:
-            raise ValueError("Need at least 2 distinct concept classes to identify concept directions")
+            raise ValueError(
+                "Need at least 2 distinct concept classes to identify concept directions"
+            )
 
         # Compute mean difference directions across classes
         concept_vectors = []
@@ -482,11 +515,15 @@ class NullspaceConceptScrubbing:
     def transform(self, representations: np.ndarray) -> np.ndarray:
         """Project representations onto the concept nullspace."""
         if self.P_perp is None:
-            raise ValueError("NullspaceConceptScrubbing must be fitted before transform()")
+            raise ValueError(
+                "NullspaceConceptScrubbing must be fitted before transform()"
+            )
         H = np.asarray(representations, dtype=np.float64)
         return H @ self.P_perp
 
-    def scrub_weights(self, weight_matrix: np.ndarray, mode: str = "input") -> np.ndarray:
+    def scrub_weights(
+        self, weight_matrix: np.ndarray, mode: str = "input"
+    ) -> np.ndarray:
         """Scrub linear layer weight matrix to neutralize concept interactions.
 
         Args:
@@ -494,7 +531,9 @@ class NullspaceConceptScrubbing:
             mode: 'input' (neutralizes reading from concept) or 'output' (neutralizes writing to concept).
         """
         if self.P_perp is None:
-            raise ValueError("NullspaceConceptScrubbing must be fitted before scrub_weights()")
+            raise ValueError(
+                "NullspaceConceptScrubbing must be fitted before scrub_weights()"
+            )
         W = np.asarray(weight_matrix, dtype=np.float64)
 
         if mode == "input":
@@ -505,13 +544,17 @@ class NullspaceConceptScrubbing:
             elif W.shape[1] == self.P_perp.shape[0]:
                 return W @ self.P_perp
             else:
-                raise ValueError(f"Shape mismatch between W {W.shape} and P_perp {self.P_perp.shape}")
+                raise ValueError(
+                    f"Shape mismatch between W {W.shape} and P_perp {self.P_perp.shape}"
+                )
         elif mode == "output":
             if W.shape[0] == self.P_perp.shape[0]:
                 return self.P_perp @ W
             elif W.shape[1] == self.P_perp.shape[0]:
                 return W @ self.P_perp
             else:
-                raise ValueError(f"Shape mismatch between W {W.shape} and P_perp {self.P_perp.shape}")
+                raise ValueError(
+                    f"Shape mismatch between W {W.shape} and P_perp {self.P_perp.shape}"
+                )
         else:
             raise ValueError(f"Unsupported mode '{mode}'")

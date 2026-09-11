@@ -4,14 +4,16 @@ Reference:
     Shoemake, "Animating rotation with quaternion curves", ACM SIGGRAPH 1985.
 """
 
-from typing import Dict, Union, Any, Optional
+from typing import Dict, Optional
 import numpy as np
 
 
 class SLERP:
     """Spherical Linear Interpolation (SLERP) for geometric neural network weight merging."""
 
-    def __init__(self, t: float = 0.5, eps: float = 1e-8, collinear_threshold: float = 0.9995) -> None:
+    def __init__(
+        self, t: float = 0.5, eps: float = 1e-8, collinear_threshold: float = 0.9995
+    ) -> None:
         """Initialize SLERP.
 
         Args:
@@ -40,8 +42,8 @@ class SLERP:
             return np.copy(tensor_b)
 
         shape = tensor_a.shape
-        v0 = tensor_a.astype(np.float64).flatten()
-        v1 = tensor_b.astype(np.float64).flatten()
+        v0: np.ndarray = np.asarray(tensor_a, dtype=np.float64).flatten()
+        v1: np.ndarray = np.asarray(tensor_b, dtype=np.float64).flatten()
 
         norm0 = np.linalg.norm(v0)
         norm1 = np.linalg.norm(v1)
@@ -87,7 +89,9 @@ class SLERP:
         merged: Dict[str, np.ndarray] = {}
         for key in weights_a:
             if key in weights_b:
-                merged[key] = self.interpolate_tensors(weights_a[key], weights_b[key], t=t)
+                merged[key] = self.interpolate_tensors(
+                    weights_a[key], weights_b[key], t=t
+                )
             else:
                 merged[key] = np.copy(weights_a[key])
         return merged

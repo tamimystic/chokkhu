@@ -27,7 +27,7 @@ from .models.merging import (
 
 from typing import Any, Optional
 
-__version__ = "1.5.6"
+__version__ = "1.5.7"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope

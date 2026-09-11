@@ -4,14 +4,16 @@ Reference:
     Lightman et al., "Let's Verify Step by Step", OpenAI 2023 (PRM800K).
 """
 
-from typing import List, Dict, Any, Optional, Callable, Union
+from typing import List, Optional, Callable
 import numpy as np
 
 
 class ProcessRewardModel:
     """Process Reward Model scoring correctness probabilities for individual reasoning steps."""
 
-    def __init__(self, step_scorer: Optional[Callable[[str, str], float]] = None) -> None:
+    def __init__(
+        self, step_scorer: Optional[Callable[[str, str], float]] = None
+    ) -> None:
         """Initialize PRM.
 
         Args:
@@ -64,7 +66,9 @@ class ProcessRewardModel:
         elif aggregation == "mean":
             return float(np.mean(scores_arr))
         elif aggregation == "discounted":
-            weights = np.array([discount ** i for i in range(len(scores_arr))])
-            return float(np.sum(scores_arr * weights) / np.sum(weights))
+            weights: np.ndarray = np.array(
+                [float(discount**i) for i in range(len(scores_arr))], dtype=np.float64
+            )
+            return float(np.sum(scores_arr * weights) / float(np.sum(weights)))
         else:
             raise ValueError(f"Unsupported aggregation '{aggregation}'")

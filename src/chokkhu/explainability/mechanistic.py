@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Sequence, Union, Tuple, Dict, Any, Callable
+from typing import List, Optional, Sequence, Union, Tuple
 import numpy as np
 
 
@@ -159,15 +159,19 @@ class TopKSAE:
 
         rng = np.random.default_rng(seed)
         # Initialize encoder weights: standard normal scaled
-        self.W_enc = rng.normal(0.0, 1.0 / np.sqrt(self.d_in), size=(self.d_in, self.d_sae)).astype(np.float64)
-        self.b_enc = np.zeros(self.d_sae, dtype=np.float64)
+        self.W_enc = rng.normal(
+            0.0, 1.0 / np.sqrt(self.d_in), size=(self.d_in, self.d_sae)
+        ).astype(np.float64)
+        self.b_enc: np.ndarray = np.zeros(self.d_sae, dtype=np.float64)
 
         # Initialize decoder weights: unit-norm columns/rows (d_sae, d_in)
-        self.W_dec = rng.normal(0.0, 1.0 / np.sqrt(self.d_sae), size=(self.d_sae, self.d_in)).astype(np.float64)
+        self.W_dec = rng.normal(
+            0.0, 1.0 / np.sqrt(self.d_sae), size=(self.d_sae, self.d_in)
+        ).astype(np.float64)
         self._normalize_decoder()
 
         # Decoder bias initialized to geometric center
-        self.b_dec = np.zeros(self.d_in, dtype=np.float64)
+        self.b_dec: np.ndarray = np.zeros(self.d_in, dtype=np.float64)
 
     def _normalize_decoder(self) -> None:
         """Ensure decoder dictionary vectors have unit Euclidean norm."""
@@ -201,7 +205,7 @@ class TopKSAE:
             f = acts
         else:
             # Find threshold for top k elements per row
-            topk_indices = np.argpartition(acts, -self.k, axis=1)[:, -self.k:]
+            topk_indices = np.argpartition(acts, -self.k, axis=1)[:, -self.k :]
             for b in range(B):
                 row_idx = topk_indices[b]
                 f[b, row_idx] = acts[b, row_idx]
@@ -275,7 +279,7 @@ class TopKSAE:
 
                 # Top-K
                 f = np.zeros_like(acts)
-                topk_indices = np.argpartition(acts, -self.k, axis=1)[:, -self.k:]
+                topk_indices = np.argpartition(acts, -self.k, axis=1)[:, -self.k :]
                 active_mask = np.zeros_like(acts, dtype=bool)
                 for b in range(B):
                     row_idx = topk_indices[b]
@@ -307,9 +311,9 @@ class TopKSAE:
                     (self.W_dec, grad_W_dec, m_dec, v_dec),
                 ]:
                     m[:] = beta1 * m + (1.0 - beta1) * grad
-                    v[:] = beta2 * v + (1.0 - beta2) * (grad ** 2)
-                    m_hat = m / (1.0 - beta1 ** t)
-                    v_hat = v / (1.0 - beta2 ** t)
+                    v[:] = beta2 * v + (1.0 - beta2) * (grad**2)
+                    m_hat = m / (1.0 - beta1**t)
+                    v_hat = v / (1.0 - beta2**t)
                     param -= lr * m_hat / (np.sqrt(v_hat) + eps)
 
                 self._normalize_decoder()
@@ -337,10 +341,14 @@ class JumpReLU:
         self.threshold = float(threshold)
 
         rng = np.random.default_rng(seed)
-        self.W_enc = rng.normal(0.0, 1.0 / np.sqrt(self.d_in), size=(self.d_in, self.d_sae)).astype(np.float64)
-        self.b_enc = np.zeros(self.d_sae, dtype=np.float64)
-        self.W_dec = rng.normal(0.0, 1.0 / np.sqrt(self.d_sae), size=(self.d_sae, self.d_in)).astype(np.float64)
-        self.b_dec = np.zeros(self.d_in, dtype=np.float64)
+        self.W_enc = rng.normal(
+            0.0, 1.0 / np.sqrt(self.d_in), size=(self.d_in, self.d_sae)
+        ).astype(np.float64)
+        self.b_enc: np.ndarray = np.zeros(self.d_sae, dtype=np.float64)
+        self.W_dec = rng.normal(
+            0.0, 1.0 / np.sqrt(self.d_sae), size=(self.d_sae, self.d_in)
+        ).astype(np.float64)
+        self.b_dec: np.ndarray = np.zeros(self.d_in, dtype=np.float64)
         self._normalize_decoder()
 
     def _normalize_decoder(self) -> None:

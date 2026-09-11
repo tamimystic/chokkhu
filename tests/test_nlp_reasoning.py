@@ -1,7 +1,6 @@
 """Unit tests for Frontier 4.19: Test-Time Search, Process Reward Models & Self-Play."""
 
 import numpy as np
-import pytest
 
 from chokkhu.models.nlp.reasoning import (
     MCTSNode,
@@ -61,6 +60,7 @@ def test_mcts_node_statistics():
 
 def test_process_reward_model_step_scoring():
     """Verify PRM scores individual steps and handles heuristic evaluation."""
+
     def custom_scorer(ctx, step):
         if "correct" in step:
             return 0.95

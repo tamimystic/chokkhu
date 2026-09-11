@@ -5,7 +5,7 @@ Reference:
     Homologous Models as a Free Lunch", ICML 2024.
 """
 
-from typing import Dict, List, Union, Any, Optional
+from typing import Dict, List, Optional
 import numpy as np
 from .ties import TIESMerging
 
@@ -85,7 +85,8 @@ class DARE:
         if m == "linear":
             # Direct average of DARE task vectors
             stacked = np.stack(
-                [tt - base_tensor.astype(np.float64) for tt in dare_task_tensors], axis=0
+                [tt - base_tensor.astype(np.float64) for tt in dare_task_tensors],
+                axis=0,
             )
             mean_delta = np.mean(stacked, axis=0)
             merged = base_tensor.astype(np.float64) + lam * mean_delta

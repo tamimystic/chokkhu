@@ -4,14 +4,16 @@ Reference:
     Frank & Wolfe, "An algorithm for quadratic programming", Naval Research Logistics 1956.
 """
 
-from typing import Dict, List, Union, Any, Optional, Tuple
+from typing import Dict, List, Optional
 import numpy as np
 
 
 class FrankWolfeEnsemble:
     """Frank-Wolfe algorithm for finding optimal convex combination weights on the probability simplex."""
 
-    def __init__(self, max_iters: int = 50, tol: float = 1e-6, loss: str = "mse") -> None:
+    def __init__(
+        self, max_iters: int = 50, tol: float = 1e-6, loss: str = "mse"
+    ) -> None:
         """Initialize FrankWolfeEnsemble.
 
         Args:
@@ -26,7 +28,9 @@ class FrankWolfeEnsemble:
         self.loss = loss
         self.weights_: Optional[np.ndarray] = None
 
-    def fit(self, predictions: List[np.ndarray], y_true: np.ndarray) -> "FrankWolfeEnsemble":
+    def fit(
+        self, predictions: List[np.ndarray], y_true: np.ndarray
+    ) -> "FrankWolfeEnsemble":
         """Fit optimal mixture weights alpha on the probability simplex.
 
         Args:
@@ -42,10 +46,10 @@ class FrankWolfeEnsemble:
 
         # Stack predictions: shape (M, N) or (M, N, C)
         P = np.stack([p.astype(np.float64) for p in predictions], axis=0)
-        y = y_true.astype(np.float64)
+        y: np.ndarray = np.asarray(y_true, dtype=np.float64)
 
         # Initialize uniform weights on simplex
-        alpha = np.full(M, 1.0 / M, dtype=np.float64)
+        alpha: np.ndarray = np.full(M, 1.0 / M, dtype=np.float64)
 
         for t in range(self.max_iters):
             # Current ensemble prediction: y_pred = sum_m alpha_m * P_m
@@ -59,7 +63,9 @@ class FrankWolfeEnsemble:
             elif self.loss == "log_loss":
                 eps = 1e-12
                 y_pred_clipped = np.clip(y_pred, eps, 1.0 - eps)
-                grad_ypred = - (y / y_pred_clipped - (1.0 - y) / (1.0 - y_pred_clipped)) / y.size
+                grad_ypred = (
+                    -(y / y_pred_clipped - (1.0 - y) / (1.0 - y_pred_clipped)) / y.size
+                )
                 grad_alpha = np.array([np.sum(grad_ypred * P[m]) for m in range(M)])
 
             # Linear subproblem: find corner i* = argmin_i grad_alpha[i]
@@ -78,7 +84,7 @@ class FrankWolfeEnsemble:
             if self.loss == "mse":
                 # Exact line search for quadratic objective
                 diff = P[i_star] - y_pred
-                denom = np.sum(diff ** 2)
+                denom: float = float(np.sum(diff**2))
                 if denom > 1e-12:
                     gamma = np.clip(np.sum((y - y_pred) * diff) / denom, 0.0, 1.0)
                 else:
@@ -111,7 +117,9 @@ class FrankWolfeEnsemble:
             raise ValueError("FrankWolfeEnsemble must be fitted before merging weights")
         merged: Dict[str, np.ndarray] = {}
         for key in weights_list[0]:
-            stacked = np.stack([w[key].astype(np.float64) for w in weights_list], axis=0)
+            stacked = np.stack(
+                [w[key].astype(np.float64) for w in weights_list], axis=0
+            )
             merged[key] = np.tensordot(self.weights_, stacked, axes=(0, 0)).astype(
                 weights_list[0][key].dtype
             )

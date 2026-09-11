@@ -1,7 +1,6 @@
 """Unit tests for Frontier 4.16: Model Merging, Weight Surgery & Task Arithmetic."""
 
 import numpy as np
-import pytest
 
 from chokkhu.models.merging import (
     TIESMerging,
@@ -15,9 +14,11 @@ from chokkhu.models.merging import (
 def test_ties_trimming_fraction():
     """Verify TIES trimming retains top k fraction and zeroes out lower magnitudes."""
     ties = TIESMerging(density=0.4)
-    tensor = np.array([-10.0, 1.0, 2.0, -8.0, 0.5])  # size 5, top 40% = 2 items: -10.0 and -8.0
+    tensor = np.array(
+        [-10.0, 1.0, 2.0, -8.0, 0.5]
+    )  # size 5, top 40% = 2 items: -10.0 and -8.0
     trimmed = ties.trim_tensor(tensor)
-    
+
     assert trimmed[0] == -10.0
     assert trimmed[3] == -8.0
     assert trimmed[1] == 0.0
@@ -29,7 +30,7 @@ def test_ties_sign_consensus_and_disjoint_merge():
     """Verify majority sign election and disjoint merge filtering."""
     ties = TIESMerging(density=1.0, scaling_factor=1.0)
     base = np.array([10.0, 10.0])
-    
+
     # Task 1: [+2.0, -3.0]
     task1 = np.array([12.0, 7.0])
     # Task 2: [+4.0, +1.0]
@@ -41,7 +42,7 @@ def test_ties_sign_consensus_and_disjoint_merge():
     # Agreeing tasks: Task 1 (+2.0) and Task 2 (+4.0) -> mean = +3.0.
     # For coord 1: deltas are [-3.0, +1.0, -4.0] -> sum = -6.0 (majority negative)
     # Agreeing tasks: Task 1 (-3.0) and Task 3 (-4.0) -> mean = -3.5.
-    
+
     merged = ties.merge_tensors(base, [task1, task2, task3])
     expected = base + np.array([3.0, -3.5])
     np.testing.assert_allclose(merged, expected, rtol=1e-5)
@@ -133,18 +134,18 @@ def test_slerp_collinear_fallback():
 
 def test_regmean_closed_form_exactness():
     """Verify RegMean closed form solution minimizes expected activation error."""
+    rng = np.random.default_rng(42)
     regmean = RegMean(eps=1e-6)
-    
+
     # Feature dimension 4, Output dimension 3
     d_in, d_out = 4, 3
-    rng = np.random.default_rng(42)
-    
+
     X1 = rng.standard_normal((50, d_in))
     X2 = rng.standard_normal((50, d_in))
-    
+
     G1 = regmean.compute_gram_matrix(X1)
     G2 = regmean.compute_gram_matrix(X2)
-    
+
     W1 = rng.standard_normal((d_in, d_out))
     W2 = rng.standard_normal((d_in, d_out))
 
@@ -173,9 +174,8 @@ def test_regmean_diagonal_approximation():
 
 def test_frank_wolfe_simplex_optimization():
     """Verify Frank-Wolfe optimizes mixture weights on simplex to match target."""
-    rng = np.random.default_rng(42)
     N = 100
-    
+
     # 3 model predictions
     p1 = np.linspace(0, 10, N)
     p2 = np.linspace(10, 0, N)

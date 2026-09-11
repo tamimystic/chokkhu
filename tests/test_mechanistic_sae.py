@@ -1,10 +1,8 @@
 """Unit tests for Frontier 4.18: Mechanistic Interpretability & Sparse Autoencoders."""
 
 import numpy as np
-import pytest
 
 from chokkhu.explainability.mechanistic import (
-    AttentionRollout,
     DirectLogitAttribution,
     TopKSAE,
     JumpReLU,
@@ -94,12 +92,14 @@ def test_activation_patching_tensor_substitution():
 def test_direct_logit_attribution():
     """Verify DirectLogitAttribution projects hidden states into vocabulary logits."""
     # Hidden dim 4, Vocab size 3
-    W_U = np.array([
-        [1.0, 0.0, 0.0],
-        [0.0, 2.0, 0.0],
-        [0.0, 0.0, 3.0],
-        [1.0, 1.0, 1.0],
-    ])
+    W_U = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 2.0, 0.0],
+            [0.0, 0.0, 3.0],
+            [1.0, 1.0, 1.0],
+        ]
+    )
     dla = DirectLogitAttribution(W_U)
     h = np.array([1.0, 1.0, 1.0, 1.0])
     logits = dla.attribute(h)

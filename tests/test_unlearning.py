@@ -1,7 +1,6 @@
 """Unit tests for Frontier 4.17: Machine Unlearning & Concept Scrubbing."""
 
 import numpy as np
-import pytest
 
 from chokkhu.privacy.unlearning import (
     SISARetraining,
@@ -38,7 +37,9 @@ def test_sisa_exact_unlearning_deterministic_recovery():
 def test_sisa_multi_shard_aggregation():
     """Verify SISA aggregates multi-shard predictions via majority voting."""
     sisa = SISARetraining(num_shards=5, num_slices=2, task="classification")
-    X = np.array([[1.0, 2.0], [-1.0, -2.0], [2.0, 3.0], [-2.0, -3.0], [1.5, 2.5], [-1.5, -2.5]])
+    X = np.array(
+        [[1.0, 2.0], [-1.0, -2.0], [2.0, 3.0], [-2.0, -3.0], [1.5, 2.5], [-1.5, -2.5]]
+    )
     y = np.array([1.0, 0.0, 1.0, 0.0, 1.0, 0.0])
 
     sisa.fit(X, y)
@@ -132,7 +133,7 @@ def test_nullspace_concept_orthogonality():
     mean0 = np.mean(H_scrubbed[:50], axis=0)
     mean1 = np.mean(H_scrubbed[50:], axis=0)
     concept_diff = mean0 - mean1
-    
+
     # Projection of diff onto concept basis must be virtually 0
     v_concept = nullspace.concept_basis
     assert np.abs(concept_diff @ v_concept) < 1e-4

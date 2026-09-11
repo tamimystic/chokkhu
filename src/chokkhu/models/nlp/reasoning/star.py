@@ -6,7 +6,6 @@ References:
 """
 
 from typing import List, Dict, Any, Optional, Callable, Tuple
-import numpy as np
 
 
 class STaR:
@@ -42,13 +41,15 @@ class STaR:
             # 1. Direct generation attempt
             rationale, answer = rationale_generator(prompt, None)
             if verifier(answer, gt):
-                curated.append({
-                    "prompt": prompt,
-                    "rationale": rationale,
-                    "answer": answer,
-                    "ground_truth": gt,
-                    "rationalized": False,
-                })
+                curated.append(
+                    {
+                        "prompt": prompt,
+                        "rationale": rationale,
+                        "answer": answer,
+                        "ground_truth": gt,
+                        "rationalized": False,
+                    }
+                )
                 continue
 
             # 2. Rationalization with ground truth hint if initial generation failed
@@ -56,13 +57,15 @@ class STaR:
                 hint = f"The correct answer is {gt}."
                 rat_rationale, rat_answer = rationale_generator(prompt, hint)
                 if verifier(rat_answer, gt):
-                    curated.append({
-                        "prompt": prompt,
-                        "rationale": rat_rationale,
-                        "answer": rat_answer,
-                        "ground_truth": gt,
-                        "rationalized": True,
-                    })
+                    curated.append(
+                        {
+                            "prompt": prompt,
+                            "rationale": rat_rationale,
+                            "answer": rat_answer,
+                            "ground_truth": gt,
+                            "rationalized": True,
+                        }
+                    )
                     break
 
         return curated
