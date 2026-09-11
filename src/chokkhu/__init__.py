@@ -38,10 +38,15 @@ from .models.geometric import (
     CliffordMultivector,
     CliffordGANN,
 )
+from .models.robotics import (
+    ActionTokenizer,
+    ActionChunkingTransformer,
+    OpenVLAPolicy,
+)
 
 from typing import Any, Optional
 
-__version__ = "1.5.9"
+__version__ = "1.5.10"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
