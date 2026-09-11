@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.5.5"
+__version__ = "1.5.6"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -328,6 +328,8 @@ from .models.timeseries import (
     find_discords,
     ExtendedKalmanFilter,
     UnscentedKalmanFilter,
+    ParticleFilter,
+    RaoBlackwellizedParticleFilter,
 )
 
 from .automl import (
@@ -393,6 +395,8 @@ from .models.causal import (
     uplift_at_k,
     TwoStageLeastSquares,
     InstrumentalGMM,
+    DoubleMLPLR,
+    RLearner,
 )
 
 from .models.survival import (
@@ -430,6 +434,8 @@ from .models.sciml import (
     NeuralODE,
     SpectralConv2d,
     FourierNeuralOperator2D,
+    SparseGaussianProcessRegression,
+    VariationalSparseGP,
 )
 
 from .fairness import (
@@ -548,6 +554,8 @@ from .models.nlp import (
 from .models.gnn import (
     HeteroGCN,
     SpatioTemporalGCN,
+    GraphCL,
+    GRACE,
 )
 
 
@@ -577,6 +585,8 @@ from .models.neurosymbolic import (
     RotatE,
     TransE,
     DifferentiableILP,
+    ProgramSynthesizer,
+    DSLGrammar,
 )
 from .hdc import (
     HyperdimensionalVector,
@@ -1135,4 +1145,14 @@ __all__ = [
     "ScoreMatchingEBM",
     "AnnealedLangevinDynamics",
     "PersistenceImage",
+    "ParticleFilter",
+    "RaoBlackwellizedParticleFilter",
+    "DoubleMLPLR",
+    "RLearner",
+    "SparseGaussianProcessRegression",
+    "VariationalSparseGP",
+    "GraphCL",
+    "GRACE",
+    "ProgramSynthesizer",
+    "DSLGrammar",
 ]

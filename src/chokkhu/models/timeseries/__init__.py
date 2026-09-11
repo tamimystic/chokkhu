@@ -5,6 +5,10 @@ from .kalman import (
     ExtendedKalmanFilter,
     UnscentedKalmanFilter,
 )
+from .particle_filter import (
+    ParticleFilter,
+    RaoBlackwellizedParticleFilter,
+)
 from .transforms import (
     decompose_series,
     create_lag_matrix,
@@ -51,4 +55,6 @@ __all__ = [
     "find_discords",
     "ExtendedKalmanFilter",
     "UnscentedKalmanFilter",
+    "ParticleFilter",
+    "RaoBlackwellizedParticleFilter",
 ]

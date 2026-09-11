@@ -3847,6 +3847,244 @@ print(f"Persistence Image Pixel Grid: {img_surface.shape} (20 x 20)")
 | `weight_power` | `float` | `1.0` | Persistence ramp weighting exponent $r$ for $w(b, p) = (p / p_{\max})^r$. |
 
 
+## 29. Advanced State-Space Filtering, Causal ML, Sparse Scalable GPs, Self-Supervised Graph Contrastive Learning & Program Synthesis
+
+### 29.1 Particle Filtering & Sequential Monte Carlo (`ParticleFilter`, `RaoBlackwellizedParticleFilter`)
+
+Enables non-linear, non-Gaussian state estimation via Sequential Importance Resampling (SIR) and Rao-Blackwellized marginalization (Doucet et al. 2000, Gordon et al. 1993):
+$$w_t^{(i)} \propto w_{t-1}^{(i)} \frac{p(y_t | x_t^{(i)}) p(x_t^{(i)} | x_{t-1}^{(i)})}{q(x_t^{(i)} | x_{t-1}^{(i)}, y_t)}, \quad N_{\text{eff}} = \frac{1}{\sum_{i=1}^{N_p} (w_t^{(i)})^2}$$
+
+```python
+import numpy as np
+from chokkhu import ParticleFilter, RaoBlackwellizedParticleFilter
+
+# Non-linear dynamic transition and observation models
+def f_trans(x, u=None):
+    return 0.5 * x + 25.0 * x / (1.0 + x**2)
+
+def h_obs(x):
+    return (x**2) / 20.0
+
+# 1. SIR Particle Filter with Systematic Resampling
+pf = ParticleFilter(
+    dim_x=1,
+    dim_z=1,
+    n_particles=200,
+    f=f_trans,
+    h=h_obs,
+    Q=np.array([[1.0]]),
+    R=np.array([[1.0]]),
+    resample_method="systematic",
+    resample_threshold=0.5,
+)
+
+# Filter across sequential observations
+observations = [0.5, 1.2, 0.8, 2.1, 1.9]
+state_estimates = []
+for y in observations:
+    pf.predict()
+    mean, cov = pf.update(np.array([y]))
+    state_estimates.append(mean)
+
+print(f"Final State Estimate: {state_estimates[-1][0]:.4f}, Particles: {pf.particles.shape}")
+
+# 2. Rao-Blackwellized Particle Filter (Marginalized State Partitioning)
+rbpf = RaoBlackwellizedParticleFilter(
+    dim_nl=1,
+    dim_lin=1,
+    dim_z=1,
+    n_particles=50,
+)
+u_hat, x_lin_hat = rbpf.step(np.array([1.5]))
+print(f"RBPF Nonlinear State: {u_hat.ravel()}, Linear State: {x_lin_hat.ravel()}")
+```
+
+#### Parameter Breakdown: `ParticleFilter` & `RaoBlackwellizedParticleFilter`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `dim_x` / `dim_nl` | `int` | *Required* | Dimensionality of continuous hidden state space. |
+| `dim_z` | `int` | *Required* | Dimensionality of sequential measurement vectors. |
+| `n_particles` | `int` | `500` / `100` | Number of Monte Carlo particle trajectories $N_p$. |
+| `resample_method` | `str` | `"systematic"` | Resampling scheme: `"systematic"`, `"stratified"`, `"residual"`, `"multinomial"`. |
+| `resample_threshold` | `float` | `0.5` | Threshold fraction $N_{\text{eff}} / N_p$ below which resampling is triggered. |
+
+---
+
+### 29.2 Double / Debiased Machine Learning & Residualized CATE (`DoubleMLPLR`, `RLearner`)
+
+Delivers Neyman-orthogonal $\sqrt{N}$-consistent causal effect estimation with high-dimensional nuisance parameterization and Robinson transformation (Chernozhukov et al. Econometrica 2018, Nie & Wager Biometrika 2021):
+$$\hat{\theta}_0 = \frac{\sum_{i=1}^N (T_i - \hat{m}(X_i)) (Y_i - \hat{g}(X_i))}{\sum_{i=1}^N (T_i - \hat{m}(X_i))^2}, \quad \hat{\tau}(X) = \arg\min_\tau \frac{1}{N}\sum_{i=1}^N \left( (Y_i - \hat{m}(X_i)) - (T_i - \hat{e}(X_i))\tau(X_i) \right)^2$$
+
+```python
+import numpy as np
+from chokkhu import DoubleMLPLR, RLearner
+
+# Synthetic observational dataset with confounding
+np.random.seed(42)
+N = 200
+X = np.random.randn(N, 5)
+true_ate = 2.5
+T = (X[:, 0] + np.random.randn(N) > 0).astype(float)
+Y = true_ate * T + 1.2 * X[:, 0] + 0.8 * X[:, 1] + np.random.randn(N) * 0.5
+
+# 1. Double Machine Learning Partially Linear Regression (DML-PLR)
+dml = DoubleMLPLR(n_folds=5, alpha=1.0)
+dml.fit(X, Y, T)
+stats_dict = dml.summary()
+print(f"DML Estimated ATE: {dml.coef_:.4f} (True: {true_ate:.1f}), p-value: {dml.p_val_:.4e}")
+
+# 2. R-Learner for Heterogeneous Treatment Effects (CATE)
+r_learner = RLearner(alpha=1.0)
+r_learner.fit(X, Y, T)
+cate_preds = r_learner.predict_cate(X[:5])
+print(f"Predicted Individual Treatment Effects (CATE): {np.round(cate_preds, 3)}")
+```
+
+#### Parameter Breakdown: `DoubleMLPLR` & `RLearner`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_folds` | `int` | `5` | Cross-fitting splits ($K$-fold) for Neyman orthogonality. |
+| `alpha` | `float` | `1.0` | $L_2$ Tikhonov regularization strength for nuisance and second-stage models. |
+| `seed` | `int` | `42` | Random seed for fold partitioning. |
+
+---
+
+### 29.3 Sparse & Variational Gaussian Process Regression (`SparseGaussianProcessRegression`, `VariationalSparseGP`)
+
+Scales Nonparametric Bayesian Inference from $\mathcal{O}(N^3)$ to $\mathcal{O}(N M^2)$ through FITC pseudo-inputs and Titsias Variational Free Energy optimization (Snelson & Ghahramani 2006, Titsias AISTATS 2009):
+$$\mathcal{L}_{\text{VFE}}(Z, \theta) = \log \mathcal{N}\left(y; 0, Q_{NN} + \sigma_n^2 I\right) - \frac{1}{2\sigma_n^2} \text{Tr}\left(K_{NN} - Q_{NN}\right), \quad Q_{NN} = K_{NM} K_{MM}^{-1} K_{MN}$$
+
+```python
+import numpy as np
+from chokkhu import SparseGaussianProcessRegression, VariationalSparseGP
+
+# 1D Non-linear function with noise
+X = np.linspace(-3, 3, 100).reshape(-1, 1)
+y = np.sin(X).ravel() + 0.1 * np.random.randn(100)
+X_test = np.linspace(-3.5, 3.5, 30).reshape(-1, 1)
+
+# 1. FITC Sparse Gaussian Process with Inducing Points (M=10 << N=100)
+sgp = SparseGaussianProcessRegression(
+    n_inducing=10,
+    length_scale=1.0,
+    variance=1.0,
+    noise_variance=0.01,
+)
+sgp.fit(X, y)
+mu_fitc, std_fitc = sgp.predict(X_test, return_std=True)
+print(f"FITC Mean Shape: {mu_fitc.shape}, Posterior Std Uncertainty: {std_fitc.shape}")
+
+# 2. Variational Sparse GP (Titsias Free Energy Bound)
+vsgp = VariationalSparseGP(
+    n_inducing=10,
+    length_scale=1.2,
+    variance=1.0,
+    noise_variance=0.02,
+)
+vsgp.fit(X, y)
+mu_var, std_var = vsgp.predict(X_test, return_std=True)
+print(f"Variational Sparse GP Mean Shape: {mu_var.shape}, Std Shape: {std_var.shape}")
+```
+
+#### Parameter Breakdown: `SparseGaussianProcessRegression` & `VariationalSparseGP`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_inducing` | `int` | `20` | Number of inducing / pseudo-input points $M \ll N$. |
+| `length_scale` | `float` | `1.0` | RBF kernel correlation distance hyperparameter $\ell$. |
+| `variance` | `float` | `1.0` | Output amplitude variance $\sigma_f^2$. |
+| `noise_variance` | `float` | `1e-2` | Observational likelihood variance $\sigma_n^2$. |
+
+---
+
+### 29.4 Self-Supervised Graph Contrastive Learning (`GraphCL`, `GRACE`)
+
+Learns topology-invariant node representations via InfoNCE / NT-Xent mutual information maximization across stochastic edge-dropping and feature-masking views (You et al. NeurIPS 2020, Zhu et al. WWW 2020):
+$$\mathcal{L}_{\text{InfoNCE}}(u, v) = -\log \frac{\exp(\text{sim}(z_u, z_v) / \tau)}{\sum_{w} \exp(\text{sim}(z_u, z_w) / \tau)}$$
+
+```python
+import numpy as np
+from chokkhu import GraphCL, GRACE
+
+# Synthetic graph adjacency matrix and node attributes
+np.random.seed(42)
+adj = (np.random.rand(8, 8) > 0.6).astype(float)
+np.fill_diagonal(adj, 0)
+features = np.random.randn(8, 8)
+
+# 1. GraphCL: Graph Contrastive Learning
+gcl = GraphCL(
+    in_dim=8,
+    hidden_dim=16,
+    out_dim=8,
+    temperature=0.2,
+    drop_edge_rate=0.2,
+    mask_feat_rate=0.2,
+    lr=0.01,
+)
+gcl.fit(features, adj, epochs=15)
+node_embs = gcl.transform(features, adj)
+print(f"GraphCL Node Embedding Matrix Shape: {node_embs.shape} (8 nodes x 8 features)")
+
+# 2. GRACE: Deep Graph Contrastive Representation Learning
+grace = GRACE(
+    in_dim=8,
+    hidden_dim=16,
+    out_dim=8,
+    temperature=0.4,
+    drop_edge_rate=0.2,
+    mask_feat_rate=0.2,
+    lr=0.01,
+)
+grace.fit(features, adj, epochs=15)
+grace_embs = grace.transform(features, adj)
+print(f"GRACE Node Embeddings Shape: {grace_embs.shape} (8 nodes x 8 features)")
+```
+
+#### Parameter Breakdown: `GraphCL` & `GRACE`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_dim` | `int` | *Required* | Input node attribute dimension. |
+| `hidden_dim` | `int` | `32` | GNN message-passing representation dimension. |
+| `out_dim` | `int` | `16` | Non-linear projection / output embedding dimension. |
+| `temperature` | `float` | `0.5` | InfoNCE Softmax temperature scaling parameter $\tau$. |
+| `drop_edge_rate` | `float` | `0.2` | Graph augmentation probability for random edge removal. |
+| `mask_feat_rate` | `float` | `0.2` | Graph augmentation probability for random node feature zeroing. |
+
+---
+
+### 29.5 Inductive Neuro-Symbolic Program Synthesizer (`ProgramSynthesizer`, `DSLGrammar`)
+
+Synthesizes verifiable, deterministic DSL programs from input-output example pairs via bottom-up search and observational equivalence pruning (Gulwani CACM 2011, Ellis et al. 2021):
+$$P^* = \arg\min_{P \in \mathcal{L}_{\text{DSL}}} \text{Size}(P) \quad \text{s.t.} \quad \forall i \in \{1,\dots,N\}: \llbracket P \rrbracket(x_i) = y_i$$
+
+```python
+import numpy as np
+from chokkhu import ProgramSynthesizer
+
+# Synthesize executable program from input-output examples: f(x) = (x + 1)^2
+examples = [
+    (2, 9),
+    (3, 16),
+    (4, 25),
+    (5, 36),
+]
+
+synthesizer = ProgramSynthesizer(max_depth=3, constants=[1])
+synthesizer.fit(examples)
+
+print(f"Synthesized Code: {synthesizer.synthesized_code}")
+test_out = synthesizer.predict(6)
+print(f"Predicted Evaluation on x=6: {test_out}")
+```
+
+#### Parameter Breakdown: `ProgramSynthesizer` & `DSLGrammar`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `max_depth` | `int` | `3` | Maximum AST depth for bottom-up enumerative search. |
+| `constants` | `List[Any]` | `[0, 1, 2, 3]` | Available constant literals in the primitive pool. |
+
+---
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.

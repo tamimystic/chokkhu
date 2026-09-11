@@ -5,6 +5,7 @@ Pure NumPy implementations of:
 - SymbolicRegressor: Sparse equation discovery (SINDy)
 - NeuralODE: Continuous-depth ordinary differential equation models
 - SpectralConv2d, FourierNeuralOperator2D: 2D Fourier Neural Operator for PDEs
+- SparseGaussianProcessRegression, VariationalSparseGP: Inducing point sparse GPs
 """
 
 from .pinn import (
@@ -18,6 +19,7 @@ from .symbolic_regression import SymbolicRegressor
 from .neural_ode import NeuralODE
 from .fluid import DifferentiableParticleFluid
 from .fno import SpectralConv2d, FourierNeuralOperator2D
+from .sparse_gp import SparseGaussianProcessRegression, VariationalSparseGP
 
 __all__ = [
     "PINN",
@@ -30,4 +32,6 @@ __all__ = [
     "DifferentiableParticleFluid",
     "SpectralConv2d",
     "FourierNeuralOperator2D",
+    "SparseGaussianProcessRegression",
+    "VariationalSparseGP",
 ]

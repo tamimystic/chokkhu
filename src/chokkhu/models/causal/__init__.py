@@ -7,6 +7,7 @@ Sovereign pure NumPy implementations of:
 - Uplift Modeling: TwoModelUplift, ClassTransformationUplift
 - Uplift Evaluation: qini_curve, qini_score, cumulative_gain_curve, uplift_at_k
 - Instrumental Variables: TwoStageLeastSquares (2SLS), InstrumentalGMM
+- Double ML & Heterogeneous Effects: DoubleMLPLR, RLearner
 """
 
 from chokkhu.models.causal.potential_outcomes import (
@@ -32,6 +33,10 @@ from chokkhu.models.causal.instrumental import (
     TwoStageLeastSquares,
     InstrumentalGMM,
 )
+from chokkhu.models.causal.double_ml import (
+    DoubleMLPLR,
+    RLearner,
+)
 
 __all__ = [
     "PropensityModel",
@@ -51,4 +56,6 @@ __all__ = [
     "PCAlgorithm",
     "TwoStageLeastSquares",
     "InstrumentalGMM",
+    "DoubleMLPLR",
+    "RLearner",
 ]
