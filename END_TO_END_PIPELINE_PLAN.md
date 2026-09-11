@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Executive Vision & Sovereign Philosophy
+## 1. Executive Vision, Grand Universe Architecture & Sovereign Philosophy
 
 ### 1.1 The Mission of Chokkhu
 Modern AI and Data Science ecosystems are crippled by **dependency bloat**, **fragile binary environments**, **complex boilerplate**, and **hidden data leakage**. A practitioner building an end-to-end intelligent system is forced to juggle gigabytes of external frameworks:
@@ -68,7 +68,33 @@ Every single algorithm across the entire landscape of modern artificial intellig
 
 ---
 
-### 1.2 Core Development & Operational Directives
+### 1.2 The 9 Architectural Sovereign Layers
+
+```
+===================================================================================
+ Layer 1: Core Foundation & Tensor Math (Autograd, Optimizers, Losses, Layers)
+-----------------------------------------------------------------------------------
+ Layer 2: Classical ML & Tabular Intelligence (Ensembles, Boosters, Trees, SVM, GMM)
+-----------------------------------------------------------------------------------
+ Layer 3: Deep Representation Learning (CNNs, ViT, Swin, ResNet, NeRF, 3DGS, UNet)
+-----------------------------------------------------------------------------------
+ Layer 4: Frontier Sequence & LLM Modeling (Transformers, RoPE, MLA, MoE, Mamba, RWKV)
+-----------------------------------------------------------------------------------
+ Layer 5: Multi-Modal, Audio & Vision-Language (CLIP, SigLIP, Conformer, AudioVAE, Vocoder)
+-----------------------------------------------------------------------------------
+ Layer 6: Probabilistic & Generative Universe (DDPM, Flow Matching, GFlowNets, VAE)
+-----------------------------------------------------------------------------------
+ Layer 7: Reinforcement Learning & Multi-Agent (PPO, SAC, Decision Transformer, QMIX)
+-----------------------------------------------------------------------------------
+ Layer 8: Scientific AI & Physical Systems (PINNs, Neural ODE, FNO, Differentiable Physics)
+-----------------------------------------------------------------------------------
+ Layer 9: Trustworthy AI, Safety & Geometry (Causal DAGs, Watermarking, HDC, Hyperbolic)
+===================================================================================
+```
+
+---
+
+### 1.3 Core Development & Operational Directives
 
 1. **Zero Heavy Dependencies (Strictly Enforced)**:
    - **STRICTLY ALLOWED**: `numpy`, `pandas`, `scipy`, `matplotlib`, `seaborn`, `opencv-python-headless`, `tqdm`.
@@ -82,7 +108,7 @@ Every single algorithm across the entire landscape of modern artificial intellig
 5. **Research-Grade Mathematical Rigor**:
    - Exact backpropagation calculus, vectorized matrix operations (e.g., `im2col` GEMM for convolutions, scaled dot-product attention, selective state-space scan, ODE numerical integration), and numerical stability safeguards ($\epsilon$ clipping, log-sum-exp tricks).
 6. **Robust Multi-OS & Multi-Python Compatibility Matrix**:
-   - All code, linting, and test suites must run cleanly with 100% pass rate across Ubuntu, Windows, and macOS on Python 3.9, 3.10, 3.11, 3.12, and 3.13.
+   - All code, linting, and test suites run cleanly with 100% pass rate across Ubuntu, Windows, and macOS on Python 3.9, 3.10, 3.11, 3.12, and 3.13.
 
 ---
 
@@ -174,6 +200,10 @@ chokkhu/
 │       │   │   ├── gmm.py                 # Gaussian Mixture Models with Expectation-Maximization (EM)
 │       │   │   ├── spectral_clustering.py # Spectral Clustering via Graph Laplacian Eigen-decomposition
 │       │   │   └── anomaly.py             # Isolation Forest, LOF, One-Class SVM, Elliptic Envelope
+│       │   │
+│       │   ├── trees/                     # Advanced Tree Architectures & Model Trees
+│       │   │   ├── __init__.py
+│       │   │   └── model_tree.py          # ModelTree (Piecewise Linear LinearRegression leaf estimators)
 │       │   │
 │       │   ├── dl/                        # Sovereign Deep Learning & Autograd Framework
 │       │   │   ├── __init__.py
@@ -288,10 +318,16 @@ chokkhu/
 │       │   │   ├── autoencoders.py        # VAE (Reparameterization Trick + KL), VQ-VAE (Straight-Through)
 │       │   │   ├── gan.py                 # DCGAN, WGAN-GP (Wasserstein with Gradient Penalty), StyleGAN2, Pix2Pix, CycleGAN
 │       │   │   ├── diffusion.py           # DDPM, DDIM fast sampler, Classifier-Free Guidance (CFG), DPM-Solver
+│       │   │   ├── dit.py                 # Diffusion Transformer (DiT with adaptive layer norm conditioning)
 │       │   │   ├── flow_matching.py       # Rectified Flow Matching (Flux / SD3 continuous ODE solver)
 │       │   │   ├── latent_diffusion.py    # Latent Diffusion Model (LDM / Stable Diffusion with Cross-Attention)
 │       │   │   ├── normalizing_flows.py   # RealNVP & GLOW Invertible Affine Coupling Flows
+│       │   │   ├── discrete_diffusion.py  # Discrete Text Diffusion (Markov categorical absorbing state token transitions)
 │       │   │   └── adapters.py            # LoRA, ControlNet, DreamBooth concept adapters
+│       │   │
+│       │   ├── energy/                    # Energy-Based Models & Score Matching
+│       │   │   ├── __init__.py
+│       │   │   └── score_matching.py      # ScoreMatchingEBM, AnnealedLangevinDynamics
 │       │   │
 │       │   ├── gnn/                       # Graph Neural Networks & Geometric Deep Learning
 │       │   │   ├── __init__.py
@@ -302,14 +338,17 @@ chokkhu/
 │       │   │   ├── equivariant.py         # EGNN / SchNet Equivariant GNNs for 3D coordinates & molecules
 │       │   │   ├── temporal.py            # Temporal Graph Networks (TGN for continuous-time dynamic graphs)
 │       │   │   ├── hypergraph.py          # Hypergraph Neural Networks (HGNN for N-ary relationships)
+│       │   │   ├── contrastive.py         # GraphCL, GRACE (Self-Supervised Graph Contrastive Learning)
 │       │   │   └── architectures.py       # GCN, GAT, GraphSAGE, GIN, DiffPool Hierarchical Classifiers
 │       │   │
-│       │   ├── timeseries/                # Time Series, Econometrics & Deep Forecasting
+│       │   ├── timeseries/                # Time Series, Econometrics, Deep Forecasting & State Estimation
 │       │   │   ├── __init__.py
 │       │   │   ├── statistical.py         # ARIMA, SARIMAX, Holt-Winters, Auto-ARIMA, VAR
 │       │   │   ├── transforms.py          # Seasonal-Trend Decomposition, Lag Matrices, Differencing, DTW
 │       │   │   ├── conformal.py           # Conformal Prediction Intervals for guaranteed statistical coverage
 │       │   │   ├── matrix_profile.py      # STAMP / STOMP Matrix Profile for motif discovery & discords
+│       │   │   ├── kalman.py              # Linear Kalman Filter, Extended Kalman Filter (EKF), Unscented Kalman Filter (UKF)
+│       │   │   ├── particle_filter.py     # ParticleFilter (SIR Resampling), RaoBlackwellizedParticleFilter (RBPF)
 │       │   │   └── neural.py              # N-BEATS, N-HiTS, PatchTST, TimesNet, TiDE, Informer, DeepAR, Chronos
 │       │   │
 │       │   ├── retrieval/                 # Vector Retrieval, Approximate Nearest Neighbors (ANN) & Search
@@ -330,12 +369,15 @@ chokkhu/
 │       │   │   ├── dlrm.py                # Deep Learning Recommendation Model (Sparse tables + Dense MLPs)
 │       │   │   └── sequential.py          # SASRec (Self-Attention Sequential Recommendation), GRU4Rec
 │       │   │
-│       │   ├── causal/                    # Causal Inference, Uplift Modeling & Heterogeneous Treatment Effects
+│       │   ├── causal/                    # Causal Inference, Uplift Modeling & Causal DAGs
 │       │   │   ├── __init__.py
 │       │   │   ├── potential_outcomes.py  # Rubin Causal Model, Propensity Score Matching (PSM), IPW
 │       │   │   ├── doubly_robust.py       # Doubly Robust (DR Learner) Estimation
 │       │   │   ├── meta_learners.py       # S-Learner, T-Learner, X-Learner
-│       │   │   └── uplift.py              # Two-Model Uplift, Class Transformation, Qini Curve & Cumulative Gain
+│       │   │   ├── uplift.py              # Two-Model Uplift, Class Transformation, Qini Curve & Cumulative Gain
+│       │   │   ├── double_ml.py           # DoubleMLPLR (Neyman Orthogonal Cross-Fitting), RLearner (Robinson CATE)
+│       │   │   ├── instrumental.py        # TwoStageLeastSquares (2SLS), InstrumentalGMM (Hansen's J-Test)
+│       │   │   └── discovery.py           # NOTEARS Continuous Optimization, PCAlgorithm (Constraint-based CPDAG)
 │       │   │
 │       │   ├── survival/                  # Survival Analysis, Reliability & Event-Time Modeling
 │       │   │   ├── __init__.py
@@ -344,11 +386,36 @@ chokkhu/
 │       │   │   ├── deep_surv.py           # DeepSurv (Nonlinear Deep Proportional Hazards)
 │       │   │   └── metrics.py             # Harrell's Concordance Index (C-Index), Brier Score at time t
 │       │   │
-│       │   ├── sciml/                     # Scientific Machine Learning, PINNs & Symbolic Regression
+│       │   ├── sciml/                     # Scientific Machine Learning, PINNs, FNO & Koopman Operator
 │       │   │   ├── __init__.py
 │       │   │   ├── pinn.py                # Physics-Informed Neural Networks (Autograd PDE residual collocation solver)
 │       │   │   ├── pdes.py                # Pre-built PDE operators (Heat, Wave, Burgers, Navier-Stokes)
+│       │   │   ├── neural_ode.py          # Neural Ordinary Differential Equations (RK4 / Euler solvers)
+│       │   │   ├── fno.py                 # Fourier Neural Operators (SpectralConv2D for resolution-invariant PDEs)
+│       │   │   ├── sparse_gp.py           # SparseGaussianProcessRegression (FITC), VariationalSparseGP (Titsias VFE)
+│       │   │   ├── fluid.py               # Differentiable SPH Particle Fluid Simulator
+│       │   │   ├── koopman.py             # Koopman Operator & Dynamic Mode Decomposition (ExactDMD)
 │       │   │   └── symbolic_regression.py # Genetic Programming Discovery of Analytical Governing Equations
+│       │   │
+│       │   ├── robotics/                  # Robotics Kinematics, World Models & Diffusion Policy
+│       │   │   ├── __init__.py
+│       │   │   ├── kinematics.py          # Forward Kinematics (DH Convention), Damped Least Squares Inverse Kinematics
+│       │   │   ├── diffusion_policy.py    # Robot Action Trajectory Denoising Diffusion
+│       │   │   ├── mppi.py                # Model Predictive Path Integral Trajectory Optimization
+│       │   │   └── world_model.py         # Recurrent State-Space Dynamic World Models
+│       │   │
+│       │   ├── marl/                      # Multi-Agent Reinforcement Learning
+│       │   │   ├── __init__.py
+│       │   │   ├── qmix.py                # QMIX Monotonic Value Factorization Hypernetwork
+│       │   │   └── mappo.py               # Multi-Agent PPO with Centralized Critic
+│       │   │
+│       │   ├── neurosymbolic/             # Inductive Program Synthesis & Symbolic Logic
+│       │   │   ├── __init__.py
+│       │   │   └── synthesizer.py         # ProgramSynthesizer (Observational Equivalence Pruning), DSLGrammar
+│       │   │
+│       │   ├── bio/                       # Genomic AI & Protein Structural Modeling
+│       │   │   ├── __init__.py
+│       │   │   └── genomics.py            # GenomicBERT 1D Transformer & Protein Direct Coupling Analysis (DCA)
 │       │   │
 │       │   └── rl/                        # Sovereign Reinforcement Learning & Decision Transformers
 │       │       ├── __init__.py
@@ -358,14 +425,69 @@ chokkhu/
 │       │       ├── policy_gradient.py     # REINFORCE with Baseline, Advantage Actor-Critic (A2C)
 │       │       ├── ppo.py                 # Proximal Policy Optimization (PPO with clipped surrogate objective)
 │       │       ├── sac.py                 # Soft Actor-Critic (SAC with maximum entropy objective)
+│       │       ├── her.py                 # Hindsight Experience Replay (Goal-Conditioned Relabeling)
 │       │       ├── decision_transformer.py# Decision Transformer (Offline RL as Autoregressive Sequence Modeling)
 │       │       └── bandits.py             # UCB1, Thompson Sampling (Beta/Gaussian), LinUCB Contextual Bandits
 │       │
-│       ├── optimization/                  # Sovereign Model Compression, Pruning & Edge Quantization
+│       ├── ranking/                       # Learning to Rank (LTR) & Differentiable Sorting
+│       │   ├── __init__.py
+│       │   ├── lambdamart.py              # LambdaMART (Pairwise Lambda-Gradients), ListNet (Top-1 Softmax Cross-Entropy)
+│       │   └── diff_sort.py               # Differentiable Sorting & Ranking Operators
+│       │
+│       ├── uncertainty/                   # Conformal Prediction & Distribution-Free Uncertainty
+│       │   ├── __init__.py
+│       │   └── cqr.py                     # Conformalized Quantile Regression (CQR Valid Prediction Intervals)
+│       │
+│       ├── tda/                           # Topological Data Analysis
+│       │   ├── __init__.py
+│       │   ├── rips.py                    # Vietoris-Rips Complex & Persistent Homology Filtration
+│       │   ├── diagrams.py                # Persistence Diagrams & Barcodes
+│       │   └── vectorization.py           # PersistenceLandscape, PersistenceImage (2D Surface Vectorizer)
+│       │
+│       ├── geometry/                      # Non-Euclidean Differential Geometry & Manifolds
+│       │   ├── __init__.py
+│       │   └── hyperbolic.py              # PoincareBallEmbedding, LorentzManifold (Möbius addition & Geodesics)
+│       │
+│       ├── safety/                        # AI Safety, Watermarking & Alignment Probing
+│       │   ├── __init__.py
+│       │   ├── watermark.py               # StatisticalTextWatermark (Kirchenbauer Green/Red Partitioning)
+│       │   └── probe.py                   # RefusalDirectionProbe (Residual Stream Safety Steering)
+│       │
+│       ├── hdc/                           # Hyperdimensional Computing
+│       │   ├── __init__.py
+│       │   └── hdc.py                     # Hyperdimensional Vector Symbolic Architecture (Binding, Bundling, Permuting)
+│       │
+│       ├── quantum/                       # Quantum Machine Learning
+│       │   ├── __init__.py
+│       │   ├── circuit.py                 # Quantum Circuit Simulation (Pauli-X/Y/Z, Hadamard, CNOT)
+│       │   └── vqc.py                     # Variational Quantum Classifier (VQC) with Parameter-Shift Rule
+│       │
+│       ├── geospatial/                    # GeoSpatial Machine Learning
+│       │   ├── __init__.py
+│       │   └── kriging.py                 # Spatial Kriging, Variograms & Haversine Distance Embeddings
+│       │
+│       ├── continual/                     # Continual & Lifelong Learning
+│       │   ├── __init__.py
+│       │   └── ewc.py                     # Elastic Weight Consolidation (EWC with Empirical Fisher Information)
+│       │
+│       ├── optimal_transport/             # Optimal Transport & Wasserstein Geodesics
+│       │   ├── __init__.py
+│       │   ├── sinkhorn.py                # Sinkhorn Optimal Transport with Entropic Regularization
+│       │   ├── barycenter.py              # Wasserstein Barycenters & Free-Support Distributions
+│       │   └── divergence.py              # Sinkhorn Divergences
+│       │
+│       ├── privacy/                       # Differential Privacy & Federated Learning
+│       │   ├── __init__.py
+│       │   ├── dp.py                      # DP-SGD with Rényi Differential Privacy Accounting
+│       │   └── federated.py               # FedAvg, FedProx, Secure Aggregation, Byzantine-Robust Mean/Median
+│       │
+│       ├── optimization/                  # Model Compression, Pruning, K-FAC & Edge Quantization
 │       │   ├── __init__.py
 │       │   ├── quantization.py            # INT8 / INT4 Symmetric & Asymmetric PTQ, Vector Quantization, AWQ/GPTQ
 │       │   ├── pruning.py                 # Unstructured Magnitude Pruning, Structured Channel/Head Pruning, 2:4 Sparsity
 │       │   ├── distillation.py            # Hinton Logit Dark Knowledge Distillation & Intermediate Feature Mimicking
+│       │   ├── kfac.py                    # Kronecker-Factored Approximate Curvature (K-FAC Natural Gradient)
+│       │   ├── differentiable_qp.py       # Differentiable Quadratic Programming Solver (OptNet Layers)
 │       │   └── compiler.py                # Pure NumPy Fused Layer Engine & Static Execution Graph Compiler
 │       │
 │       ├── evaluation/                    # Metrics, Diagnostics, Calibration, Drift & Fairness
@@ -394,90 +516,63 @@ chokkhu/
 │       │   ├── image/                     # Metadata, Color, Texture, Duplicates, Quality Engines
 │       │   └── engine.py                  # Standalone Dark-Mode HTML Dashboard Generator
 │       │
-│       └── pipeline/                      # Autonomous AutoML, Stacking & Universal Pipelines
+│       ├── reports/                       # Automated Interactive HTML Reporting & Diagnostic Dashboards
+│       │   ├── __init__.py
+│       │   └── html_builder.py            # Standalone Dark-Mode HTML Builder with Interactive Charts
+│       │
+│       ├── pipeline/                      # The Universal End-to-End Leak-Free Pipeline Engine
+│       │   ├── __init__.py
+│       │   ├── engine.py                  # Universal ck.pipeline() multi-task orchestrator & ChokkhuPipeline fluent API
+│       │   ├── state.py                   # PreprocessorState & TransformationState serializers
+│       │   ├── stacking.py                # Multi-Layer Super Learner Stacking & Nelder-Mead Weight Blending
+│       │   ├── feature_synthesis.py       # Deep Feature Synthesis (DFS automated cross-aggregations & ratios)
+│       │   └── automl/                    # Autonomous Tournament, Bayesian Optimization, Hyperband, BOHB, Genetic Search
+│       │       ├── __init__.py
+│       │       ├── autotrainer.py         # Autonomous Dataset Profiling & Candidate Tournament
+│       │       ├── bayesian.py            # Gaussian Process Surrogate with EI and UCB Acquisitions
+│       │       ├── hyperband.py           # Successive Halving Bandit Tuner
+│       │       ├── bohb.py                # Combined Bayesian Optimization + Hyperband (BOHB)
+│       │       └── genetic.py             # Evolutionary Genetic Pipeline Search (TPOT-Style Graph Mutation)
+│       │
+│       └── utils/                         # Logging, Validation & Custom Exceptions
 │           ├── __init__.py
-│           ├── engine.py                  # Universal ck.pipeline() leak-free orchestrator
-│           ├── state.py                   # PreprocessorState & TransformationState serializers
-│           ├── stacking.py                # Multi-Layer Super Learner Stacking & Nelder-Mead Weight Blending
-│           ├── feature_synthesis.py       # Deep Feature Synthesis (DFS automated cross-aggregations & ratios)
-│           └── automl/                    # Autonomous Tournament, Bayesian Optimization, Hyperband, BOHB, Genetic Search
-│               ├── __init__.py
-│               ├── autotrainer.py         # Autonomous Dataset Profiling & Candidate Tournament
-│               ├── bayesian.py            # Gaussian Process Surrogate with EI and UCB Acquisitions
-│               ├── hyperband.py           # Successive Halving Bandit Tuner
-│               ├── bohb.py                # Combined Bayesian Optimization + Hyperband (BOHB)
-│               └── genetic.py             # Evolutionary Genetic Pipeline Search (TPOT-Style Graph Mutation)
+│           └── custom_exception.py
 │
-├── tests/                                 # Comprehensive Multi-Platform Test Suite (184+ Tests)
+├── tests/                                 # Comprehensive Multi-Platform Test Suite (430+ Tests, 100% Pass)
 │   ├── integration/
 │   │   ├── test_end_to_end_complete.py    # Full lifecycle tests
 │   │   └── test_int.py                    # Pipeline integration tests
 │   └── unit/
-│       ├── test_algorithmic_fixes.py
-│       ├── test_all_vision_universe.py
-│       ├── test_api_and_tuning.py
-│       ├── test_audio.py
-│       ├── test_autograd_tensor.py
-│       ├── test_automl.py
-│       ├── test_cleaning.py
-│       ├── test_cli.py
-│       ├── test_conv_layers.py
-│       ├── test_evaluation.py
-│       ├── test_explainability.py
-│       ├── test_generative.py
-│       ├── test_gnn.py
-│       ├── test_io.py
-│       ├── test_metrics_extended.py
-│       ├── test_models.py
-│       ├── test_neural_network.py
-│       ├── test_neural_xai.py
-│       ├── test_nlp_classical.py
-│       ├── test_nlp_modern_llms.py
-│       ├── test_nlp_moe_mla.py
-│       ├── test_nlp_transformers.py
-│       ├── test_pipeline.py
-│       ├── test_preprocessing.py
-│       ├── test_rl.py
-│       ├── test_scalers_selectors.py
-│       ├── test_splitting.py
-│       ├── test_timeseries.py
-│       ├── test_transformation.py
-│       ├── test_unit.py
-│       ├── test_vision_architectures.py
-│       ├── test_vision_detection_models.py
-│       ├── test_vision_detection_xai.py
-│       ├── test_vision_fpn_conv.py
-│       ├── test_vision_losses.py
-│       └── test_vision_swin_deit.py
+│       └── (60+ comprehensive unit test suites covering every submodule)
 │
 ├── pyproject.toml                         # Modern PEP 518/621 Build System Configuration
 ├── setup.py                               # Setuptools Packaging Script
 ├── setup.cfg                              # Linter & Type-Checking Configuration
 ├── requirements.txt                       # Core Minimal Runtime Dependencies
 ├── requirements_dev.txt                   # Developer & CI Dependencies
-└── README.md                              # Professional Documentation with ASCII Art & Badges
+└── README.md                              # Professional Documentation with Equations, Tables & Verified Snippets
 ```
 
 ---
 
-## 3. Phase-by-Phase Detailed Implementation Roadmap (24 Grand Phases)
+## 3. The 24 Grand Architectural Phases & Mathematical Formulations
 
-### Phase 1: Foundation, Infrastructure, Dynamic Config & Multi-OS CI/CD (`core/`)
+### Phase 1: Foundation, Infrastructure, Dynamic Config & Autograd Tensor Engine (`core/`)
 - **Global Deterministic Control & Hardware Optimization**:
   - Unified seed management (`ck.core.config.set_seed(42)`) controlling random generators in NumPy, Python `random`, and internal weight initializers.
   - Multi-threaded CPU BLAS optimization (`set_num_threads(n)` for OpenBLAS / MKL / Accelerate).
   - Vectorized SIMD-friendly array operations ensuring zero C-compiler dependency while maximizing throughput.
   - Custom CPU zero-copy memory arena and reusable buffer pools (`core/memory.py`).
-- **Modern Packaging & PEP Compliance**:
-  - Zero build-time compilation, PEP 518/621 compliance (`pyproject.toml`, `setup.py`), `< 5 MB` wheel target.
-  - Multi-OS GitHub Actions testing across Ubuntu, Windows, and macOS for Python 3.9, 3.10, 3.11, 3.12, and 3.13 (17 active jobs, 100% Green).
+- **Autograd Engine & Dynamic Computational DAG (`core/tensor.py`)**:
+  - Dynamic DAG construction with reverse-mode automatic differentiation, tape-based execution, broadcasting backward rules, in-place operation tracking, higher-order derivatives (Hessian-vector products), and memory-retaining computation graphs:
+    $$\frac{\partial L}{\partial x} = \sum_{y \in \text{children}(x)} \frac{\partial L}{\partial y} \frac{\partial y}{\partial x}$$
 - **Core Exceptions & Logging**:
   - Typed exceptions: `DataLeakageError`, `DimensionMismatchError`, `ConvergenceWarning`, `NumericalInstabilityError`.
   - Rich ANSI/Unicode terminal logger with configurable verbosity levels, execution timer wrappers, and ASCII progress tracking.
 
 ---
 
-### Phase 2: Multi-Modal Data Ingestion, Streaming & Serialization (`io/`)
+### Phase 2: Multi-Modal Data Ingestion, Streaming, SafeTensors & Serialization (`io/`)
 - **Tabular & Streaming Ingestion**:
   - Memory-mapped streaming reader for ultra-large CSV, TSV, JSON, and JSON Lines (`.jsonl`).
   - Native Parquet and Feather format parser integration using raw buffer streams without heavy PyArrow dependency.
@@ -490,13 +585,13 @@ chokkhu/
   - Frame-by-frame pure OpenCV/NumPy video stream generator for action recognition and video analysis.
   - Geospatial format parser for GeoJSON, Shapefiles, and GeoTIFF raster arrays (`io/spatial.py`).
   - 3D mesh and point cloud parser for PLY, OBJ, and PCD binary/ASCII files (`io/mesh.py`).
-- **Persistence & Serialization**:
+- **Persistence & Serialization (`io/persistence.py`)**:
   - `SafeTensors` format serializer: Zero-copy, header-indexed, pure NumPy model weight saving/loading preventing arbitrary code execution vulnerability of standard pickle.
-  - Atomic pipeline serializer bundling fitted preprocessors, transformation states, models, and metadata into compressed `.chokkhu` archives.
+  - Atomic pipeline serializer bundling fitted preprocessors, transformation states, model weights, and metadata.
 
 ---
 
-### Phase 3: Deep Data Cleaning, Quality Control & Automated Imputation (`cleaning/`)
+### Phase 3: Deep Data Cleaning, Entity Resolution, MICE Imputation & Quality Control (`cleaning/`)
 - **Advanced Imputation Engines**:
   - `Mean`, `Median`, `Mode`, and `Constant` statistical imputers with automated dtype mapping.
   - `KNNImputer`: Distance-weighted k-nearest neighbors imputation over Euclidean/Manhattan metrics.
@@ -522,8 +617,7 @@ chokkhu/
 
 ### Phase 4: Feature Preprocessing, Scaling & Advanced Encodings (`preprocessing/`)
 - **Scaling & Normalization Suite**:
-  - `StandardScaler`: Zero-mean unit-variance transformation:
-    $$z = \frac{x - \mu}{\sigma}$$
+  - `StandardScaler`: Zero-mean unit-variance transformation: $z = \frac{x - \mu}{\sigma}$.
   - `MinMaxScaler`: Bounded interval transformation $z = \frac{x - x_{\min}}{x_{\max} - x_{\min}} \cdot (b - a) + a$.
   - `MaxAbsScaler`: Scaled by maximum absolute value $z = \frac{x}{|x_{\max}|}$ preserving sparsity.
   - `RobustScaler`: Median and interquartile range scaling $z = \frac{x - \text{median}}{\text{IQR}}$ immune to outliers.
@@ -591,7 +685,7 @@ chokkhu/
 
 ---
 
-### Phase 6: Leakage-Free Splitting & Stratification (`splitting/`)
+### Phase 6: Leakage-Free Splitting, Purged Group TimeSeries & Spatial CV (`splitting/`)
 - **Splitting Strategies**:
   - `train_test_split`: Deterministic random splitting with shuffle and seed control.
   - `train_val_test_split`: 3-way statistical split ensuring completely independent evaluation.
@@ -607,7 +701,7 @@ chokkhu/
 
 ---
 
-### Phase 7: Classical Machine Learning & Ensembles (`models/ml/`)
+### Phase 7: Classical Machine Learning & Tree Ensembles (`models/ml/`, `models/trees/`)
 - **Linear & Generalized Linear Models (GLMs)**:
   - `LinearRegression`: Ordinary Least Squares (OLS) via Normal Equations $(X^T X)^{-1} X^T y$ and SVD.
   - `RidgeRegression`: L2 regularized regression solving $(X^T X + \alpha I)^{-1} X^T y$.
@@ -621,8 +715,9 @@ chokkhu/
   - `KNNClassifier` & `KNNRegressor`: K-Nearest Neighbors supporting Uniform and Distance-weighted voting, accelerated by pure NumPy KD-Tree and Ball-Tree spatial indices.
   - `RadiusNeighbors`: Fixed distance radius ball voting.
   - `NearestCentroid`: Prototype-based classification.
-- **Decision Trees & Tree Ensembles**:
+- **Decision Trees, Model Trees & Tree Ensembles**:
   - `DecisionTreeClassifier` & `DecisionTreeRegressor`: CART trees supporting Gini Impurity, Shannon Entropy, Mean Squared Error (MSE), Mean Absolute Error (MAE) criteria, minimum sample leaf constraints, maximum depth, and Minimal Cost-Complexity Pruning with parameter $\alpha$.
+  - `ModelTree` (`models/trees/model_tree.py`): Piecewise linear regression tree fitting explicit LinearRegression models in leaf nodes.
   - `RandomForestClassifier` & `RandomForestRegressor`: Bootstrap aggregation (Bagging) ensemble with random feature subspace sampling at each split ($\sqrt{p}$ or $\log_2 p$), out-of-bag (OOB) scoring, and quantile prediction intervals.
   - `ExtraTreesClassifier` & `ExtraTreesRegressor`: Extremely Randomized Trees sampling random split thresholds per feature for maximum variance reduction.
   - `IsolationForest`: Unsupervised anomaly isolation trees computing anomaly scores from average path lengths $c(n)$.
@@ -649,8 +744,6 @@ chokkhu/
   - `AgglomerativeClustering`: Hierarchical clustering with Ward's variance minimization, Complete, Average, and Single linkage distance updates.
   - `GaussianMixture (GMM)`: Soft probabilistic clustering via Expectation-Maximization (EM) estimating Gaussian components $(\pi_k, \mu_k, \Sigma_k)$ with full, tied, diag, and spherical covariance constraints.
   - `SpectralClustering`: Graph Laplacian eigen-decomposition followed by K-Means in spectral embedding space.
-- **Anomaly Detection**:
-  - `IsolationForest`, `LocalOutlierFactor (LOF)`, `OneClassSVM`, `EllipticEnvelope` (Minimum Covariance Determinant).
 
 ---
 
@@ -671,7 +764,7 @@ chokkhu/
 
 ---
 
-### Phase 9: Complete Computer Vision Architecture Universe (`models/vision/`)
+### Phase 9: Complete Computer Vision Architecture Universe & Object Detection (`models/vision/`)
 - **Convolutional Mechanics**:
   - Vectorized `im2col` & `col2im` GEMM `Conv2D`, `ConvTranspose2D` (Deconvolution / Fractional strided), `DepthwiseSeparableConv2D`, `GroupedConv2D`, `ChannelShuffle`, `Dilated / Atrous Conv2D` (rate $r$), `Deformable Convolution` (learnable offset sampling), `MaxPool2D`, `AvgPool2D`, `GlobalAvgPool2D`, `GlobalMaxPool2D`, `Spatial Pyramid Pooling (SPP)`.
 - **Visual Attention Modules**:
@@ -689,7 +782,7 @@ chokkhu/
 
 ---
 
-### Phase 10: 3D Computer Vision, Point Clouds & Neural Radiance (`models/vision_3d/`)
+### Phase 10: 3D Computer Vision, Point Clouds & Neural Radiance / Gaussian Splatting (`models/vision_3d/`)
 - **Point Cloud Foundations & Processing**:
   - `PointNet`: Shared MLPs with T-Net Spatial Transformer affine alignment network and symmetric Max Pooling aggregator.
   - `PointNet++`: Hierarchical Set Abstraction levels with Farthest Point Sampling (FPS), Ball Query radius grouping, and multi-scale feature aggregation.
@@ -801,7 +894,7 @@ chokkhu/
 
 ---
 
-### Phase 15: Generative Models, Latent Diffusion & Flow Matching (`models/generative/`)
+### Phase 15: Generative Models, Latent Diffusion, Flow Matching & Adapters (`models/generative/`)
 - **Autoencoders**:
   - `Autoencoder` & `DenoisingAutoencoder`.
   - `VAE` (Variational Autoencoder): Gaussian latent space with Reparameterization Trick ($z = \mu + \sigma \odot \epsilon$) and analytical KL Divergence loss.
@@ -815,9 +908,11 @@ chokkhu/
 - **Diffusion Models & Deterministic Samplers**:
   - `DDPM` (Denoising Diffusion Probabilistic Models): Linear/Cosine $\beta_t$ variance schedulers, sinusoidal time embeddings, reverse Gaussian denoising.
   - `DDIM` (Denoising Diffusion Implicit Models): Deterministic fast sampling loop achieving high fidelity in 15-20 steps.
+  - `DiT` (`models/generative/dit.py`): Diffusion Transformer operating on visual latent patches with adaptive layer norm (adaLN-Zero) conditioning.
   - `Classifier-Free Guidance (CFG)`: Conditional vs unconditional score interpolation:
     $$v_{\text{guided}} = v_{\text{uncond}} + s \cdot (v_{\text{cond}} - v_{\text{uncond}})$$
   - `DPM-Solver` & `Euler A` high-order ODE samplers.
+  - `DiscreteTextDiffusion` (`models/generative/discrete_diffusion.py`): Discrete categorical Markov transition diffusion with absorbing $[MASK]$ tokens.
 - **Latent Diffusion & Flow Matching**:
   - `Latent Diffusion Models (LDM / Stable Diffusion style)`: VAE latent space diffusion with Cross-Attention text/context conditioning.
   - `Rectified Flow Matching (Flux / SD3)`: Optimal transport straight-line velocity field ODE solver:
@@ -830,7 +925,7 @@ chokkhu/
 
 ---
 
-### Phase 16: Graph Neural Networks & Geometric Deep Learning (`models/gnn/`)
+### Phase 16: Graph Neural Networks, Geometric Deep Learning & Contrastive GNNs (`models/gnn/`)
 - **Graph Foundations & Spectral Operations**:
   - Graph Adjacency, Degree Matrix, Symmetric Normalized Laplacian ($\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2}$), Random-Walk Normalization ($\tilde{D}^{-1} \tilde{A}$).
   - Dense $\leftrightarrow$ Sparse COO Edge Index conversion.
@@ -848,6 +943,8 @@ chokkhu/
   - `Equivariant GNNs (EGNN / SchNet)`: Rotation, translation, and reflection $E(n)$-equivariant networks for 3D coordinate and molecular modeling.
   - `Temporal Graph Networks (TGN)`: Continuous-time dynamic graphs with memory update and message passing.
   - `Hypergraph Neural Networks (HGNN)`: Hyperedge incidence matrix operations for complex multi-node interactions.
+  - `GraphCL` & `GRACE` (`models/gnn/contrastive.py`): Self-supervised contrastive learning maximizing mutual information across edge-dropping and feature-masking views under InfoNCE loss:
+    $$\mathcal{L}_{\text{InfoNCE}}(u, v) = -\log \frac{\exp(\text{sim}(z_u, z_v) / \tau)}{\sum_{w} \exp(\text{sim}(z_u, z_w) / \tau)}$$
 - **Graph Tasks & Hierarchical Pooling**:
   - Node Classification & Graph Classification.
   - Link Prediction: Dot-product and MLP scoring with negative edge sampling.
@@ -856,7 +953,7 @@ chokkhu/
 
 ---
 
-### Phase 17: Time Series, Econometrics & Deep Forecasting (`models/timeseries/`)
+### Phase 17: Time Series, Econometrics, Deep Forecasting, Kalman & Particle Filtering (`models/timeseries/`)
 - **Statistical & Classical Econometric Models**:
   - `ARIMA(p, d, q)`: Pure NumPy exact least-squares and gradient-based solver.
   - `SARIMAX(p, d, q)x(P, D, Q)_s`: Seasonal ARIMA with exogenous covariate support.
@@ -864,6 +961,12 @@ chokkhu/
   - `ExponentialSmoothing`: Simple Exponential Smoothing, Holt's Linear Trend, and Holt-Winters Additive/Multiplicative Seasonality.
   - `Vector Autoregression (VAR)`: Multivariate time series inter-dependency modeling.
   - `Seasonal-Trend Decomposition`: Classical additive/multiplicative moving average decomposition.
+- **State Estimation, Filtering & Particle SMC**:
+  - `KalmanFilter` (`models/timeseries/kalman.py`): Linear state-space tracking ($x_{k|k} = x_{k|k-1} + K_k (z_k - H x_{k|k-1})$).
+  - `ExtendedKalmanFilter (EKF)` & `UnscentedKalmanFilter (UKF)`: Non-linear Jacobian & sigma-point unscented transform filtering.
+  - `ParticleFilter` (`models/timeseries/particle_filter.py`): Non-linear, non-Gaussian Sequential Importance Resampling (SIR) with Systematic, Stratified, Residual, and Multinomial resampling:
+    $$w_t^{(i)} \propto w_{t-1}^{(i)} \frac{p(y_t | x_t^{(i)}) p(x_t^{(i)} | x_{t-1}^{(i)})}{q(x_t^{(i)} | x_{t-1}^{(i)}, y_t)}, \quad N_{\text{eff}} = \frac{1}{\sum_{i=1}^{N_p} (w_t^{(i)})^2}$$
+  - `RaoBlackwellizedParticleFilter (RBPF)`: Analytical Kalman marginalization for linear sub-states alongside Monte Carlo particle exploration for non-linear states.
 - **Time Series Feature Transformations & Diagnostics**:
   - Lag Matrices, Rolling Window Statistics, Differencing, Dynamic Time Warping (DTW) distance.
   - `STAMP / STOMP Matrix Profile`: Time series anomaly discord discovery and repeating motif extraction.
@@ -882,14 +985,14 @@ chokkhu/
 
 ### Phase 18: Vector Retrieval, Approximate Nearest Neighbors & Search (`models/retrieval/`)
 - **Vector Search & Indexing Foundations**:
-  - `HNSW (Hierarchical Navigable Small World)`: Multi-layer graph index with logarithmic greedy search complexity in pure NumPy.
+  - `HNSW (Hierarchical Navigable Small World)`: Multi-layer graph index with logarithmic greedy search complexity in pure NumPy ($P(l) = \exp(-l / m_L)$).
   - `IVF-PQ (Inverted File with Product Quantization)`: Voronoi coarse clustering + sub-vector codebook quantization + Asymmetric Distance Computation (ADC):
     $$d(q, x) \approx \sum_{m=1}^M \|q_m - \mathbf{C}_m(x_m)\|^2$$
   - `LSH (Locality-Sensitive Hashing)`: Random hyperplanes sign projection and MinHash signatures for Jaccard/Cosine similarity.
 - **Information Retrieval & Reranking**:
   - `Okapi BM25+`: Sublinear term saturation with lower-bound document frequency tuning.
   - `Two-Tower Dense Retrieval`: Query Tower and Document/Item Tower with in-batch negative contrastive loss.
-  - `Hybrid Sparse-Dense Reranker`: Reciprocal Rank Fusion (RRF) combining BM25 keyword scores with dense vector similarities.
+  - `Hybrid Sparse-Dense Reranker`: Reciprocal Rank Fusion (RRF) combining BM25 keyword scores with dense vector similarities: $\text{RRF}(d) = \sum_{m \in M} \frac{1}{k + r_m(d)}$.
 
 ---
 
@@ -908,21 +1011,29 @@ chokkhu/
 
 ---
 
-### Phase 20: Causal Inference, Uplift Modeling & Algorithmic Fairness (`causal/`, `fairness/`)
+### Phase 20: Causal Inference, Uplift Modeling, Double ML & Causal DAG Discovery (`causal/`, `fairness/`)
 - **Causal Estimation & Potential Outcomes**:
   - Rubin Causal Model: Average Treatment Effect (ATE), Average Treatment Effect on the Treated (ATT), Conditional Average Treatment Effect (CATE).
   - `PropensityScoreMatching (PSM)`: Nearest-neighbor and caliper propensity matching.
   - `InverseProbabilityWeighting (IPW)`: Horvitz-Thompson weighted estimating equations.
   - `DoublyRobustEstimator (DR-Learner)`: Combining propensity score weighting with outcome regression to ensure consistency if either model is correctly specified.
-- **Heterogeneous Treatment Effects (HTE) & Meta-Learners**:
-  - `S-Learner`: Single model with treatment indicator feature.
-  - `T-Learner`: Separate models fitted independently on control and treated cohorts.
-  - `X-Learner`: Two-stage cross-learner estimating imputed counterfactual treatment effects for imbalanced treatment groups.
-- **Uplift Modeling**:
+- **Double Machine Learning & Heterogeneous Treatment Effects (CATE)**:
+  - `DoubleMLPLR` (`models/causal/double_ml.py`): Chernozhukov et al. (Econometrica 2018) Neyman-orthogonal score residualization with $K$-fold cross-fitting:
+    $$\hat{\theta}_0 = \frac{\sum_{i=1}^N (T_i - \hat{m}(X_i)) (Y_i - \hat{g}(X_i))}{\sum_{i=1}^N (T_i - \hat{m}(X_i))^2}$$
+    with asymptotic standard errors, $t$-statistics, $p$-values, and 95% confidence intervals.
+  - `RLearner`: Nie & Wager (Biometrika 2021) Robinson transformation minimizing weighted residualized loss for CATE estimation $\tau(X)$.
+  - Meta-Learners: `SLearner`, `TLearner`, `XLearner`.
+- **Instrumental Variables Regression**:
+  - `TwoStageLeastSquares (2SLS)` (`models/causal/instrumental.py`): $\hat{\beta}_{\text{2SLS}} = (X^T P_Z X)^{-1} X^T P_Z Y$, $P_Z = Z (Z^T Z)^{-1} Z^T$.
+  - `InstrumentalGMM`: Hansen's $J$-test for overidentifying restrictions ($J \sim \chi^2(L - K)$).
+- **Automated Causal Discovery & DAG Structure Learning (`causal/discovery.py`)**:
+  - `NOTEARSCausalDiscovery`: Continuous non-combinatorial DAG optimization via matrix exponential acyclicity constraint:
+    $$\min_{W} \frac{1}{2n} \|X - X W\|_F^2 + \lambda \|W\|_1 \quad \text{s.t.} \quad h(W) = \text{tr}(e^{W \odot W}) - d = 0$$
+  - `PCAlgorithm`: Constraint-based causal discovery utilizing partial correlation and Fisher $z$-transformation conditional independence tests to discover the Markov equivalence class (CPDAG).
+- **Uplift Modeling & Algorithmic Fairness**:
   - Two-Model Approach, Class Variable Transformation ($z = y \cdot w + (1-y)(1-w)$).
-  - `Qini Curve` & `Cumulative Uplift Chart` measuring incremental business impact.
-- **Algorithmic Fairness & Bias Auditing**:
-  - Fairness Metrics: Disparate Impact Ratio ($P(\hat{Y}=1|A=0) / P(\hat{Y}=1|A=1)$), Equalized Odds ($TPR_{A=0}=TPR_{A=1}$ and $FPR_{A=0}=FPR_{A=1}$), Demographic Parity Difference, Equal Opportunity Difference.
+  - `Qini Curve` & `Cumulative Uplift Chart` measuring incremental business impact ($Q = A_{\text{uplift}} - A_{\text{random}}$).
+  - Fairness Metrics: Disparate Impact Ratio ($P(\hat{Y}=1|A=0) / P(\hat{Y}=1|A=1)$), Equalized Odds ($TPR_{A=0}=TPR_{A=1}$ and $FPR_{A=0}=FPR_{A=1}$), Demographic Parity Difference.
   - Mitigation: Reweighting (Pre-processing), Adversarial Debiasing (In-processing), Equalized Odds Threshold Optimizer (Post-processing).
 
 ---
@@ -942,22 +1053,35 @@ chokkhu/
 
 ---
 
-### Phase 22: Scientific Machine Learning (SciML), PINNs & Symbolic Regression (`models/sciml/`)
+### Phase 22: Scientific Machine Learning (SciML), PINNs, FNO, Sparse GP & Koopman/DMD (`models/sciml/`)
 - **Physics-Informed Neural Networks (PINNs)**:
   - Deep neural surrogate incorporating physical law governing equations via dynamic autograd:
     $$\mathcal{L}_{\text{PINN}} = \mathcal{L}_{\text{data}} + \lambda_{\text{PDE}} \mathcal{L}_{\text{PDE}} + \lambda_{\text{BC}} \mathcal{L}_{\text{BC}} + \lambda_{\text{IC}} \mathcal{L}_{\text{IC}}$$
   - Pre-built PDE Collocation Solvers: 1D/2D Heat Conduction, Wave Equation, Burgers' Equation ($\frac{\partial u}{\partial t} + u \frac{\partial u}{\partial x} - \nu \frac{\partial^2 u}{\partial x^2} = 0$), Navier-Stokes fluid mechanics.
+- **Fourier Neural Operators (FNO) (`models/sciml/fno.py`)**:
+  - Resolution-invariant continuous operator learning mapping parameter fields $a(x)$ to solution fields $u(x)$ via 2D fast Fourier transforms:
+    $$v_{t+1}(x) = \text{GELU}\left( W v_t(x) + \mathcal{F}^{-1}\left( R \cdot \mathcal{F}(v_t) \right)(x) \right)$$
+- **Sparse & Variational Gaussian Process Regression (`models/sciml/sparse_gp.py`)**:
+  - Reduces $\mathcal{O}(N^3)$ GP computation to $\mathcal{O}(N M^2 + M^3)$ via $M \ll N$ inducing inputs $\mathbf{Z}$ (Snelson & Ghahramani FITC 2006, Titsias Variational Free Energy 2009):
+    $$\mathcal{L}_{\text{VFE}}(Z, \theta) = \log \mathcal{N}\left(y; 0, Q_{NN} + \sigma_n^2 I\right) - \frac{1}{2\sigma_n^2} \text{Tr}\left(K_{NN} - Q_{NN}\right), \quad Q_{NN} = K_{NM} K_{MM}^{-1} K_{MN}$$
+  - Classes: `SparseGaussianProcessRegression`, `VariationalSparseGP`.
+- **Dynamic Mode Decomposition & Koopman Operator (`models/sciml/koopman.py`)**:
+  - Linearizes non-linear dynamical systems $\dot{x} = f(x)$ into infinite-dimensional linear Koopman operators $\mathcal{K} g(x) = g(f(x))$ and dynamic mode extraction via Exact SVD Dynamic Mode Decomposition (DMD).
 - **Symbolic Regression & Equation Discovery**:
   - Genetic Programming expression trees discovering closed-form analytical mathematical equations ($y = f(x_1, x_2)$) from raw tabular observations with Pareto frontier parsimony pressure (balancing complexity vs accuracy).
 
 ---
 
-### Phase 23: Sovereign Model Optimization, Pruning, Distillation & Quantization (`optimization/`)
+### Phase 23: Sovereign Model Optimization, K-FAC, Pruning, Distillation & Quantization (`optimization/`)
 - **Post-Training Quantization (PTQ)**:
   - INT8 / INT4 Symmetric & Asymmetric affine integer quantization:
     $$q = \text{clip}\left(\left\lfloor \frac{x}{s} \right\rceil + z, q_{\min}, q_{\max}\right), \quad \hat{x} = s \cdot (q - z)$$
   - Dynamic Range Quantization and Vector Quantization (`VQ`).
   - Second-Order Taylor Weight-Only Quantization (AWQ / GPTQ pure NumPy compensation $\Delta W = - \frac{W_i - \hat{W}_i}{[\mathbf{H}^{-1}]_{ii}} \mathbf{H}^{-1}_{:, i}$).
+- **Second-Order Curvature & K-FAC Natural Gradient (`optimization/kfac.py`)**:
+  - Kronecker-Factored Approximate Curvature approximating Fisher Information Matrix:
+    $$F_l = \mathbb{E}[a_{l-1} a_{l-1}^T] \otimes \mathbb{E}[g_l g_l^T] = A_{l-1} \otimes S_l$$
+    enabling curvature-aware preconditioned gradient updates $(A^{-1} \otimes S^{-1}) \text{vec}(\nabla W)$.
 - **Pruning & Sparsification**:
   - Unstructured Magnitude Pruning (L1/L2 norm weight zeroing).
   - Structured Filter / Channel Pruning for Conv2D and Attention Head pruning.
@@ -971,27 +1095,18 @@ chokkhu/
 
 ---
 
-### Phase 24: Autonomous AutoML, Stacking, Universal Pipelines & Reinforcement Learning (`pipeline/`, `models/rl/`)
-- **Universal Leak-Free Pipeline Engine (`ck.pipeline`)**:
-  - Sequential chaining: Loading $\rightarrow$ Cleaning $\rightarrow$ Preprocessing $\rightarrow$ Transformations $\rightarrow$ Modeling $\rightarrow$ Evaluation.
-  - Strict Statistical Isolation: Fitting scalers, encoders, PCA, and selectors strictly on `X_train` and applying frozen `PreprocessorState` / `TransformationState` to `X_test` / `X_val` / production inference data.
-  - Resampling Isolation: SMOTE and oversampling applied strictly to training data, leaving validation and test splits untouched.
-  - Production Serialization: `.save()` and `PipelineResult.load()` for single-call `.predict()` on raw unseen inputs.
-- **Advanced Stacking & Ensembling**:
-  - `SuperLearner / Multi-Layer Stacking`: Out-of-fold (OOF) cross-validated predictions generating meta-features for Level-2 meta-learners.
-  - `Weighted Ensemble Optimizer`: Nelder-Mead / SLSQP optimization finding continuous weights that maximize validation metric.
-  - `Dynamic Ensemble Selection (KNORA-Eliminate / KNORA-Union)`: Test-sample k-nearest neighbor local competence evaluation.
-- **Automated Feature Engineering**:
-  - `Deep Feature Synthesis (DFS)`: Automated feature crosses, numerical ratios, polynomial expansions, rolling aggregates, and date-part decomposition.
-- **Autonomous AutoML & Hyperparameter Optimization**:
+### Phase 24: Autonomous AutoML, Stacking, Universal Pipelines & Reinforcement Learning (`pipeline/`, `automl/`, `models/rl/`)
+- **Autonomous AutoML & Tournament Engine (`automl/`)**:
   - `AutoTrainer`: 1-line automated task inference, data profiling, multi-candidate tournament, and champion model selection.
   - `BayesianOptimization`: Gaussian Process surrogate with Expected Improvement (EI) and Upper Confidence Bound (UCB) acquisition functions.
   - `Hyperband`: Successive Halving multi-armed bandit resource allocator.
   - `BOHB`: Integrated Bayesian Optimization + Hyperband combining fast multi-fidelity bandits with TPE/GP surrogate exploration.
-  - `Genetic Pipeline Search (TPOT-Style)`: Evolutionary algorithm mutating and crossing over entire preprocessing + model graph pipelines.
-- **Interactive Dark-Mode Reporting**:
-  - Fully self-contained, responsive HTML dashboard generator with interactive embedded charts for EDA, training curves, confusion matrices, ROC curves, and SHAP plots.
-- **Sovereign Deep Reinforcement Learning (RL) Universe**:
+  - `GeneticPipelineSearch (TPOT-Style)`: Evolutionary algorithm mutating and crossing over entire preprocessing + model graph pipelines.
+- **Advanced Stacking & Ensembling (`pipeline/stacking.py`)**:
+  - `SuperLearner / Multi-Layer Stacking`: Out-of-fold (OOF) cross-validated predictions generating meta-features for Level-2 meta-learners.
+  - `Weighted Ensemble Optimizer`: Nelder-Mead / SLSQP optimization finding continuous weights that maximize validation metric.
+  - `Dynamic Ensemble Selection (KNORA-Eliminate / KNORA-Union)`: Test-sample k-nearest neighbor local competence evaluation.
+- **Deep Reinforcement Learning (RL) Universe (`models/rl/`)**:
   - Tabular Q-Learning with Epsilon-Greedy and Bellman updates.
   - Deep Q-Networks (DQN, Double DQN, Dueling DQN, Prioritized Experience Replay).
   - Policy Gradients (REINFORCE with baseline, Advantage Actor-Critic A2C).
@@ -999,12 +1114,249 @@ chokkhu/
     $$L^{\text{CLIP}}(\theta) = \hat{\mathbb{E}}_t \left[ \min\left(r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t\right) \right]$$
   - Soft Actor-Critic (SAC with maximum entropy objective).
   - Decision Transformer: Offline RL formulated as autoregressive token generation conditioning on return-to-go.
+  - `Hindsight Experience Replay (HER)` (`models/rl/her.py`): Multi-goal sparse reward relabeling.
   - Multi-Armed Bandits: UCB1, Thompson Sampling, LinUCB Contextual Bandits.
 
 ---
 
-## 4. Verification & Quality Assurance Protocol
-1. **Zero Heavy Dependencies Constraint Check**: Automated import audit confirming absence of banned libraries (`torch`, `tensorflow`, `sklearn`, `transformers`, etc.).
-2. **Deterministic Reproducibility**: Unified global seeding (`ck.core.config.set_seed(42)`).
-3. **Cross-Platform Matrix Test Suite**: 100% test pass rate across Ubuntu, Windows, and macOS on Python 3.9, 3.10, 3.11, 3.12, and 3.13.
-4. **Featherweight Wheel Distribution**: `python -m build` generating `< 5 MB` clean wheels verified by `twine check`.
+## 4. Specialized Frontier Subsystems (Integrated from Milestones 1–27+)
+
+```
++-----------------------------------------------------------------------------------------------+
+|                                SPECIALIZED FRONTIER MATRIX                                    |
++--------------------+-------------------------------------------+------------------------------+
+| Subsystem          | Components / Classes                      | Core Mathematical Foundation |
++--------------------+-------------------------------------------+------------------------------+
+| 4.1 AI Safety &    | StatisticalTextWatermark                  | Green/Red Hash Partitioning, |
+|     Watermarking   | RefusalDirectionProbe                     | Z-Score Test, Latent Probe   |
++--------------------+-------------------------------------------+------------------------------+
+| 4.2 Hyperbolic     | PoincareBallEmbedding                     | Riemannian Metric Tensor,    |
+|     Geometry       | LorentzManifold                           | Möbius Addition, Minkowski   |
++--------------------+-------------------------------------------+------------------------------+
+| 4.3 Robotics       | RobotArmKinematics,                       | Denavit-Hartenberg (DH),     |
+|     & SPH Fluid    | DampedLeastSquares, ParticleFluid         | DLS Jacobian Inverse, SPH    |
++--------------------+-------------------------------------------+------------------------------+
+| 4.4 HDC & Genomics | HyperdimensionalComputing                 | Bundling, Binding, Permute,  |
+|                    | GenomicBERT, DirectCouplingAnalysis       | DCA Inverse Covariance Map   |
++--------------------+-------------------------------------------+------------------------------+
+| 4.5 Quantum ML     | QuantumCircuit,                           | Pauli Rotation Gates,        |
+|                    | VariationalQuantumClassifier              | Parameter-Shift Rule         |
++--------------------+-------------------------------------------+------------------------------+
+| 4.6 Neuromorphic   | SpikingNeuralNetwork (LIF),               | Membrane Potential ODE,      |
+|     & DEQ          | DeepEquilibriumModel                      | Implicit Function Theorem    |
++--------------------+-------------------------------------------+------------------------------+
+| 4.7 GFlowNets      | GFlowNet                                  | Trajectory / Detailed        |
+|                    |                                           | Balance Objectives           |
++--------------------+-------------------------------------------+------------------------------+
+| 4.8 Lifelong & OT  | ElasticWeightConsolidation (EWC),         | Fisher Information Penalty,  |
+|                    | SinkhornOptimalTransport, Barycenter      | Entropic Regularized Dual    |
++--------------------+-------------------------------------------+------------------------------+
+| 4.9 Neurosymbolic  | ProgramSynthesizer,                       | Observational Equivalence    |
+|     Synthesis      | DSLGrammar                                | Pruning, Bottom-Up AST Search|
++--------------------+-------------------------------------------+------------------------------+
+| 4.10 Federated ML  | FederatedAveraging (FedAvg),              | Secure Aggregation, Trimmed  |
+|                    | FedProx, ByzantineRobustAggregator        | Mean / Coordinate Median     |
++--------------------+-------------------------------------------+------------------------------+
+| 4.11 Conformal CQR | ConformalizedQuantileRegression           | Non-conformity Pinball Score |
+|                    |                                           | Guaranteed Coverage Interval |
++--------------------+-------------------------------------------+------------------------------+
+| 4.12 Score EBM     | ScoreMatchingEBM,                         | Denoising Score Matching,    |
+|                    | AnnealedLangevinDynamics                  | Geometric Noise MCMC Sampler |
++--------------------+-------------------------------------------+------------------------------+
+| 4.13 Learning-to-  | LambdaMART,                               | Pairwise Lambda Gradients,   |
+|      Rank (LTR)    | ListNet                                   | Top-1 Softmax Cross-Entropy  |
++--------------------+-------------------------------------------+------------------------------+
+| 4.14 TDA           | PersistenceLandscape,                     | Functional Banach Spaces,    |
+|      Vectorization | PersistenceImage                          | 2D Weighted Density Surface  |
++--------------------+-------------------------------------------+------------------------------+
+```
+
+### 4.1 AI Safety & LLM Watermarking (`src/chokkhu/safety/`)
+- **Kirchenbauer Statistical Watermark**: Deterministically seeds a pseudo-random hash generator with prefix token $x_{t-1}$ to partition the vocabulary into Green list $G$ (size $\gamma V$) and Red list $R$. Adds a logit bias $\delta$ to Green tokens during generation. Detection computes:
+  $$z = \frac{|x|_G - \gamma T}{\sqrt{T \gamma (1 - \gamma)}}$$
+  Rejecting unwatermarked hypothesis when $z > z_{\text{threshold}}$.
+- **Refusal Direction Probe**: Computes mean difference direction $v = \mu_{\text{refusal}} - \mu_{\text{compliant}}$ in transformer residual activations, allowing directional steering or safety monitoring without retraining.
+
+### 4.2 Non-Euclidean Hyperbolic Manifolds (`src/chokkhu/geometry/hyperbolic.py`)
+- **Poincaré Ball Model**: $d$-dimensional open ball $\mathbb{D}^d = \{x \in \mathbb{R}^d : \|x\| < 1\}$ equipped with Riemannian metric $g_x = \left(\frac{2}{1 - \|x\|^2}\right)^2 I$.
+  - Geodesic Distance: $d_{\mathbb{D}}(u, v) = \text{arcosh}\left(1 + 2 \frac{\|u - v\|^2}{(1 - \|u\|^2)(1 - \|v\|^2)}\right)$.
+  - Möbius Addition: $u \oplus v = \frac{(1 + 2\langle u, v \rangle + \|v\|^2)u + (1 - \|u\|^2)v}{1 + 2\langle u, v \rangle + \|u\|^2 \|v\|^2}$.
+- **Lorentz (Hyperboloid) Model**: Minkowski inner product $\langle x, y \rangle_L = -x_0 y_0 + \sum_{i=1}^d x_i y_i$ enabling high-capacity representation of scale-free hierarchical tree networks without distortion.
+
+### 4.3 Robotics Kinematics & SPH Fluid Simulation (`src/chokkhu/models/robotics/`, `src/chokkhu/models/sciml/fluid.py`)
+- **Forward Kinematics (DH Convention)**: Homogeneous transformation matrices:
+  $$T_i^{i-1} = \begin{bmatrix} \cos\theta_i & -\sin\theta_i \cos\alpha_i & \sin\theta_i \sin\alpha_i & a_i \cos\theta_i \\ \sin\theta_i & \cos\theta_i \cos\alpha_i & -\cos\theta_i \sin\alpha_i & a_i \sin\theta_i \\ 0 & \sin\alpha_i & \cos\alpha_i & d_i \\ 0 & 0 & 0 & 1 \end{bmatrix}$$
+- **Inverse Kinematics (Damped Least Squares / Levenberg-Marquardt)**: $\Delta \theta = J^T (J J^T + \lambda^2 I)^{-1} e$.
+- **Smoothed Particle Hydrodynamics (SPH)**: Density estimation $\rho_i = \sum_j m_j W(\|r_i - r_j\|, h)$ and Navier-Stokes pressure/viscosity forces.
+
+### 4.4 Hyperdimensional Computing (HDC) & Genomic AI (`src/chokkhu/hdc/`, `src/chokkhu/models/bio/`)
+- **Hyperdimensional Computing**: High-dimensional vector symbolic algebra (Binding $\odot$, Bundling $\sum$, Permutation $\Pi$) with zero-gradient associative memory classification.
+- **GenomicBERT & Protein Direct Coupling Analysis (DCA)**: 1D DNA $k$-mer transformer with variant effect zero-shot scoring and DCA residue contact maps via inverse covariance matrix.
+
+### 4.5 Quantum Machine Learning (`src/chokkhu/quantum/`)
+- **Parameterized Quantum Circuits (PQC) & VQC**: Quantum state vectors $|\psi\rangle = \prod_l U_l(\theta_l) |0\rangle$ with Pauli-X/Y/Z rotation gates and exact analytical gradient evaluation via Parameter-Shift Rule:
+  $$\frac{\partial \langle H \rangle}{\partial \theta} = \frac{\langle H \rangle_{\theta + \pi/2} - \langle H \rangle_{\theta - \pi/2}}{2}$$
+
+### 4.6 Spiking Neural Networks (SNN) & Deep Equilibrium Models (DEQ)
+- **Leaky Integrate-and-Fire (LIF)**: Membrane potential dynamics with surrogate gradients:
+  $$V[t] = \beta V[t-1] + I[t] - S[t-1] V_{\text{reset}}, \quad S[t] = \Theta(V[t] - V_{\text{th}})$$
+- **Deep Equilibrium Models (DEQ)**: Solving fixed points $z^* = f_\theta(z^*, x)$ with implicit function theorem backward passes.
+
+### 4.7 Generative Flow Networks (GFlowNets)
+- **GFlowNets**: Sampling composite objects $x \in \mathcal{X}$ with probability proportional to reward $R(x)$ using Trajectory Balance (TB) and Detailed Balance (DB) objectives:
+  $$\mathcal{L}_{\text{TB}}(\tau) = \left( \log \frac{Z P_F(\tau)}{R(x) P_B(\tau | x)} \right)^2$$
+
+### 4.8 Continual Learning (EWC) & Sinkhorn Optimal Transport
+- **Elastic Weight Consolidation (EWC)**: Preserving past task knowledge via Fisher Information regularization:
+  $$\mathcal{L}(\theta) = \mathcal{L}_B(\theta) + \sum_i \frac{\lambda}{2} F_i (\theta_i - \theta_{A, i}^*)^2$$
+- **Sinkhorn Optimal Transport**: Entropic regularized optimal transport matrix $P^* = \text{diag}(u) K \text{diag}(v)$ where $K_{ij} = \exp(-C_{ij}/\varepsilon)$ with Sinkhorn-Knopp matrix scaling iterations.
+
+### 4.9 Inductive Neuro-Symbolic Program Synthesizer (`models/neurosymbolic/synthesizer.py`)
+- **Program Synthesis**: Inductive synthesis from I/O examples via bottom-up explicit search and observational equivalence pruning over domain-specific grammar rules:
+  $$P^* = \arg\min_{P \in \mathcal{L}_{\text{DSL}}} \text{Size}(P) \quad \text{s.t.} \quad \forall i \in \{1,\dots,N\}: \llbracket P \rrbracket(x_i) = y_i$$
+
+### 4.10 Federated Learning & Distributed Robust Optimization (`privacy/federated.py`)
+- **Federated Averaging (FedAvg & FedProx)**: Local client SGD updates with proximal drift regularization:
+  $$\min_w f_k(w) + \frac{\mu}{2} \|w - w^t\|^2, \quad w^{t+1} = \sum_{k=1}^K \frac{n_k}{N} w_k^{t+1}$$
+- **Byzantine-Robust Aggregation**: Trimmed Mean, Coordinate Median, and Krum aggregators resisting adversarial/poisoned worker updates.
+
+### 4.11 Conformalized Quantile Regression (CQR) (`uncertainty/cqr.py`)
+- **Conformal Prediction**: Fits lower/upper conditional quantile estimators ($\hat{q}_{\alpha/2}(x), \hat{q}_{1-\alpha/2}(x)$), computes calibration non-conformity scores $E_i = \max(\hat{q}_{\alpha/2}(x_i) - y_i, y_i - \hat{q}_{1-\alpha/2}(x_i))$, and produces guaranteed $1-\alpha$ coverage intervals:
+  $$C(x_{\text{new}}) = \left[ \hat{q}_{\alpha/2}(x_{\text{new}}) - Q_{1-\alpha}(E), \; \hat{q}_{1-\alpha/2}(x_{\text{new}}) + Q_{1-\alpha}(E) \right]$$
+
+### 4.12 Second-Order Natural Gradient (K-FAC) (`optimization/kfac.py`)
+- **K-FAC**: Approximates layer-wise Fisher information matrix as Kronecker product of input activations covariance and pre-activation gradient covariance ($F_l = A_{l-1} \otimes S_l$).
+
+### 4.13 Learning-to-Rank (LambdaMART & ListNet) (`ranking/lambdamart.py`)
+- **LambdaMART**: Tree-boosted learning-to-rank optimizing $\Delta\text{NDCG}@k$ via pairwise $\lambda$-gradients:
+  $$\lambda_{ij} = \frac{-\sigma}{1 + e^{\sigma (s_i - s_j)}} |\Delta \text{NDCG}_{ij}|$$
+- **ListNet**: Top-1 probability cross-entropy ranking loss.
+
+### 4.14 Deep Energy-Based Models & Annealed Langevin Dynamics (`models/energy/score_matching.py`)
+- **Score-Matching EBM**: Direct unnormalized energy score estimation $s_\theta(x) = \nabla_x \log p(x)$ via Denoising Score Matching (DSM) and Sliced Score Matching (SSM), coupled with Annealed Langevin MCMC sampling across geometric noise schedules.
+
+### 4.15 Topological Data Analysis (TDA) Vectorization (`tda/vectorization.py`)
+- **Persistence Landscapes**: Maps $(b_i, d_i)$ diagrams into functional Banach spaces via tent functions: $\lambda_k(t) = k\text{-max}_{i=1}^n \max(0, \min(t - b_i, d_i - t))$.
+- **Persistence Images**: Discretizes weighted Gaussian density surface over $(b, p = d - b)$ coordinates on a $N_x \times N_y$ pixel grid.
+
+---
+
+## 5. The Grand Unified Universal Pipeline Engine (`chokkhu.pipeline`)
+
+The Central Universal Pipeline Engine (`src/chokkhu/pipeline/engine.py`) represents the pinnacle of Chokkhu's zero-leakage orchestration philosophy. It binds all 31 sovereign modules into a single seamless, fluent, multi-task framework.
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                CHOKKHU UNIVERSAL PIPELINE FLOW                                   │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+   ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐
+   │ 1. INGEST  │───▶│ 2. CLEAN   │───▶│ 3. SPLIT   │───▶│ 4. PREPROC │───▶│ 5. MODEL   │───▶│ 6. REPORT  │
+   │ Raw Data / │    │ Impute/Fix │    │ Leak-Free  │    │ Scale/Enc/ │    │ Train/Auto/│    │ HTML Dash/ │
+   │ Stream/Mesh│    │ Outliers   │    │ Train/Test │    │ Transform  │    │ Stacking   │    │ Diagnostics│
+   └────────────┘    └────────────┘    └────────────┘    └────────────┘    └────────────┘    └────────────┘
+```
+
+### 5.1 Universal 1-Line Pipeline Architecture (`ck.pipeline(...)`)
+
+```python
+import chokkhu as ck
+
+# Execute complete leak-free end-to-end pipeline in 1 line
+result = ck.pipeline(
+    data="dataset.csv",
+    target="target_variable",
+    clean="auto",
+    preprocess="auto",
+    transform={"pca": 10, "polynomial": 2},
+    resample="smote",
+    model="auto",
+    task="auto",
+    evaluate=True,
+    save_reports=True,
+    save_dir="reports",
+)
+
+# Predict on unseen production data with 0 data leakage
+predictions = result.predict(new_data)
+```
+
+### 5.2 Fluent Composable Chaining API (`ChokkhuPipeline`)
+
+Provides a modular, type-safe fluent API for building custom multi-stage pipelines:
+
+```python
+from chokkhu.pipeline import ChokkhuPipeline
+from chokkhu.cleaning import KNNImputer
+from chokkhu.preprocessing import RobustScaler, TargetEncoder
+from chokkhu.transformation import PCA
+from chokkhu.models.ml import RandomForestClassifier
+
+pipe = (
+    ChokkhuPipeline()
+    .add_cleaner(KNNImputer(n_neighbors=5))
+    .add_preprocessor(TargetEncoder())
+    .add_preprocessor(RobustScaler())
+    .add_transformer(PCA(n_components=8))
+    .add_model(RandomForestClassifier(n_estimators=100))
+)
+
+pipe.fit(X_train, y_train)
+y_pred = pipe.predict(X_test)
+```
+
+### 5.3 Multi-Task Universal Pipeline Dispatcher
+
+The Universal Pipeline Engine dynamically detects and orchestrates specialized machine learning tasks:
+1. **Tabular Classification & Regression** (`task="classification"` / `task="regression"`).
+2. **Time Series Forecasting & State Filtering** (`task="timeseries_forecast"`): Auto-chains lag transforms, ARIMA/PatchTST/Kalman models, and rolling evaluation.
+3. **Causal Treatment Inference** (`task="causal_inference"`): Auto-partitions confounders, fits nuisance propensity models, and outputs Double ML / 2SLS causal treatment summaries.
+4. **Survival & Event-Time Modeling** (`task="survival"`): Computes Kaplan-Meier curves, Cox-PH proportional hazards, and Harrell's $C$-Index.
+5. **Unsupervised Anomaly Detection & Clustering** (`task="anomaly_detection"` / `task="clustering"`).
+6. **Conformal Uncertainty Quantification** (`conformal_interval=0.95`): Auto-calibrates non-conformity scores and outputs rigorous $95\%$ coverage prediction bands alongside point predictions.
+
+### 5.4 Zero-Leakage State Preservation
+
+- `PreprocessorState`: Captures fitted imputation statistics, mean/std scalers, category-to-integer dictionaries, and target encodings computed **strictly** on training folds.
+- `TransformationState`: Preserves fitted PCA eigenvectors, LDA projection matrices, polynomial exponents, and SVD basis.
+- `ModelWeightsState`: Contains serializable model parameters, tree splits, or neural tensor weights.
+
+### 5.5 Deep Feature Synthesis (DFS)
+
+`src/chokkhu/pipeline/feature_synthesis.py` automatically synthesizes predictive tabular features:
+- Cross-feature ratios and differences ($x_i / x_j$, $x_i - x_j$).
+- Polynomial interaction crosses ($x_i \cdot x_j$).
+- Rolling window aggregates (rolling mean, rolling std, rolling min/max).
+- Date-part cyclical harmonic expansions ($\sin(2\pi t/T), \cos(2\pi t/T)$).
+
+### 5.6 SuperLearner Multi-Layer Stacking
+
+`src/chokkhu/pipeline/stacking.py` constructs out-of-fold (OOF) cross-validated meta-feature matrices:
+$$\mathbf{Z}_{\text{meta}} = \begin{bmatrix} \hat{y}_{\text{OOF}}^{(1)} & \hat{y}_{\text{OOF}}^{(2)} & \dots & \hat{y}_{\text{OOF}}^{(M)} \end{bmatrix}$$
+optimizing Level-2 meta-learner weights via Nelder-Mead and constrained quadratic programming.
+
+### 5.7 Automated Standalone Dark-Mode Interactive HTML Diagnostic Report Builder
+
+`src/chokkhu/reports/html_builder.py` produces an all-in-one, zero-dependency, standalone dark-mode HTML dashboard featuring:
+- Dataset summary statistics & missing data distribution heatmaps.
+- Confusion Matrix & Multiclass ROC/PR Curves.
+- Regression Residual Plots & Distribution QQ-Plots.
+- Conformal Prediction Band Visualizations.
+- Feature Importance & Exact TreeSHAP Summary Bar Charts.
+- Causal DAG Graph Renders & Treatment Effect Forest Plots.
+
+---
+
+## 6. Verification, Quality Assurance & Release Protocol
+
+1. **Zero Heavy Dependencies Constraint Check**:
+   - Automated import audit script validating the complete absence of banned external frameworks (`torch`, `tensorflow`, `sklearn`, `transformers`, etc.).
+2. **Deterministic Reproducibility**:
+   - Explicit random seed parameterization across all probabilistic modules (`ck.core.config.set_seed(42)`).
+3. **Cross-Platform Matrix Test Suite**:
+   - 100% test pass rate across Ubuntu, Windows, and macOS on Python 3.9, 3.10, 3.11, 3.12, and 3.13.
+4. **Featherweight Wheel Distribution**:
+   - Package builds under `< 5 MB` clean wheels verified by `twine check` and published directly to PyPI.
+5. **Continuous Documentation Verification**:
+   - Every single code snippet in README.md and documentation verified as 100% runnable in isolated execution environments.
+
+---
