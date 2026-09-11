@@ -8,6 +8,7 @@ from .dtype_fixer import fix_dtypes
 from .duplicates import remove_duplicates
 from .missing import handle_missing
 from .outliers import handle_outliers
+from .outliers_advanced import EllipticEnvelope, LocalOutlierFactor
 
 
 def clean(
@@ -83,4 +84,6 @@ __all__ = [
     "handle_outliers",
     "remove_duplicates",
     "fix_dtypes",
+    "LocalOutlierFactor",
+    "EllipticEnvelope",
 ]

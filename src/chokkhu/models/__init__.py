@@ -20,6 +20,12 @@ from .generative import (
     LoRAAdapter,
     LatentDiffusionModel,
     LatentCrossAttentionBlock,
+    ControlNet,
+    ZeroConv2D,
+    ControlNetBlock,
+    CycleGAN,
+    CycleGANGenerator,
+    PatchGANDiscriminator,
 )
 from .audio import (
     stft,
@@ -44,6 +50,9 @@ from .audio import (
     Whisper,
     WhisperEncoder,
     WhisperDecoder,
+    ResidualVectorQuantizer,
+    VectorQuantizerStage,
+    VoiceActivityDetector,
 )
 from .base import ChokkhuModel
 from .engine import train
@@ -251,6 +260,8 @@ from .nlp import (
     Qwen2_5,
     BitLinear,
     BitNet158,
+    SpeculativeDecoder,
+    StructuredJSONDecoder,
 )
 
 from .gnn import (
@@ -400,6 +411,12 @@ __all__ = [
     "DDPM",
     "LatentDiffusionModel",
     "LatentCrossAttentionBlock",
+    "ControlNet",
+    "ZeroConv2D",
+    "ControlNetBlock",
+    "CycleGAN",
+    "CycleGANGenerator",
+    "PatchGANDiscriminator",
     "VectorQuantizer",
     "VQVAE",
     "VAE",
@@ -419,6 +436,9 @@ __all__ = [
     "Whisper",
     "WhisperEncoder",
     "WhisperDecoder",
+    "ResidualVectorQuantizer",
+    "VectorQuantizerStage",
+    "VoiceActivityDetector",
     "AudioSpectrogramTransformer",
     "AST",
     "ConformerConvModule",
@@ -625,6 +645,8 @@ __all__ = [
     "Qwen2_5",
     "BitLinear",
     "BitNet158",
+    "SpeculativeDecoder",
+    "StructuredJSONDecoder",
     # Vector Retrieval
     "HNSWIndex",
     "IVFPQIndex",

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "tamimystic"
 
-from .cleaning import clean
+from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
 from .eda import ImageEDA
 from .eda import tabular as tabular_fn
 from .io import load, save
@@ -24,6 +24,7 @@ from .transformation import (
     PCA,
     SMOTE,
     TSNE,
+    UMAP,
     ImageAugmenter,
     LinearDiscriminantAnalysis,
     PolynomialFeatures,
@@ -38,6 +39,12 @@ from .models import (
     DenoisingMLP,
     SinusoidalTimeEmbedding,
     DDPM,
+    ControlNet,
+    ZeroConv2D,
+    ControlNetBlock,
+    CycleGAN,
+    CycleGANGenerator,
+    PatchGANDiscriminator,
     VectorQuantizer,
     VQVAE,
     VAE,
@@ -54,6 +61,9 @@ from .models import (
     Whisper,
     WhisperEncoder,
     WhisperDecoder,
+    ResidualVectorQuantizer,
+    VectorQuantizerStage,
+    VoiceActivityDetector,
     AudioSpectrogramTransformer,
     AST,
     ConformerConvModule,
@@ -204,6 +214,8 @@ from .models import (
     DPOTrainer,
     KTOTrainer,
     ORPOTrainer,
+    SpeculativeDecoder,
+    StructuredJSONDecoder,
     train,
 )
 from .evaluation import (
@@ -317,6 +329,8 @@ from .automl import (
     BOHB,
     SuperLearner,
     StackingEnsemble,
+    GeneticPipelineSearch,
+    DynamicEnsembleSelection,
 )
 
 from .models.retrieval import (
@@ -504,10 +518,19 @@ __all__ = [
     "LoRAAdapter",
     "LatentDiffusionModel",
     "LatentCrossAttentionBlock",
+    "ControlNet",
+    "ZeroConv2D",
+    "ControlNetBlock",
+    "CycleGAN",
+    "CycleGANGenerator",
+    "PatchGANDiscriminator",
     "Wav2Vec2",
     "Whisper",
     "WhisperEncoder",
     "WhisperDecoder",
+    "ResidualVectorQuantizer",
+    "VectorQuantizerStage",
+    "VoiceActivityDetector",
     "AudioSpectrogramTransformer",
     "AST",
     "ConformerConvModule",
@@ -549,6 +572,8 @@ __all__ = [
     "load",
     "save",
     "clean",
+    "LocalOutlierFactor",
+    "EllipticEnvelope",
     "preprocess",
     "transform",
     "split",
@@ -556,6 +581,7 @@ __all__ = [
     "LDA",
     "LinearDiscriminantAnalysis",
     "TSNE",
+    "UMAP",
     "SMOTE",
     "ImageAugmenter",
     "PolynomialFeatures",
@@ -688,6 +714,8 @@ __all__ = [
     "DPOTrainer",
     "KTOTrainer",
     "ORPOTrainer",
+    "SpeculativeDecoder",
+    "StructuredJSONDecoder",
     # Preprocessing & Metrics
     "StandardScaler",
     "MinMaxScaler",
@@ -749,6 +777,8 @@ __all__ = [
     "BOHB",
     "SuperLearner",
     "StackingEnsemble",
+    "GeneticPipelineSearch",
+    "DynamicEnsembleSelection",
     # Vector Retrieval
     "HNSWIndex",
     "IVFPQIndex",

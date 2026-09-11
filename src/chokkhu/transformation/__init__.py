@@ -19,6 +19,7 @@ from .resampling import (
     SMOTETomek,
 )
 from .tsne import TSNE
+from .umap import UMAP
 
 LDA = LinearDiscriminantAnalysis
 
@@ -35,6 +36,9 @@ def transform(
     tsne_perplexity: float = 30.0,
     tsne_learning_rate: float = 200.0,
     tsne_n_iter: int = 500,
+    umap: int | None = None,
+    umap_n_neighbors: int = 15,
+    umap_min_dist: float = 0.1,
     resample: str | None = None,
     resample_ratio: float = 1.0,
     smote_k: int = 5,
@@ -218,6 +222,23 @@ def transform(
             non_num_cols = [c for c in df.columns if c not in num_cols]
             df = pd.concat([df[non_num_cols], tsne_df], axis=1)
 
+    if umap is not None:
+        num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        if target is not None and target in num_cols:
+            num_cols.remove(target)
+        if len(num_cols) > 0:
+            umap_model = UMAP(
+                n_components=umap,
+                n_neighbors=umap_n_neighbors,
+                min_dist=umap_min_dist,
+                random_state=random_state,
+            )
+            umap_arr = umap_model.fit_transform(df[num_cols].to_numpy())
+            umap_cols = [f"umap_{i}" for i in range(umap_arr.shape[1])]
+            umap_df = pd.DataFrame(umap_arr, columns=umap_cols, index=df.index)
+            non_num_cols = [c for c in df.columns if c not in num_cols]
+            df = pd.concat([df[non_num_cols], umap_df], axis=1)
+
     if verbose:
         Logger.info(f"Transformed dataset: {initial_shape} -> {df.shape}")
 
@@ -231,6 +252,7 @@ __all__ = [
     "LinearDiscriminantAnalysis",
     "LDA",
     "TSNE",
+    "UMAP",
     "SMOTE",
     "ADASYN",
     "RandomOverSampler",

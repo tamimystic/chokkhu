@@ -14,6 +14,11 @@ from .stacking import (
     StackingEnsemble,
 )
 from .nas import DARTS
+from .genetic_pipeline import (
+    GeneticPipelineSearch,
+    PipelineIndividual,
+)
+from .dynamic_selection import DynamicEnsembleSelection
 from .autotrainer import (
     AutoTrainer,
     AutoMLResult,
@@ -28,6 +33,9 @@ __all__ = [
     "Hyperband",
     "BOHB",
     "DARTS",
+    "GeneticPipelineSearch",
+    "PipelineIndividual",
+    "DynamicEnsembleSelection",
     "SuperLearner",
     "StackingEnsemble",
     "AutoTrainer",

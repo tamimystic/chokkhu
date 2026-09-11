@@ -7,6 +7,16 @@ from .autoencoders import (
     VQVAE,
     VectorQuantizer,
 )
+from .controlnet import (
+    ControlNet,
+    ControlNetBlock,
+    ZeroConv2D,
+)
+from .cyclegan import (
+    CycleGAN,
+    CycleGANGenerator,
+    PatchGANDiscriminator,
+)
 from .diffusion import (
     DDPM,
     DenoisingMLP,
@@ -41,17 +51,23 @@ __all__ = [
     "VAE",
     "VQVAE",
     "VectorQuantizer",
-    # Diffusion
+    # Diffusion & Control
     "DDPM",
     "SinusoidalTimeEmbedding",
     "DenoisingMLP",
     "LatentDiffusionModel",
     "LatentCrossAttentionBlock",
-    # GANs
+    "ControlNet",
+    "ControlNetBlock",
+    "ZeroConv2D",
+    # GANs & Translation
     "Generator",
     "Discriminator",
     "DCGAN",
     "WGANGP",
+    "CycleGAN",
+    "CycleGANGenerator",
+    "PatchGANDiscriminator",
     # Flow Matching
     "VelocityMLP",
     "FlowMatching",

@@ -106,6 +106,8 @@ from .generation import (
     GenerationConfig,
     TextGenerator,
     sample_next_token,
+    SpeculativeDecoder,
+    StructuredJSONDecoder,
 )
 
 __all__ = [
@@ -187,8 +189,10 @@ __all__ = [
     "Qwen2_5",
     "BitLinear",
     "BitNet158",
-    # Generation
+    # Generation & Accelerated Decoding
     "GenerationConfig",
     "sample_next_token",
     "TextGenerator",
+    "SpeculativeDecoder",
+    "StructuredJSONDecoder",
 ]

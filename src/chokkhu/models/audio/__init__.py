@@ -34,6 +34,12 @@ from .architectures import (
     WhisperDecoder,
 )
 
+from .rvq import (
+    ResidualVectorQuantizer,
+    VectorQuantizerStage,
+)
+from .vad import VoiceActivityDetector
+
 __all__ = [
     # Transforms
     "get_window",
@@ -52,7 +58,7 @@ __all__ = [
     "DepthwiseConv1D",
     "BatchNorm1D",
     "im2col1d",
-    # Architectures
+    # Architectures & Speech Models
     "Conformer",
     "ConformerBlock",
     "ConformerConvModule",
@@ -62,4 +68,8 @@ __all__ = [
     "Whisper",
     "WhisperEncoder",
     "WhisperDecoder",
+    # Audio Codecs & Detection
+    "ResidualVectorQuantizer",
+    "VectorQuantizerStage",
+    "VoiceActivityDetector",
 ]

@@ -1924,6 +1924,334 @@ print(f"Generated Latent Representations Shape: {generated_latents.shape}")
 | `num_heads` | `int` | `4` | Number of heads in cross-attention conditioning block. |
 | `seed` | `int` | `42` | Random seed for weight initialization. |
 
+---
+
+## 20. Sovereign Production Generative AI, Audio Codecs, Speculative LLMs & Genetic AutoML
+
+### 20.1 Spatial Conditional Control with Zero-Convolution (`ControlNet`)
+
+```python
+import numpy as np
+from chokkhu import ControlNet
+
+# Initialize ControlNet adapter with zero-initialized convolution layers
+cnet = ControlNet(
+    in_channels=4,
+    cond_channels=3,
+    base_channels=8,
+    num_stages=2,
+    seed=42,
+)
+
+# Latent feature representation and spatial conditioning guide (e.g., edge map, depth)
+latents = np.random.randn(1, 8, 16, 16).astype(np.float32)
+condition = np.random.randn(1, 3, 16, 16).astype(np.float32)
+
+# Forward pass injects condition while preserving base model representations
+out_latents, stage_residuals = cnet.forward(latents, condition)
+print(f"Modulated Latents Shape: {out_latents.shape}, Intermediate Stages: {len(stage_residuals)}")
+```
+
+#### Parameter Breakdown: `ControlNet`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `in_channels` | `int` | `4` | Number of channels in base input latent representation. |
+| `cond_channels` | `int` | `3` | Number of channels in spatial condition image/map. |
+| `base_channels` | `int` | `32` | Internal channel capacity of feature backbone and ZeroConv layers. |
+| `num_stages` | `int` | `3` | Number of cascaded Zero-Convolution conditioning stages. |
+| `seed` | `int` | `42` | Random seed for weight initialization. |
+
+---
+
+### 20.2 Unpaired Image-to-Image Domain Translation (`CycleGAN`)
+
+```python
+import numpy as np
+from chokkhu import CycleGAN
+
+# Initialize bidirectional domain translation network (A <-> B)
+cyclegan = CycleGAN(
+    channels_a=3,
+    channels_b=3,
+    base_channels=8,
+    lambda_cycle=10.0,
+    lambda_identity=5.0,
+    seed=42,
+)
+
+# Domain A and Domain B unaligned sample batches
+real_a = np.random.randn(1, 3, 16, 16).astype(np.float32)
+real_b = np.random.randn(1, 3, 16, 16).astype(np.float32)
+
+# Bidirectional translations
+fake_b = cyclegan.translate_a2b(real_a)
+fake_a = cyclegan.translate_b2a(real_b)
+
+# Full training pass computing cycle consistency and adversarial losses
+metrics = cyclegan.forward(real_a, real_b)
+print(f"Cycle Loss: {metrics['loss_cycle']:.4f}, Total Gen Loss: {metrics['total_loss']:.4f}")
+```
+
+#### Parameter Breakdown: `CycleGAN`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `channels_a` | `int` | `3` | Number of image channels in domain A. |
+| `channels_b` | `int` | `3` | Number of image channels in domain B. |
+| `base_channels` | `int` | `16` | Base filter depth in ResNet generators and PatchGAN discriminators. |
+| `lambda_cycle` | `float` | `10.0` | Weight scalar for L1 cycle consistency reconstruction loss. |
+| `lambda_identity` | `float` | `5.0` | Weight scalar for identity preservation loss. |
+| `seed` | `int` | `42` | Random seed for reproducibility. |
+
+---
+
+### 20.3 Neural Audio Compression & Discrete Codecs (`ResidualVectorQuantizer`)
+
+```python
+import numpy as np
+from chokkhu import ResidualVectorQuantizer
+
+# 4-stage residual vector quantizer (SoundStream / EnCodec style)
+rvq = ResidualVectorQuantizer(
+    num_quantizers=4,
+    codebook_size=32,
+    embed_dim=8,
+    commitment_weight=0.25,
+    seed=42,
+)
+
+# Continuous audio frame representations (Batch, Time, Dim)
+audio_embeddings = np.random.randn(2, 10, 8).astype(np.float32)
+
+# 1. Multi-stage hierarchical quantization
+quantized, codes, commitment_loss = rvq.forward(audio_embeddings)
+print(f"Discrete Code Tokens Shape: {codes.shape}, Loss: {commitment_loss:.4f}")
+
+# 2. Reconstruct continuous latents from discrete indices
+reconstructed = rvq.decode_codes(codes)
+print(f"Reconstructed Latents Match Original Shape: {reconstructed.shape == audio_embeddings.shape}")
+```
+
+#### Parameter Breakdown: `ResidualVectorQuantizer`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `num_quantizers` | `int` | `4` | Number of cascaded residual quantization stages ($N_q$). |
+| `codebook_size` | `int` | `1024` | Number of discrete code vectors per stage codebook ($K$). |
+| `embed_dim` | `int` | `64` | Embedding dimensionality of continuous latent vectors ($D$). |
+| `commitment_weight` | `float` | `0.25` | Scalar multiplier for codebook commitment loss. |
+| `seed` | `int` | `42` | Random seed for codebook initialization. |
+
+---
+
+### 20.4 Multi-Cue Voice Activity Detection (`VoiceActivityDetector`)
+
+```python
+import numpy as np
+from chokkhu import VoiceActivityDetector
+
+# Multi-cue VAD with Short-Time Energy, ZCR, and Spectral Flux
+vad = VoiceActivityDetector(
+    sample_rate=16000,
+    frame_length_ms=25.0,
+    hop_length_ms=10.0,
+    energy_threshold=0.02,
+)
+
+# Generate synthetic audio with speech tone and silence
+t = np.linspace(0, 0.5, 8000)
+tone = np.sin(2 * np.pi * 440 * t) * 0.5
+silence = np.zeros(4000)
+audio = np.concatenate([silence, tone, silence])
+
+# Run VAD speech segmentation
+vad_result = vad.detect(audio)
+print(f"Speech Ratio: {vad_result['speech_ratio']:.2%}")
+print(f"Detected Speech Intervals (sec): {vad_result['segments']}")
+```
+
+#### Parameter Breakdown: `VoiceActivityDetector`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `sample_rate` | `int` | `16000` | Sampling frequency of the input audio signal in Hz. |
+| `frame_length_ms` | `float` | `25.0` | Duration of each analysis frame in milliseconds. |
+| `hop_length_ms` | `float` | `10.0` | Hop step between consecutive frames in milliseconds. |
+| `energy_threshold` | `float` | `0.02` | Sensitivity threshold for speech classification. |
+| `zcr_threshold` | `float` | `0.15` | Zero-Crossing Rate threshold for unvoiced speech discrimination. |
+| `min_speech_duration_ms` | `float` | `100.0` | Minimum duration required to trigger active speech state. |
+| `min_silence_duration_ms` | `float` | `200.0` | Minimum silence duration required to terminate active speech state. |
+
+---
+
+### 20.5 High-Speed Speculative & Grammar-Constrained LLM Decoding (`SpeculativeDecoder`, `StructuredJSONDecoder`)
+
+```python
+import numpy as np
+from chokkhu import SpeculativeDecoder, StructuredJSONDecoder
+from chokkhu.core.tensor import Tensor
+
+# Define mock target and draft model logit functions
+def mock_target_model(tensor_in):
+    logits = np.zeros((1, 1, 30), dtype=np.float32)
+    logits[0, 0, 5] = 5.0
+    return Tensor(logits, requires_grad=False)
+
+def mock_draft_model(tensor_in):
+    return Tensor(np.ones((1, 1, 30), dtype=np.float32), requires_grad=False)
+
+class SimpleTokenizer:
+    def encode(self, text, bos=True): return [1, 2, 3]
+    def decode(self, tokens, skip_special_tokens=True): return '{"status": "success", "result": "generated text"}'
+
+tok = SimpleTokenizer()
+
+# 1. Speculative Decoding for 2x-3x speedup via draft-verification sampling
+spec_dec = SpeculativeDecoder(
+    target_model=mock_target_model,
+    draft_model=mock_draft_model,
+    tokenizer=tok,
+    gamma=3,
+    temperature=1.0,
+)
+spec_result = spec_dec.generate("Analyze this transaction:", max_new_tokens=4, eos_token_id=None)
+print(f"Speculative Output: {spec_result['text']}, Acceptance Rate: {spec_result['acceptance_rate']:.2%}")
+
+# 2. Grammar-Constrained Structured JSON Generation
+json_dec = StructuredJSONDecoder(model=mock_target_model, tokenizer=tok)
+json_result = json_dec.generate(
+    "Extract user data",
+    schema={"properties": {"name": {"type": "string"}, "age": {"type": "number"}}},
+    max_new_tokens=5,
+)
+print(f"Parsed JSON Valid: {json_result['parsed_json']}")
+```
+
+#### Parameter Breakdown: `SpeculativeDecoder`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `target_model` | `Any` | *Required* | Main target high-capacity language model. |
+| `draft_model` | `Any` | *Required* | Lightweight draft model for fast token generation. |
+| `tokenizer` | `Any` | *Required* | Tokenizer instance providing `encode` and `decode`. |
+| `gamma` | `int` | `4` | Number of speculative draft tokens generated per iteration. |
+| `temperature` | `float` | `1.0` | Sampling temperature parameter. |
+
+---
+
+### 20.6 Non-Linear Manifold Learning & Dimension Reduction (`UMAP`)
+
+```python
+import numpy as np
+from chokkhu import UMAP
+
+# Create high-dimensional clustered dataset
+np.random.seed(42)
+c1 = np.random.randn(25, 10) + 3.0
+c2 = np.random.randn(25, 10) - 3.0
+X = np.vstack([c1, c2])
+
+# Initialize pure NumPy UMAP reducer
+umap = UMAP(
+    n_components=2,
+    n_neighbors=5,
+    min_dist=0.1,
+    n_epochs=50,
+    random_state=42,
+)
+
+# Project to 2D manifold preserving both local and global topology
+embedding = umap.fit_transform(X)
+print(f"UMAP 2D Projection Shape: {embedding.shape}")
+```
+
+#### Parameter Breakdown: `UMAP`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_components` | `int` | `2` | Dimensionality of embedded target manifold. |
+| `n_neighbors` | `int` | `15` | Size of local fuzzy simplicial metric neighborhood. |
+| `min_dist` | `float` | `0.1` | Minimum distance between embedded points in low-dimensional space. |
+| `n_epochs` | `int` | `200` | Number of SGD cross-entropy layout optimization iterations. |
+| `learning_rate` | `float` | `1.0` | Initial learning rate for manifold layout SGD. |
+| `random_state` | `int | None` | `None` | Seed for reproducibility. |
+
+---
+
+### 20.7 Evolutionary Pipeline Search & Dynamic Classifier Selection (`GeneticPipelineSearch`, `DynamicEnsembleSelection`)
+
+```python
+import numpy as np
+from chokkhu import GeneticPipelineSearch, DynamicEnsembleSelection
+
+# Synthetic classification dataset
+np.random.seed(42)
+X = np.random.randn(40, 4)
+y = (X[:, 0] + X[:, 1] > 0).astype(int)
+
+# 1. Genetic TPOT-Style Pipeline Evolution
+search = GeneticPipelineSearch(
+    population_size=6,
+    generations=3,
+    mutation_rate=0.2,
+    crossover_rate=0.5,
+    cv_folds=2,
+    seed=42,
+)
+search.fit(X, y)
+print(f"Best Evolved Pipeline: {search.best_individual.scaler_type} -> PCA({search.best_individual.pca_components}) -> {search.best_individual.model_type}")
+
+# 2. Dynamic Ensemble Selection (KNORA-Eliminate)
+pool = [
+    lambda data: (data[:, 0] > 0).astype(int),
+    lambda data: (data[:, 1] > 0).astype(int),
+]
+des = DynamicEnsembleSelection(pool_classifiers=pool, k_neighbors=3, method="knora_e")
+des.fit(X, y)
+des_predictions = des.predict(X)
+print(f"Dynamic Selection Predictions Shape: {des_predictions.shape}")
+```
+
+#### Parameter Breakdown: `GeneticPipelineSearch`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `population_size` | `int` | `12` | Number of candidate pipeline chromosomes per generation. |
+| `generations` | `int` | `4` | Number of evolutionary iterations. |
+| `mutation_rate` | `float` | `0.3` | Probability of mutating individual pipeline hyperparameters. |
+| `crossover_rate` | `float` | `0.5` | Probability of chromosome crossover reproduction. |
+| `tournament_size` | `int` | `3` | Number of individuals competing in Pareto tournament selection. |
+| `cv_folds` | `int` | `3` | Cross-validation folds used for individual fitness scoring. |
+| `seed` | `int` | `42` | Random seed for evolution reproducibility. |
+
+---
+
+### 20.8 Advanced Density & Robust Outlier Detection (`LocalOutlierFactor`, `EllipticEnvelope`)
+
+```python
+import numpy as np
+from chokkhu import LocalOutlierFactor, EllipticEnvelope
+
+# Synthetic data with anomalies
+np.random.seed(42)
+inliers = np.random.randn(40, 2)
+outliers = np.random.uniform(low=-8, high=8, size=(4, 2))
+X = np.vstack([inliers, outliers])
+
+# 1. Local Outlier Factor (LOF)
+lof = LocalOutlierFactor(n_neighbors=10, contamination=0.1, novelty=True)
+lof_labels = lof.fit_predict(X)
+print(f"LOF Detected Outliers Count: {np.sum(lof_labels == -1)}")
+
+# 2. Elliptic Envelope (FastMCD Robust Covariance)
+ee = EllipticEnvelope(contamination=0.1, random_state=42)
+ee.fit(X)
+ee_labels = ee.predict(X)
+print(f"EllipticEnvelope Detected Outliers Count: {np.sum(ee_labels == -1)}")
+```
+
+#### Parameter Breakdown: `LocalOutlierFactor`
+| Parameter Name | Data Type | Default Value | Description / Purpose |
+| :--- | :--- | :--- | :--- |
+| `n_neighbors` | `int` | `20` | Number of nearest neighbors used for local reachability density. |
+| `contamination` | `float` | `0.1` | Expected proportion of outliers in the dataset $(0, 0.5]$. |
+| `metric` | `str` | `'euclidean'` | Distance metric (`'euclidean'`, `'manhattan'`, `'cosine'`). |
+| `novelty` | `bool` | `False` | Enable prediction and scoring on unseen testing data. |
+
 ## License & Citation
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
