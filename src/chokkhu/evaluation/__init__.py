@@ -14,6 +14,11 @@ from .metrics import (
     root_mean_squared_error,
 )
 
+from .drift import (
+    MaximumMeanDiscrepancyTest,
+    PopulationStabilityIndex,
+)
+
 __all__ = [
     "evaluate",
     "EvaluationResult",
@@ -27,4 +32,6 @@ __all__ = [
     "log_loss",
     "roc_auc_score",
     "pr_auc_score",
+    "MaximumMeanDiscrepancyTest",
+    "PopulationStabilityIndex",
 ]

@@ -50,7 +50,7 @@ from .models.dl.biological import (
 
 from typing import Any, Optional
 
-__version__ = "1.5.11"
+__version__ = "1.5.12"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -281,6 +281,12 @@ from .evaluation import (
     r2_score,
     roc_auc_score,
     pr_auc_score,
+    MaximumMeanDiscrepancyTest,
+    PopulationStabilityIndex,
+)
+from .data import (
+    DataShapleyValuation,
+    FacilityLocationCoresetSelector,
 )
 from .explainability import (
     ExplanationResult,
@@ -1220,4 +1226,8 @@ __all__ = [
     "ProcessRewardModel",
     "STaR",
     "ReflexionLoop",
+    "MaximumMeanDiscrepancyTest",
+    "PopulationStabilityIndex",
+    "DataShapleyValuation",
+    "FacilityLocationCoresetSelector",
 ]
