@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -178,6 +178,8 @@ class PipelineResult:
         evaluation: Dict[str, Any],
         cv_scores: Optional[Dict[str, float]] = None,
         feature_names: Optional[List[str]] = None,
+        conformal_model: Optional[Any] = None,
+        conformal_interval: Optional[float] = None,
     ) -> None:
         self.data_raw = data_raw
         self.data_cleaned = data_cleaned
@@ -191,14 +193,18 @@ class PipelineResult:
         self.evaluation = evaluation
         self.cv_scores = cv_scores or {}
         self.feature_names = feature_names or []
+        self.conformal_model = conformal_model
+        self.conformal_interval = conformal_interval
 
     @property
     def metrics(self) -> Dict[str, Any]:
         return self.evaluation
 
     def predict(
-        self, new_data: Union[pd.DataFrame, np.ndarray, dict, list, str]
-    ) -> np.ndarray:
+        self,
+        new_data: Union[pd.DataFrame, np.ndarray, dict, list, str],
+        return_intervals: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """Runs the fitted preprocessing and transformation pipeline and returns model predictions
         on unseen data with ZERO data leakage.
         """
@@ -228,7 +234,40 @@ class PipelineResult:
             df_proc = self.transformation_state.transform(df_proc)
 
         X_arr = df_proc.to_numpy(dtype=np.float64)
-        return self.model.predict(X_arr)
+        preds = self.model.predict(X_arr)
+
+        if return_intervals and self.conformal_model is not None:
+            if hasattr(self.conformal_model, "predict"):
+                res = self.conformal_model.predict(X_arr)
+                if isinstance(res, tuple) and len(res) == 2:
+                    return preds, res[0], res[1]
+
+        return preds
+
+    def predict_interval(
+        self,
+        new_data: Union[pd.DataFrame, np.ndarray, dict, list, str],
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Returns point predictions, lower conformal bounds, and upper conformal bounds."""
+        raw_preds = self.predict(new_data, return_intervals=False)
+        preds_arr: np.ndarray = np.asarray(raw_preds)
+
+        if self.conformal_model is not None:
+            if isinstance(new_data, pd.DataFrame):
+                df = new_data.copy()
+            else:
+                df = pd.DataFrame(new_data)
+            if self.target_col in df.columns:
+                df = df.drop(columns=[self.target_col])
+            df_proc = self.preprocessor_state.transform(df)
+            if self.transformation_state is not None:
+                df_proc = self.transformation_state.transform(df_proc)
+            X_arr = df_proc.to_numpy(dtype=np.float64)
+            low, high = self.conformal_model.predict(X_arr)
+            return preds_arr, np.asarray(low), np.asarray(high)
+
+        # Fallback default margin
+        return preds_arr, preds_arr - 1.96, preds_arr + 1.96
 
     def predict_proba(
         self, new_data: Union[pd.DataFrame, np.ndarray, dict, list]
@@ -311,15 +350,16 @@ class PipelineResult:
 
 def pipeline(
     data: Union[str, pd.DataFrame],
-    target: str,
+    target: Optional[str] = None,
     clean: Union[bool, str, Dict[str, Any]] = "auto",
     preprocess: Union[bool, str, Dict[str, Any]] = "auto",
     transform: Optional[Dict[str, Any]] = None,
     resample: Optional[str] = None,
     resample_ratio: float = 1.0,
     smote_k: int = 5,
-    model: Union[str, List[str]] = "auto",
+    model: Union[str, List[str], Any] = "auto",
     task: str = "auto",
+    conformal_interval: Optional[float] = None,
     test_size: float = 0.2,
     val_size: Optional[float] = None,
     stratify: bool = True,
@@ -329,7 +369,7 @@ def pipeline(
     save_dir: str = "chokkhu_reports",
     verbose: bool = True,
     **kwargs,
-) -> PipelineResult:
+) -> Any:
     """Executes the complete End-to-End Machine Learning Pipeline with ZERO Data Leakage.
 
     Execution Flow:
@@ -353,6 +393,47 @@ def pipeline(
         df_raw = data.copy()
     else:
         raise TypeError("Data must be a file path string or pandas DataFrame.")
+
+    if (
+        task
+        in (
+            "timeseries_forecast",
+            "causal_inference",
+            "survival",
+            "anomaly_detection",
+            "clustering",
+        )
+        or (target is None and task == "auto")
+        or "treatment" in kwargs
+        or "duration" in kwargs
+    ):
+        from .dispatcher import dispatch_pipeline
+
+        return dispatch_pipeline(
+            data=data,
+            target=target,
+            task=task,
+            model=model,
+            clean=clean,
+            preprocess=preprocess,
+            transform=transform,
+            resample=resample,
+            resample_ratio=resample_ratio,
+            conformal_interval=conformal_interval,
+            test_size=test_size,
+            val_size=val_size,
+            random_state=random_state,
+            evaluate=evaluate,
+            save_reports=save_reports,
+            save_dir=save_dir,
+            verbose=verbose,
+            **kwargs,
+        )
+
+    if target is None:
+        raise ValueError(
+            "Target column must be provided for supervised tabular pipeline."
+        )
 
     if target not in df_raw.columns:
         raise ValueError(

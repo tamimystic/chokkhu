@@ -100,7 +100,7 @@ from .models.ml import (
 
 from typing import Any, Optional
 
-__version__ = "1.5.19"
+__version__ = "1.5.20"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -353,9 +353,17 @@ from .explainability import (
 from .pipeline import (
     ChokkhuPipeline,
     DeepFeatureSynthesizer,
+    MultiTaskDispatcher,
+    MultiTaskPipelineResult,
     PipelineResult,
+    StackingPipeline,
     TransformationState,
+    dispatch_pipeline,
     pipeline,
+)
+from .reports import (
+    HTMLReportBuilder,
+    create_diagnostic_dashboard,
 )
 
 
@@ -449,7 +457,6 @@ from .automl import (
     BayesianOptimization,
     Hyperband,
     BOHB,
-    SuperLearner,
     StackingEnsemble,
     GeneticPipelineSearch,
     DynamicEnsembleSelection,
@@ -1338,4 +1345,11 @@ __all__ = [
     "SpectralClustering",
     "KNNClassifier",
     "KNNRegressor",
+    "SuperLearner",
+    "StackingPipeline",
+    "MultiTaskDispatcher",
+    "dispatch_pipeline",
+    "MultiTaskPipelineResult",
+    "HTMLReportBuilder",
+    "create_diagnostic_dashboard",
 ]

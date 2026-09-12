@@ -163,3 +163,25 @@ def pr_auc_score(y_true: np.ndarray, y_score: np.ndarray) -> float:
     r_arr = np.array([0.0] + recalls + [1.0])
     # Trapezoid rule
     return float(np.sum(0.5 * (p_arr[:-1] + p_arr[1:]) * np.diff(r_arr)))
+
+
+def f1_score(y_true: np.ndarray, y_pred: np.ndarray, average: str = "macro") -> float:
+    """Computes F1 score."""
+    _, _, f1 = precision_recall_f1(y_true, y_pred, average=average)
+    return float(f1)
+
+
+def precision_score(
+    y_true: np.ndarray, y_pred: np.ndarray, average: str = "macro"
+) -> float:
+    """Computes Precision score."""
+    p, _, _ = precision_recall_f1(y_true, y_pred, average=average)
+    return float(p)
+
+
+def recall_score(
+    y_true: np.ndarray, y_pred: np.ndarray, average: str = "macro"
+) -> float:
+    """Computes Recall score."""
+    _, r, _ = precision_recall_f1(y_true, y_pred, average=average)
+    return float(r)

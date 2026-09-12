@@ -3,6 +3,9 @@ from __future__ import annotations
 from .engine import EvaluationResult, evaluate
 from .metrics import (
     accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
     confusion_matrix,
     log_loss,
     mean_absolute_error,
