@@ -22,6 +22,10 @@ from .trees import (
     RuleFitRegressor,
     RuleFitClassifier,
 )
+from .meta import (
+    MAML,
+    MAPElites,
+)
 
 
 from .generative import (
@@ -859,4 +863,6 @@ __all__ = [
     "SLERP",
     "RegMean",
     "FrankWolfeEnsemble",
+    "MAML",
+    "MAPElites",
 ]

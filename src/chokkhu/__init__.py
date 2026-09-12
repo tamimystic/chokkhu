@@ -50,7 +50,7 @@ from .models.dl.biological import (
 
 from typing import Any, Optional
 
-__version__ = "1.5.12"
+__version__ = "1.5.13"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -678,6 +678,11 @@ from .optimization import (
 from .information import (
     KraskovMutualInformation,
     MultivariateKDE,
+    DeepVariationalInformationBottleneck,
+)
+from .models.meta import (
+    MAML,
+    MAPElites,
 )
 from .models.energy import (
     EnergyBasedModel,
@@ -1230,4 +1235,7 @@ __all__ = [
     "PopulationStabilityIndex",
     "DataShapleyValuation",
     "FacilityLocationCoresetSelector",
+    "DeepVariationalInformationBottleneck",
+    "MAML",
+    "MAPElites",
 ]
