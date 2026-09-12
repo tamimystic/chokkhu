@@ -147,3 +147,27 @@ def test_pipeline_summary_and_serialization(sample_classification_df, tmp_path):
     orig_preds = result.predict(new_data)
     loaded_preds = loaded_result.predict(new_data)
     np.testing.assert_array_equal(orig_preds, loaded_preds)
+
+
+def test_chokkhu_pipeline_fluent_chaining(sample_classification_df):
+    from chokkhu.preprocessing import StandardScaler
+    from chokkhu.transformation import PCA
+    from chokkhu.models.ml import RandomForest
+
+    X = sample_classification_df[["num_1", "num_2"]].to_numpy()
+    y = sample_classification_df["target"].to_numpy()
+
+    pipe = (
+        ck.ChokkhuPipeline()
+        .add_preprocessor(StandardScaler())
+        .add_transformer(PCA(n_components=2))
+        .add_model(
+            RandomForest(n_estimators=10, task="classification", random_state=42)
+        )
+    )
+
+    pipe.fit(X, y)
+    preds = pipe.predict(X[:5])
+    assert len(preds) == 5
+    probs = pipe.predict_proba(X[:5])
+    assert probs.shape == (5, 2)

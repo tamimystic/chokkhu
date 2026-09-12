@@ -642,3 +642,112 @@ def pipeline(
         )
 
     return result
+
+
+class ChokkhuPipeline:
+    """Fluent Composable Chaining API for multi-stage ML pipelines with zero data leakage.
+
+    Example:
+        pipe = (
+            ChokkhuPipeline()
+            .add_cleaner(KNNImputer(n_neighbors=5))
+            .add_preprocessor(StandardScaler())
+            .add_transformer(PCA(n_components=8))
+            .add_model(RandomForestClassifier(n_estimators=100))
+        )
+        pipe.fit(X_train, y_train)
+        y_pred = pipe.predict(X_test)
+    """
+
+    def __init__(self) -> None:
+        self.cleaners: List[Any] = []
+        self.preprocessors: List[Any] = []
+        self.transformers: List[Any] = []
+        self.model: Optional[Any] = None
+
+    def add_cleaner(self, cleaner: Any) -> "ChokkhuPipeline":
+        self.cleaners.append(cleaner)
+        return self
+
+    def add_preprocessor(self, preprocessor: Any) -> "ChokkhuPipeline":
+        self.preprocessors.append(preprocessor)
+        return self
+
+    def add_transformer(self, transformer: Any) -> "ChokkhuPipeline":
+        self.transformers.append(transformer)
+        return self
+
+    def add_model(self, model: Any) -> "ChokkhuPipeline":
+        self.model = model
+        return self
+
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Optional[Union[pd.Series, np.ndarray]] = None,
+    ) -> "ChokkhuPipeline":
+        curr_X = X
+        # 1. Cleaners
+        for cleaner in self.cleaners:
+            if hasattr(cleaner, "fit_transform"):
+                curr_X = cleaner.fit_transform(curr_X)
+            elif hasattr(cleaner, "fit"):
+                cleaner.fit(curr_X)
+                if hasattr(cleaner, "transform"):
+                    curr_X = cleaner.transform(curr_X)
+
+        # 2. Preprocessors
+        for preproc in self.preprocessors:
+            if hasattr(preproc, "fit_transform"):
+                curr_X = preproc.fit_transform(curr_X)
+            elif hasattr(preproc, "fit"):
+                preproc.fit(curr_X)
+                if hasattr(preproc, "transform"):
+                    curr_X = preproc.transform(curr_X)
+
+        # 3. Transformers
+        for trans in self.transformers:
+            if hasattr(trans, "fit_transform"):
+                curr_X = trans.fit_transform(curr_X)
+            elif hasattr(trans, "fit"):
+                trans.fit(curr_X)
+                if hasattr(trans, "transform"):
+                    curr_X = trans.transform(curr_X)
+
+        # 4. Model
+        if self.model is not None:
+            if hasattr(self.model, "fit"):
+                self.model.fit(curr_X, y)
+            elif hasattr(self.model, "train"):
+                self.model.train(curr_X, y)
+
+        return self
+
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+        curr_X = X
+        for cleaner in self.cleaners:
+            if hasattr(cleaner, "transform"):
+                curr_X = cleaner.transform(curr_X)
+        for preproc in self.preprocessors:
+            if hasattr(preproc, "transform"):
+                curr_X = preproc.transform(curr_X)
+        for trans in self.transformers:
+            if hasattr(trans, "transform"):
+                curr_X = trans.transform(curr_X)
+        return curr_X
+
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
+        curr_X = self.transform(X)
+        if self.model is not None:
+            if hasattr(self.model, "predict"):
+                return self.model.predict(curr_X)
+        raise RuntimeError("No trained model in pipeline")
+
+    def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
+        curr_X = self.transform(X)
+        if self.model is not None:
+            if hasattr(self.model, "predict_proba"):
+                return self.model.predict_proba(curr_X)
+        raise RuntimeError("No model with predict_proba in pipeline")
