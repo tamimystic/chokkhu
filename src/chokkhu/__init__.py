@@ -66,11 +66,21 @@ from .models.ml import (
     ExtraTreesRegressor,
     KMedoids,
     OPTICS,
+    IsolationForest,
+    HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
+    SVC,
+    SVR,
+    OneClassSVM,
+    LinearSVC,
+    NearestCentroid,
+    RadiusNeighborsClassifier,
+    RadiusNeighborsRegressor,
 )
 
 from typing import Any, Optional
 
-__version__ = "1.5.17"
+__version__ = "1.5.18"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -1278,4 +1288,14 @@ __all__ = [
     "ExtraTreesRegressor",
     "KMedoids",
     "OPTICS",
+    "IsolationForest",
+    "HistGradientBoostingClassifier",
+    "HistGradientBoostingRegressor",
+    "SVC",
+    "SVR",
+    "OneClassSVM",
+    "LinearSVC",
+    "NearestCentroid",
+    "RadiusNeighborsClassifier",
+    "RadiusNeighborsRegressor",
 ]

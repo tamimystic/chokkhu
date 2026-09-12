@@ -17,6 +17,17 @@ from .adaboost import AdaBoostClassifier, AdaBoostRegressor
 from .extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
 from .kmedoids import KMedoids
 from .optics import OPTICS
+from .isolation_forest import IsolationForest
+from .hist_gradient_boosting import (
+    HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
+)
+from .svm_kernels import SVC, SVR, OneClassSVM, LinearSVC
+from .nearest_neighbors import (
+    NearestCentroid,
+    RadiusNeighborsClassifier,
+    RadiusNeighborsRegressor,
+)
 
 __all__ = [
     "LinearRegression",
@@ -37,4 +48,14 @@ __all__ = [
     "ExtraTreesRegressor",
     "KMedoids",
     "OPTICS",
+    "IsolationForest",
+    "HistGradientBoostingClassifier",
+    "HistGradientBoostingRegressor",
+    "SVC",
+    "SVR",
+    "OneClassSVM",
+    "LinearSVC",
+    "NearestCentroid",
+    "RadiusNeighborsClassifier",
+    "RadiusNeighborsRegressor",
 ]

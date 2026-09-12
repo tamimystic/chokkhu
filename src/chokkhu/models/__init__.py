@@ -42,6 +42,16 @@ from .ml import (
     ExtraTreesRegressor,
     KMedoids,
     OPTICS,
+    IsolationForest,
+    HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
+    SVC,
+    SVR,
+    OneClassSVM,
+    LinearSVC,
+    NearestCentroid,
+    RadiusNeighborsClassifier,
+    RadiusNeighborsRegressor,
 )
 
 
@@ -894,4 +904,14 @@ __all__ = [
     "ExtraTreesRegressor",
     "KMedoids",
     "OPTICS",
+    "IsolationForest",
+    "HistGradientBoostingClassifier",
+    "HistGradientBoostingRegressor",
+    "SVC",
+    "SVR",
+    "OneClassSVM",
+    "LinearSVC",
+    "NearestCentroid",
+    "RadiusNeighborsClassifier",
+    "RadiusNeighborsRegressor",
 ]
