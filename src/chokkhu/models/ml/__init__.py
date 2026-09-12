@@ -28,6 +28,35 @@ from .nearest_neighbors import (
     RadiusNeighborsClassifier,
     RadiusNeighborsRegressor,
 )
+from .glm import (
+    RidgeRegression,
+    LassoRegression,
+    ElasticNet,
+    HuberRegressor,
+    BayesianRidge,
+    ARDRegression,
+    PassiveAggressiveClassifier,
+    PassiveAggressiveRegressor,
+)
+from .naive_bayes_extended import (
+    GaussianNB,
+    MultinomialNB,
+    BernoulliNB,
+    ComplementNB,
+    LinearDiscriminantAnalysis,
+    QuadraticDiscriminantAnalysis,
+    LDAClassifier,
+    QDAClassifier,
+)
+from .clustering_advanced import (
+    MiniBatchKMeans,
+    GaussianMixture,
+    SpectralClustering,
+)
+from .knn_spatial import (
+    KNNClassifier,
+    KNNRegressor,
+)
 
 __all__ = [
     "LinearRegression",
@@ -58,4 +87,25 @@ __all__ = [
     "NearestCentroid",
     "RadiusNeighborsClassifier",
     "RadiusNeighborsRegressor",
+    "RidgeRegression",
+    "LassoRegression",
+    "ElasticNet",
+    "HuberRegressor",
+    "BayesianRidge",
+    "ARDRegression",
+    "PassiveAggressiveClassifier",
+    "PassiveAggressiveRegressor",
+    "GaussianNB",
+    "MultinomialNB",
+    "BernoulliNB",
+    "ComplementNB",
+    "LinearDiscriminantAnalysis",
+    "QuadraticDiscriminantAnalysis",
+    "LDAClassifier",
+    "QDAClassifier",
+    "MiniBatchKMeans",
+    "GaussianMixture",
+    "SpectralClustering",
+    "KNNClassifier",
+    "KNNRegressor",
 ]

@@ -76,11 +76,31 @@ from .models.ml import (
     NearestCentroid,
     RadiusNeighborsClassifier,
     RadiusNeighborsRegressor,
+    RidgeRegression,
+    LassoRegression,
+    ElasticNet,
+    HuberRegressor,
+    BayesianRidge,
+    ARDRegression,
+    PassiveAggressiveClassifier,
+    PassiveAggressiveRegressor,
+    GaussianNB,
+    MultinomialNB,
+    BernoulliNB,
+    ComplementNB,
+    LDAClassifier,
+    QDAClassifier,
+    QuadraticDiscriminantAnalysis,
+    MiniBatchKMeans,
+    GaussianMixture,
+    SpectralClustering,
+    KNNClassifier,
+    KNNRegressor,
 )
 
 from typing import Any, Optional
 
-__version__ = "1.5.18"
+__version__ = "1.5.19"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -1298,4 +1318,24 @@ __all__ = [
     "NearestCentroid",
     "RadiusNeighborsClassifier",
     "RadiusNeighborsRegressor",
+    "RidgeRegression",
+    "LassoRegression",
+    "ElasticNet",
+    "HuberRegressor",
+    "BayesianRidge",
+    "ARDRegression",
+    "PassiveAggressiveClassifier",
+    "PassiveAggressiveRegressor",
+    "GaussianNB",
+    "MultinomialNB",
+    "BernoulliNB",
+    "ComplementNB",
+    "LDAClassifier",
+    "QDAClassifier",
+    "QuadraticDiscriminantAnalysis",
+    "MiniBatchKMeans",
+    "GaussianMixture",
+    "SpectralClustering",
+    "KNNClassifier",
+    "KNNRegressor",
 ]
