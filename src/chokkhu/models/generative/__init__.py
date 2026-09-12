@@ -63,6 +63,7 @@ from .consistency import (
     OptimalTransportFlowMatching,
     ReflowMatching,
 )
+from .gflownet import TrajectoryBalanceGFlowNet
 
 __all__ = [
     # Autoencoders
@@ -108,4 +109,5 @@ __all__ = [
     "DiffusionTransformer",
     "DiTBlock",
     "AdaLNZero",
+    "TrajectoryBalanceGFlowNet",
 ]

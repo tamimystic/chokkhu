@@ -28,6 +28,8 @@ from .biological import (
     DifferenceTargetPropagationNetwork,
     DecoupledSyntheticGradientLayer,
 )
+from .spiking import LIFNeuron, SpikingNeuralNetwork
+from .deq import DeepEquilibriumModel
 
 __all__ = [
     "Module",
@@ -65,4 +67,7 @@ __all__ = [
     "DirectFeedbackAlignmentNetwork",
     "DifferenceTargetPropagationNetwork",
     "DecoupledSyntheticGradientLayer",
+    "LIFNeuron",
+    "SpikingNeuralNetwork",
+    "DeepEquilibriumModel",
 ]

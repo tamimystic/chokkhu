@@ -20,6 +20,7 @@ from .neural_ode import NeuralODE
 from .fluid import DifferentiableParticleFluid
 from .fno import SpectralConv2d, FourierNeuralOperator2D
 from .sparse_gp import SparseGaussianProcessRegression, VariationalSparseGP
+from .koopman import DynamicModeDecomposition, ExtendedDMD
 
 __all__ = [
     "PINN",
@@ -34,4 +35,6 @@ __all__ = [
     "FourierNeuralOperator2D",
     "SparseGaussianProcessRegression",
     "VariationalSparseGP",
+    "DynamicModeDecomposition",
+    "ExtendedDMD",
 ]

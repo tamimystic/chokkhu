@@ -26,6 +26,15 @@ from .meta import (
     MAML,
     MAPElites,
 )
+from .dl import (
+    LIFNeuron,
+    SpikingNeuralNetwork,
+    DeepEquilibriumModel,
+)
+from .sciml import (
+    DynamicModeDecomposition,
+    ExtendedDMD,
+)
 
 
 from .generative import (
@@ -865,4 +874,10 @@ __all__ = [
     "FrankWolfeEnsemble",
     "MAML",
     "MAPElites",
+    "LIFNeuron",
+    "SpikingNeuralNetwork",
+    "DeepEquilibriumModel",
+    "TrajectoryBalanceGFlowNet",
+    "DynamicModeDecomposition",
+    "ExtendedDMD",
 ]

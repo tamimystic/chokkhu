@@ -47,10 +47,22 @@ from .models.dl.biological import (
     DirectFeedbackAlignmentNetwork,
     DifferenceTargetPropagationNetwork,
 )
+from .models.dl import (
+    LIFNeuron,
+    SpikingNeuralNetwork,
+    DeepEquilibriumModel,
+)
+from .models.generative import (
+    TrajectoryBalanceGFlowNet,
+)
+from .models.sciml import (
+    DynamicModeDecomposition,
+    ExtendedDMD,
+)
 
 from typing import Any, Optional
 
-__version__ = "1.5.15"
+__version__ = "1.5.16"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -1246,4 +1258,10 @@ __all__ = [
     "DeepVariationalInformationBottleneck",
     "MAML",
     "MAPElites",
+    "LIFNeuron",
+    "SpikingNeuralNetwork",
+    "DeepEquilibriumModel",
+    "TrajectoryBalanceGFlowNet",
+    "DynamicModeDecomposition",
+    "ExtendedDMD",
 ]
