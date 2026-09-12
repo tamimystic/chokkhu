@@ -59,10 +59,18 @@ from .models.sciml import (
     DynamicModeDecomposition,
     ExtendedDMD,
 )
+from .models.ml import (
+    AdaBoostClassifier,
+    AdaBoostRegressor,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+    KMedoids,
+    OPTICS,
+)
 
 from typing import Any, Optional
 
-__version__ = "1.5.16"
+__version__ = "1.5.17"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -1264,4 +1272,10 @@ __all__ = [
     "TrajectoryBalanceGFlowNet",
     "DynamicModeDecomposition",
     "ExtendedDMD",
+    "AdaBoostClassifier",
+    "AdaBoostRegressor",
+    "ExtraTreesClassifier",
+    "ExtraTreesRegressor",
+    "KMedoids",
+    "OPTICS",
 ]

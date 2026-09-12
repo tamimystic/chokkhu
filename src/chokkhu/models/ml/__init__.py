@@ -13,6 +13,11 @@ from .random_forest import RandomForest
 from .svm import SVM
 from .neural_network import NeuralNetwork
 
+from .adaboost import AdaBoostClassifier, AdaBoostRegressor
+from .extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
+from .kmedoids import KMedoids
+from .optics import OPTICS
+
 __all__ = [
     "LinearRegression",
     "LogisticRegression",
@@ -26,4 +31,10 @@ __all__ = [
     "DBSCAN",
     "HierarchicalClustering",
     "NeuralNetwork",
+    "AdaBoostClassifier",
+    "AdaBoostRegressor",
+    "ExtraTreesClassifier",
+    "ExtraTreesRegressor",
+    "KMedoids",
+    "OPTICS",
 ]

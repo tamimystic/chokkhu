@@ -35,6 +35,14 @@ from .sciml import (
     DynamicModeDecomposition,
     ExtendedDMD,
 )
+from .ml import (
+    AdaBoostClassifier,
+    AdaBoostRegressor,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+    KMedoids,
+    OPTICS,
+)
 
 
 from .generative import (
@@ -880,4 +888,10 @@ __all__ = [
     "TrajectoryBalanceGFlowNet",
     "DynamicModeDecomposition",
     "ExtendedDMD",
+    "AdaBoostClassifier",
+    "AdaBoostRegressor",
+    "ExtraTreesClassifier",
+    "ExtraTreesRegressor",
+    "KMedoids",
+    "OPTICS",
 ]
