@@ -23,6 +23,11 @@ from .optimizers import Optimizer, SGD, Adam, AdamW, RMSProp
 from .schedulers import LRScheduler, StepLR, CosineAnnealingLR
 from .callbacks import Callback, EarlyStopping
 from .sequential import Sequential
+from .biological import (
+    DirectFeedbackAlignmentNetwork,
+    DifferenceTargetPropagationNetwork,
+    DecoupledSyntheticGradientLayer,
+)
 
 __all__ = [
     "Module",
@@ -57,4 +62,7 @@ __all__ = [
     "Callback",
     "EarlyStopping",
     "Sequential",
+    "DirectFeedbackAlignmentNetwork",
+    "DifferenceTargetPropagationNetwork",
+    "DecoupledSyntheticGradientLayer",
 ]

@@ -43,10 +43,14 @@ from .models.robotics import (
     ActionChunkingTransformer,
     OpenVLAPolicy,
 )
+from .models.dl.biological import (
+    DirectFeedbackAlignmentNetwork,
+    DifferenceTargetPropagationNetwork,
+)
 
 from typing import Any, Optional
 
-__version__ = "1.5.10"
+__version__ = "1.5.11"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
