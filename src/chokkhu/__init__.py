@@ -50,7 +50,7 @@ from .models.dl.biological import (
 
 from typing import Any, Optional
 
-__version__ = "1.5.14"
+__version__ = "1.5.15"
 __author__ = "tamimystic"
 
 from .cleaning import clean, LocalOutlierFactor, EllipticEnvelope
@@ -300,7 +300,13 @@ from .explainability import (
     TCAV,
 )
 
-from .pipeline import ChokkhuPipeline, PipelineResult, TransformationState, pipeline
+from .pipeline import (
+    ChokkhuPipeline,
+    DeepFeatureSynthesizer,
+    PipelineResult,
+    TransformationState,
+    pipeline,
+)
 
 
 class EDAWrapper:
@@ -802,6 +808,7 @@ __all__ = [
     "ExplanationResult",
     "pipeline",
     "ChokkhuPipeline",
+    "DeepFeatureSynthesizer",
     "PipelineResult",
     "TransformationState",
     "NeuralNetwork",
