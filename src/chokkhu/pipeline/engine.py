@@ -665,7 +665,12 @@ def pipeline(
         "stratify",
         "evaluate",
         "save_reports",
+        "save_report",
         "report_dir",
+        "time_budget",
+        "conformal_interval",
+        "treatment_col",
+        "lags",
     }
     model_kwargs = {k: v for k, v in kwargs.items() if k not in pipeline_param_names}
 
