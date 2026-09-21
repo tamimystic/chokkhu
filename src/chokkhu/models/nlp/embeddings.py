@@ -133,24 +133,29 @@ class RotaryPositionEmbedding:
         self.sin_cached = np.sin(freqs)  # (max_seq_len, dim // 2)
 
     def apply_rope(
-        self, x: Union[Tensor, np.ndarray], seq_len: int
+        self, x: Union[Tensor, np.ndarray], seq_len: int, offset: int = 0
     ) -> Union[Tensor, np.ndarray]:
         """Apply 2D complex rotations to Query or Key tensor/array.
 
         Args:
             x: Tensor or Array of shape (batch, num_heads, seq_len, head_dim)
             seq_len: sequence length
+            offset: starting token index position (for KV-cache autoregression)
         """
         if isinstance(x, Tensor):
             from chokkhu.core.tensor import concat
 
             N, H, S, D = x.shape
             cos = Tensor(
-                self.cos_cached[:seq_len, :][np.newaxis, np.newaxis, :, :],
+                self.cos_cached[offset : offset + seq_len, :][
+                    np.newaxis, np.newaxis, :, :
+                ],
                 requires_grad=False,
             )
             sin = Tensor(
-                self.sin_cached[:seq_len, :][np.newaxis, np.newaxis, :, :],
+                self.sin_cached[offset : offset + seq_len, :][
+                    np.newaxis, np.newaxis, :, :
+                ],
                 requires_grad=False,
             )
             x1 = x[:, :, :, 0::2]
@@ -161,10 +166,12 @@ class RotaryPositionEmbedding:
                 N, H, S, D
             )
 
-        cos = self.cos_cached[:seq_len, :][
+        cos = self.cos_cached[offset : offset + seq_len, :][
             np.newaxis, np.newaxis, :, :
         ]  # (1, 1, seq_len, head_dim/2)
-        sin = self.sin_cached[:seq_len, :][np.newaxis, np.newaxis, :, :]
+        sin = self.sin_cached[offset : offset + seq_len, :][
+            np.newaxis, np.newaxis, :, :
+        ]
         arr = np.asarray(x)
         arr1 = arr[..., 0::2]
         arr2 = arr[..., 1::2]

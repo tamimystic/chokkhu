@@ -196,7 +196,9 @@ class GroupedQueryAttention(Module):
         x: Tensor,
         mask: Optional[Union[Tensor, np.ndarray]] = None,
         is_causal: bool = True,
-    ) -> Tensor:
+        kv_cache: Optional[Tuple[Tensor, Tensor]] = None,
+        use_cache: bool = False,
+    ) -> Union[Tensor, Tuple[Tensor, Tuple[Tensor, Tensor]]]:
         """Forward pass for Grouped Query Attention."""
         N, seq_len, D = x.shape
         q = (
@@ -215,13 +217,25 @@ class GroupedQueryAttention(Module):
             .swapaxes(1, 2)
         )
 
+        offset = 0
+        if kv_cache is not None:
+            past_k, past_v = kv_cache
+            offset = past_k.shape[2]
+
         if self.use_rope and self.rope is not None:
-            q_rope = self.rope.apply_rope(q, seq_len=seq_len)
-            k_rope = self.rope.apply_rope(k, seq_len=seq_len)
+            q_rope = self.rope.apply_rope(q, seq_len=seq_len, offset=offset)
+            k_rope = self.rope.apply_rope(k, seq_len=seq_len, offset=offset)
             assert isinstance(q_rope, Tensor)
             assert isinstance(k_rope, Tensor)
             q = q_rope
             k = k_rope
+
+        if kv_cache is not None:
+            past_k, past_v = kv_cache
+            k = concat([past_k, k], axis=2)
+            v = concat([past_v, v], axis=2)
+
+        new_kv_cache = (k, v)
 
         # Repeat KV heads to match query heads
         if self.num_queries_per_kv > 1:
@@ -233,16 +247,23 @@ class GroupedQueryAttention(Module):
                 for _ in range(self.num_queries_per_kv):
                     repeated_k.append(k_head)
                     repeated_v.append(v_head)
-            k = concat(repeated_k, axis=1)
-            v = concat(repeated_v, axis=1)
+            k_eval = concat(repeated_k, axis=1)
+            v_eval = concat(repeated_v, axis=1)
+        else:
+            k_eval = k
+            v_eval = v
 
+        total_seq_len = k_eval.shape[2]
         scale = 1.0 / np.sqrt(self.head_dim)
-        scores = (q @ k.swapaxes(-2, -1)) * scale
+        scores = (q @ k_eval.swapaxes(-2, -1)) * scale
 
         if is_causal:
-            causal_mask: np.ndarray = np.tril(np.ones((seq_len, seq_len), dtype=bool))[
-                np.newaxis, np.newaxis, :, :
-            ]
+            if seq_len == total_seq_len:
+                causal_mask: np.ndarray = np.tril(
+                    np.ones((seq_len, total_seq_len), dtype=bool)
+                )[np.newaxis, np.newaxis, :, :]
+            else:
+                causal_mask = np.ones((1, 1, seq_len, total_seq_len), dtype=bool)
             if mask is not None:
                 mask_arr = mask.data if isinstance(mask, Tensor) else mask
                 mask_arr = mask_arr & causal_mask
@@ -259,9 +280,12 @@ class GroupedQueryAttention(Module):
                 scores = scores + Tensor(mask_arr, requires_grad=False)
 
         attn_w = scores.softmax(axis=-1)
-        context = (attn_w @ v).swapaxes(1, 2).reshape(N * seq_len, self.embed_dim)
-        out = self.out_proj(context)
-        return out.reshape(N, seq_len, self.embed_dim)
+        context = (attn_w @ v_eval).swapaxes(1, 2).reshape(N * seq_len, self.embed_dim)
+        out = self.out_proj(context).reshape(N, seq_len, self.embed_dim)
+
+        if use_cache:
+            return out, new_kv_cache
+        return out
 
 
 MultiQueryAttention = GroupedQueryAttention

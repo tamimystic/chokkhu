@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Union
+from typing import List, Optional, Tuple, Union
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
@@ -37,11 +37,34 @@ class LLaMABlock(Module):
             in_features=embed_dim, hidden_features=hidden_dim, bias=False
         )
 
-    def forward(self, x: Tensor, mask: Optional[np.ndarray] = None) -> Tensor:
-        attn_out = self.attn(self.attn_norm(x), mask=mask, is_causal=True)
+    def forward(
+        self,
+        x: Tensor,
+        mask: Optional[np.ndarray] = None,
+        kv_cache: Optional[Tuple[Tensor, Tensor]] = None,
+        use_cache: bool = False,
+    ) -> Union[Tensor, Tuple[Tensor, Tuple[Tensor, Tensor]]]:
+        norm_x = self.attn_norm(x)
+        if use_cache:
+            attn_res = self.attn(
+                norm_x, mask=mask, is_causal=True, kv_cache=kv_cache, use_cache=True
+            )
+            assert isinstance(attn_res, tuple)
+            attn_out, new_cache = attn_res
+        else:
+            attn_out_res = self.attn(
+                norm_x, mask=mask, is_causal=True, kv_cache=kv_cache, use_cache=False
+            )
+            assert isinstance(attn_out_res, Tensor)
+            attn_out = attn_out_res
+            new_cache = None
+
         h = x + attn_out
         ffn_out = self.feed_forward(self.ffn_norm(h))
-        return h + ffn_out
+        out = h + ffn_out
+        if use_cache and new_cache is not None:
+            return out, new_cache
+        return out
 
 
 class LLaMA(Module, ChokkhuModel):
@@ -86,15 +109,108 @@ class LLaMA(Module, ChokkhuModel):
         self,
         input_ids: Union[np.ndarray, Tensor],
         attention_mask: Optional[np.ndarray] = None,
-    ) -> Tensor:
+        past_key_values: Optional[List[Tuple[Tensor, Tensor]]] = None,
+        use_cache: bool = False,
+    ) -> Union[Tensor, Tuple[Tensor, List[Tuple[Tensor, Tensor]]]]:
         h = self.token_embed(input_ids)
-        for block in self.blocks:
-            h = block(h, mask=attention_mask)
+        new_past_key_values: List[Tuple[Tensor, Tensor]] = []
+
+        for i, block in enumerate(self.blocks):
+            layer_cache = past_key_values[i] if past_key_values is not None else None
+            if use_cache:
+                block_res = block(
+                    h, mask=attention_mask, kv_cache=layer_cache, use_cache=True
+                )
+                assert isinstance(block_res, tuple)
+                h, cache_out = block_res
+                new_past_key_values.append(cache_out)
+            else:
+                block_out = block(
+                    h, mask=attention_mask, kv_cache=layer_cache, use_cache=False
+                )
+                assert isinstance(block_out, Tensor)
+                h = block_out
 
         normed = self.norm(h)
         N, S, D = normed.shape
         logits = self.output(normed.reshape(-1, D))
-        return logits.reshape(N, S, -1)
+        logits_out = logits.reshape(N, S, -1)
+
+        if use_cache:
+            return logits_out, new_past_key_values
+        return logits_out
+
+    def generate(
+        self,
+        input_ids: Union[np.ndarray, List[int], Tensor],
+        max_new_tokens: int = 20,
+        temperature: float = 1.0,
+        top_k: int = 50,
+        top_p: float = 0.9,
+        repetition_penalty: float = 1.0,
+        eos_token_id: Optional[int] = 3,
+        use_cache: bool = True,
+    ) -> np.ndarray:
+        """Autoregressive token generation with O(1) KV-caching and sampling decoders."""
+        from ..generation import GenerationConfig, sample_next_token
+
+        curr_tokens: np.ndarray
+        if isinstance(input_ids, Tensor):
+            curr_tokens = input_ids.data.astype(np.int64)
+        else:
+            curr_tokens = np.asarray(input_ids, dtype=np.int64)
+
+        if curr_tokens.ndim == 1:
+            curr_tokens = curr_tokens[np.newaxis, :]
+
+        batch_size = curr_tokens.shape[0]
+        all_generated: List[List[int]] = [
+            list(curr_tokens[b]) for b in range(batch_size)
+        ]
+        config = GenerationConfig(
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
+            eos_token_id=eos_token_id,
+            do_sample=(temperature > 0.0),
+        )
+
+        past_key_values: Optional[List[Tuple[Tensor, Tensor]]] = None
+
+        for _ in range(max_new_tokens):
+            if use_cache and past_key_values is not None:
+                step_input = np.array(
+                    [[tokens[-1]] for tokens in all_generated], dtype=np.int64
+                )
+            else:
+                step_input = np.array(all_generated, dtype=np.int64)
+
+            step_tensor = Tensor(step_input, requires_grad=False)
+            if use_cache:
+                fwd_res = self.forward(
+                    step_tensor, past_key_values=past_key_values, use_cache=True
+                )
+                assert isinstance(fwd_res, tuple)
+                logits, past_key_values = fwd_res
+            else:
+                logits_res = self.forward(step_tensor, use_cache=False)
+                assert isinstance(logits_res, Tensor)
+                logits = logits_res
+
+            all_done = True
+            for b in range(batch_size):
+                last_logits = logits.data[b, -1, :]
+                next_tok = sample_next_token(last_logits, all_generated[b], config)
+                all_generated[b].append(next_tok)
+                if eos_token_id is None or next_tok != eos_token_id:
+                    all_done = False
+
+            if all_done and eos_token_id is not None:
+                break
+
+        return np.array(all_generated, dtype=np.int64)
 
 
 LlamaForCausalLM = LLaMA
