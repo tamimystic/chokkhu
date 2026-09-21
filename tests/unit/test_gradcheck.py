@@ -67,9 +67,9 @@ def test_gradcheck_matmul():
     numerical_gradcheck(lambda x, y: x @ y, [a, b])
 
 
-def test_gradcheck_activations():
+def test_gradcheck_activations_and_math():
     x = Tensor(
-        np.array([[-1.5, -0.5, 0.5, 1.5], [2.0, -1.0, 0.2, -0.8]]), requires_grad=True
+        np.array([[1.4, 0.5, 0.8, 1.2], [2.0, 1.0, 0.2, 0.8]]), requires_grad=True
     )
     numerical_gradcheck(lambda t: t.sigmoid(), [x])
     x.zero_grad()
@@ -78,6 +78,20 @@ def test_gradcheck_activations():
     numerical_gradcheck(lambda t: t.gelu(), [x])
     x.zero_grad()
     numerical_gradcheck(lambda t: t.softmax(axis=-1), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.leaky_relu(0.1), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.log(), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.exp(), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.sqrt(), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.sin(), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.cos(), [x])
+    x.zero_grad()
+    numerical_gradcheck(lambda t: t.clip(0.3, 1.5), [x])
 
 
 def test_gradcheck_slice_concat():

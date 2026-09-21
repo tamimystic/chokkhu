@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
 from chokkhu.core.tensor import Tensor
 from .layers import Module
 
@@ -36,9 +35,7 @@ class LeakyReLU(Module):
         self.negative_slope = negative_slope
 
     def forward(self, x: Tensor) -> Tensor:
-        pos = x.relu()
-        neg = -((-x).relu()) * self.negative_slope
-        return pos + neg
+        return x.leaky_relu(negative_slope=self.negative_slope)
 
 
 class Softmax(Module):
@@ -47,7 +44,4 @@ class Softmax(Module):
         self.dim = dim
 
     def forward(self, x: Tensor) -> Tensor:
-        max_x = np.max(x.data, axis=self.dim, keepdims=True)
-        exp_x = np.exp(x.data - max_x)
-        probs = exp_x / np.sum(exp_x, axis=self.dim, keepdims=True)
-        return Tensor(probs, requires_grad=x.requires_grad)
+        return x.softmax(axis=self.dim)

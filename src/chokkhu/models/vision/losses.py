@@ -48,11 +48,12 @@ class FocalLoss(Loss):
         if true_data.ndim == 1 or (true_data.ndim == 2 and true_data.shape[1] == 1):
             p_t = true_data * probs + (1.0 - true_data) * (1.0 - probs)
             alpha_t = true_data * self.alpha + (1.0 - true_data) * (1.0 - self.alpha)
-            loss_arr = -alpha_t * ((1.0 - p_t) ** self.gamma) * np.log(p_t)
         else:
             p_t = np.sum(true_data * probs, axis=-1, keepdims=True)
             alpha_t = self.alpha
-            loss_arr = -alpha_t * ((1.0 - p_t) ** self.gamma) * np.log(p_t)
+
+        p_t = np.clip(p_t, self.eps, 1.0 - self.eps)
+        loss_arr = -alpha_t * ((1.0 - p_t) ** self.gamma) * np.log(p_t)
 
         loss_val: Union[float, np.ndarray]
         if self.reduction == "mean":

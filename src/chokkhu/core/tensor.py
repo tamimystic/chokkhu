@@ -203,6 +203,9 @@ class Tensor:
     def relu(self) -> Tensor:
         return ReLU()(self)
 
+    def leaky_relu(self, negative_slope: float = 0.01) -> Tensor:
+        return LeakyReLUFunction(negative_slope=negative_slope)(self)
+
     def sigmoid(self) -> Tensor:
         return Sigmoid()(self)
 
@@ -214,6 +217,31 @@ class Tensor:
 
     def softmax(self, axis: int = -1) -> Tensor:
         return Softmax(axis=axis)(self)
+
+    def log(self) -> Tensor:
+        return Log()(self)
+
+    def exp(self) -> Tensor:
+        return Exp()(self)
+
+    def sqrt(self) -> Tensor:
+        return Sqrt()(self)
+
+    def sin(self) -> Tensor:
+        return Sin()(self)
+
+    def cos(self) -> Tensor:
+        return Cos()(self)
+
+    def clip(
+        self, min_val: Optional[float] = None, max_val: Optional[float] = None
+    ) -> Tensor:
+        return Clip(min_val=min_val, max_val=max_val)(self)
+
+    def clamp(
+        self, min_val: Optional[float] = None, max_val: Optional[float] = None
+    ) -> Tensor:
+        return self.clip(min_val=min_val, max_val=max_val)
 
     def __abs__(self) -> Tensor:
         return Abs()(self)
@@ -312,12 +340,14 @@ class Mul(Function):
 
 class Div(Function):
     def forward(self, x0: Any, x1: Any = None) -> Any:  # type: ignore[override]
-        return x0 / x1
+        safe_x1 = np.where(x1 == 0.0, 1e-15, x1)
+        return x0 / safe_x1
 
     def backward(self, gy: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         x0, x1 = self.inputs[0].data, self.inputs[1].data
-        gx0 = _unbroadcast_grad(gy / x1, self.inputs[0].shape)
-        gx1 = _unbroadcast_grad(-gy * x0 / (x1**2 + 1e-12), self.inputs[1].shape)
+        safe_x1 = np.where(x1 == 0.0, 1e-15, x1)
+        gx0 = _unbroadcast_grad(gy / safe_x1, self.inputs[0].shape)
+        gx1 = _unbroadcast_grad(-gy * x0 / (safe_x1**2), self.inputs[1].shape)
         return gx0, gx1
 
 
@@ -348,6 +378,13 @@ class Pow(Function):
 
     def backward(self, gy: np.ndarray) -> np.ndarray:
         x = self.inputs[0].data
+        if self.power == 0:
+            return np.zeros_like(x)
+        if self.power < 1.0:
+            safe_x = np.where(x == 0.0, 1e-15, x)
+            return (
+                gy * self.power * (np.abs(safe_x) ** (self.power - 1)) * np.sign(safe_x)
+            )
         return gy * self.power * (x ** (self.power - 1))
 
 
@@ -522,3 +559,83 @@ class GELU(Function):
             1.0 + 3.0 * 0.044715 * x**2
         )
         return gy * grad
+
+
+class LeakyReLUFunction(Function):
+    def __init__(self, negative_slope: float = 0.01) -> None:
+        super().__init__()
+        self.negative_slope = negative_slope
+
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        return np.where(x > 0.0, x, x * self.negative_slope)
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        x = self.inputs[0].data
+        grad = np.where(x > 0.0, 1.0, self.negative_slope)
+        return gy * grad
+
+
+class Log(Function):
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        self.safe_x = np.maximum(x, 1e-15)
+        return np.log(self.safe_x)
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        return gy / self.safe_x
+
+
+class Exp(Function):
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        self.out = np.exp(np.clip(x, -500.0, 500.0))
+        return self.out
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        return gy * self.out
+
+
+class Sqrt(Function):
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        self.out = np.sqrt(np.maximum(x, 0.0))
+        return self.out
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        return gy / (2.0 * np.maximum(self.out, 1e-15))
+
+
+class Sin(Function):
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        self.x = x
+        return np.sin(x)
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        return gy * np.cos(self.x)
+
+
+class Cos(Function):
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        self.x = x
+        return np.cos(x)
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        return -gy * np.sin(self.x)
+
+
+class Clip(Function):
+    def __init__(
+        self, min_val: Optional[float] = None, max_val: Optional[float] = None
+    ) -> None:
+        super().__init__()
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        self.x = x
+        return np.clip(x, self.min_val, self.max_val)
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        mask = np.ones_like(self.x, dtype=bool)
+        if self.min_val is not None:
+            mask = mask & (self.x >= self.min_val)
+        if self.max_val is not None:
+            mask = mask & (self.x <= self.max_val)
+        return gy * mask.astype(np.float64)
