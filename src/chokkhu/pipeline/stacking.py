@@ -279,7 +279,7 @@ class SuperLearner(ChokkhuModel):
 
         raise RuntimeError("Meta-estimator does not support predict_proba.")
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self, deep: bool = True) -> Dict[str, Any]:
         """Return hyperparameters."""
         return {
             "task": self.task,

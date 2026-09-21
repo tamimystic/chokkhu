@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, List, Tuple
 import numpy as np
 
-from chokkhu.core.tensor import Tensor
+from chokkhu.core.tensor import Tensor, concat
 from ..dl.layers import Module
 from .conv_layers import Conv2D
 
@@ -35,9 +35,8 @@ class YOLOHead(Module):
         """
         raw = self.conv(x)
         N, _, H, W = raw.shape
-        data = raw.data.reshape(N, self.num_anchors, self.out_channels_per_anchor, H, W)
-        data = data.transpose(0, 1, 3, 4, 2)  # (N, num_anchors, H, W, 5 + num_classes)
-        return Tensor(data, requires_grad=x.requires_grad)
+        data = raw.reshape(N, self.num_anchors, self.out_channels_per_anchor, H, W)
+        return data.transpose(0, 1, 3, 4, 2)  # (N, num_anchors, H, W, 5 + num_classes)
 
 
 class SSDHead(Module):
@@ -82,12 +81,12 @@ class SSDHead(Module):
             H, W = cls_out.shape[2], cls_out.shape[3]
 
             cls_flat = (
-                cls_out.data.reshape(N, -1, self.num_classes, H, W)
+                cls_out.reshape(N, -1, self.num_classes, H, W)
                 .transpose(0, 1, 3, 4, 2)
                 .reshape(N, -1, self.num_classes)
             )
             reg_flat = (
-                reg_out.data.reshape(N, -1, 4, H, W)
+                reg_out.reshape(N, -1, 4, H, W)
                 .transpose(0, 1, 3, 4, 2)
                 .reshape(N, -1, 4)
             )
@@ -95,13 +94,9 @@ class SSDHead(Module):
             all_cls.append(cls_flat)
             all_reg.append(reg_flat)
 
-        cat_cls = np.concatenate(all_cls, axis=1)
-        cat_reg = np.concatenate(all_reg, axis=1)
-
-        requires_grad = any(f.requires_grad for f in features)
-        return Tensor(cat_cls, requires_grad=requires_grad), Tensor(
-            cat_reg, requires_grad=requires_grad
-        )
+        cat_cls = concat(all_cls, axis=1)
+        cat_reg = concat(all_reg, axis=1)
+        return cat_cls, cat_reg
 
 
 class RetinaNetHead(Module):

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 import numpy as np
 
-from chokkhu.core.tensor import Tensor
+from chokkhu.core.tensor import Tensor, concat
 from ..dl.layers import Linear, Module
 from .embeddings import RotaryPositionEmbedding
 
@@ -19,41 +19,51 @@ class ScaledDotProductAttention(Module):
 
     def forward(
         self,
-        q: np.ndarray,
-        k: np.ndarray,
-        v: np.ndarray,
-        mask: Optional[np.ndarray] = None,
+        q: Union[Tensor, np.ndarray],
+        k: Union[Tensor, np.ndarray],
+        v: Union[Tensor, np.ndarray],
+        mask: Optional[Union[Tensor, np.ndarray]] = None,
         scale: Optional[float] = None,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> Tuple[Tensor, Tensor]:
         """Compute Scaled Dot-Product Attention.
 
         Args:
-            q: Query array of shape (batch_size, num_heads, seq_len_q, head_dim)
-            k: Key array of shape (batch_size, num_heads, seq_len_k, head_dim)
-            v: Value array of shape (batch_size, num_heads, seq_len_k, head_dim)
+            q: Query tensor/array of shape (batch_size, num_heads, seq_len_q, head_dim)
+            k: Key tensor/array of shape (batch_size, num_heads, seq_len_k, head_dim)
+            v: Value tensor/array of shape (batch_size, num_heads, seq_len_k, head_dim)
             mask: Optional boolean or additive mask broadcastable to (batch_size, num_heads, seq_len_q, seq_len_k)
             scale: Optional scale factor (defaults to 1 / sqrt(head_dim))
         Returns:
             (context, attention_weights)
         """
+        if not isinstance(q, Tensor):
+            q = Tensor(q)
+        if not isinstance(k, Tensor):
+            k = Tensor(k)
+        if not isinstance(v, Tensor):
+            v = Tensor(v)
+
         d_k = q.shape[-1]
         if scale is None:
             scale = 1.0 / np.sqrt(d_k)
 
         # scores: (batch, num_heads, seq_len_q, seq_len_k)
-        scores = np.matmul(q, k.swapaxes(-2, -1)) * scale
+        scores = (q @ k.swapaxes(-2, -1)) * scale
 
         if mask is not None:
-            if mask.dtype == bool:
-                scores = np.where(mask, scores, -1e9)
+            mask_arr = mask.data if isinstance(mask, Tensor) else mask
+            if mask_arr.dtype == bool:
+                mask_add = np.where(mask_arr, 0.0, -1e9).astype(np.float64)
+                scores = scores + Tensor(mask_add, requires_grad=False)
             else:
-                scores = scores + mask
+                scores = scores + (
+                    mask
+                    if isinstance(mask, Tensor)
+                    else Tensor(mask, requires_grad=False)
+                )
 
-        max_scores = np.max(scores, axis=-1, keepdims=True)
-        exp_scores = np.exp(scores - max_scores)
-        attn_weights = exp_scores / (np.sum(exp_scores, axis=-1, keepdims=True) + 1e-12)
-
-        output = np.matmul(attn_weights, v)
+        attn_weights = scores.softmax(axis=-1)
+        output = attn_weights @ v
         return output, attn_weights
 
 
@@ -89,7 +99,7 @@ class MultiHeadAttention(Module):
         query: Tensor,
         key: Optional[Tensor] = None,
         value: Optional[Tensor] = None,
-        mask: Optional[np.ndarray] = None,
+        mask: Optional[Union[Tensor, np.ndarray]] = None,
         is_causal: bool = False,
     ) -> Tensor:
         """Forward pass for Multi-Head Attention.
@@ -111,17 +121,17 @@ class MultiHeadAttention(Module):
 
         q = (
             self.q_proj(query.reshape(-1, D))
-            .data.reshape(N, seq_len_q, self.num_heads, self.head_dim)
+            .reshape(N, seq_len_q, self.num_heads, self.head_dim)
             .swapaxes(1, 2)
         )
         k = (
             self.k_proj(key.reshape(-1, D))
-            .data.reshape(N, seq_len_k, self.num_heads, self.head_dim)
+            .reshape(N, seq_len_k, self.num_heads, self.head_dim)
             .swapaxes(1, 2)
         )
         v = (
             self.v_proj(value.reshape(-1, D))
-            .data.reshape(N, seq_len_k, self.num_heads, self.head_dim)
+            .reshape(N, seq_len_k, self.num_heads, self.head_dim)
             .swapaxes(1, 2)
         )
 
@@ -130,14 +140,15 @@ class MultiHeadAttention(Module):
                 np.ones((seq_len_q, seq_len_k), dtype=bool)
             )[np.newaxis, np.newaxis, :, :]
             if mask is not None:
-                mask = mask & causal_mask
+                mask_arr = mask.data if isinstance(mask, Tensor) else mask
+                mask = mask_arr & causal_mask
             else:
                 mask = causal_mask
 
         context, _ = self.attention(q, k, v, mask=mask)
         # context: (N, num_heads, seq_len_q, head_dim) -> (N, seq_len_q, embed_dim)
         context = context.swapaxes(1, 2).reshape(N * seq_len_q, self.embed_dim)
-        out = self.out_proj(Tensor(context, requires_grad=query.requires_grad))
+        out = self.out_proj(context)
         return out.reshape(N, seq_len_q, self.embed_dim)
 
 
@@ -150,6 +161,8 @@ class GroupedQueryAttention(Module):
         num_query_heads: int = 8,
         num_kv_heads: int = 2,
         bias: bool = False,
+        use_rope: bool = True,
+        max_seq_len: int = 4096,
     ) -> None:
         super().__init__()
         if embed_dim % num_query_heads != 0:
@@ -166,6 +179,12 @@ class GroupedQueryAttention(Module):
         self.num_kv_heads = num_kv_heads
         self.num_queries_per_kv = num_query_heads // num_kv_heads
         self.head_dim = embed_dim // num_query_heads
+        self.use_rope = use_rope
+        self.rope = (
+            RotaryPositionEmbedding(dim=self.head_dim, max_seq_len=max_seq_len)
+            if use_rope
+            else None
+        )
 
         self.q_proj = Linear(embed_dim, num_query_heads * self.head_dim, bias=bias)
         self.k_proj = Linear(embed_dim, num_kv_heads * self.head_dim, bias=bias)
@@ -175,55 +194,73 @@ class GroupedQueryAttention(Module):
     def forward(
         self,
         x: Tensor,
-        mask: Optional[np.ndarray] = None,
+        mask: Optional[Union[Tensor, np.ndarray]] = None,
         is_causal: bool = True,
     ) -> Tensor:
         """Forward pass for Grouped Query Attention."""
         N, seq_len, D = x.shape
         q = (
             self.q_proj(x.reshape(-1, D))
-            .data.reshape(N, seq_len, self.num_query_heads, self.head_dim)
+            .reshape(N, seq_len, self.num_query_heads, self.head_dim)
             .swapaxes(1, 2)
         )
         k = (
             self.k_proj(x.reshape(-1, D))
-            .data.reshape(N, seq_len, self.num_kv_heads, self.head_dim)
+            .reshape(N, seq_len, self.num_kv_heads, self.head_dim)
             .swapaxes(1, 2)
         )
         v = (
             self.v_proj(x.reshape(-1, D))
-            .data.reshape(N, seq_len, self.num_kv_heads, self.head_dim)
+            .reshape(N, seq_len, self.num_kv_heads, self.head_dim)
             .swapaxes(1, 2)
         )
 
+        if self.use_rope and self.rope is not None:
+            q_rope = self.rope.apply_rope(q, seq_len=seq_len)
+            k_rope = self.rope.apply_rope(k, seq_len=seq_len)
+            assert isinstance(q_rope, Tensor)
+            assert isinstance(k_rope, Tensor)
+            q = q_rope
+            k = k_rope
+
         # Repeat KV heads to match query heads
         if self.num_queries_per_kv > 1:
-            k = np.repeat(k, self.num_queries_per_kv, axis=1)
-            v = np.repeat(v, self.num_queries_per_kv, axis=1)
+            repeated_k = []
+            repeated_v = []
+            for i in range(self.num_kv_heads):
+                k_head = k[:, i : i + 1, :, :]
+                v_head = v[:, i : i + 1, :, :]
+                for _ in range(self.num_queries_per_kv):
+                    repeated_k.append(k_head)
+                    repeated_v.append(v_head)
+            k = concat(repeated_k, axis=1)
+            v = concat(repeated_v, axis=1)
 
         scale = 1.0 / np.sqrt(self.head_dim)
-        scores = np.matmul(q, k.swapaxes(-2, -1)) * scale
+        scores = (q @ k.swapaxes(-2, -1)) * scale
 
         if is_causal:
             causal_mask: np.ndarray = np.tril(np.ones((seq_len, seq_len), dtype=bool))[
                 np.newaxis, np.newaxis, :, :
             ]
-            scores = np.where(causal_mask, scores, -1e9)
-
-        if mask is not None:
-            if mask.dtype == bool:
-                scores = np.where(mask, scores, -1e9)
+            if mask is not None:
+                mask_arr = mask.data if isinstance(mask, Tensor) else mask
+                mask_arr = mask_arr & causal_mask
             else:
-                scores = scores + mask
+                mask_arr = causal_mask
+        else:
+            mask_arr = mask.data if isinstance(mask, Tensor) else mask
 
-        max_s = np.max(scores, axis=-1, keepdims=True)
-        exp_s = np.exp(scores - max_s)
-        attn_w = exp_s / (np.sum(exp_s, axis=-1, keepdims=True) + 1e-12)
+        if mask_arr is not None:
+            if mask_arr.dtype == bool:
+                mask_add = np.where(mask_arr, 0.0, -1e9).astype(np.float64)
+                scores = scores + Tensor(mask_add, requires_grad=False)
+            else:
+                scores = scores + Tensor(mask_arr, requires_grad=False)
 
-        context = (
-            np.matmul(attn_w, v).swapaxes(1, 2).reshape(N * seq_len, self.embed_dim)
-        )
-        out = self.out_proj(Tensor(context, requires_grad=x.requires_grad))
+        attn_w = scores.softmax(axis=-1)
+        context = (attn_w @ v).swapaxes(1, 2).reshape(N * seq_len, self.embed_dim)
+        out = self.out_proj(context)
         return out.reshape(N, seq_len, self.embed_dim)
 
 
@@ -258,6 +295,7 @@ class MultiHeadLatentAttention(Module):
             self.q_down = Linear(embed_dim, q_latent_dim, bias=bias)
             self.q_up = Linear(q_latent_dim, num_heads * head_dim, bias=bias)
             self.q_rope = Linear(q_latent_dim, num_heads * rope_dim, bias=bias)
+            self.q_proj = None
         else:
             self.q_down = None
             self.q_up = None
@@ -277,7 +315,7 @@ class MultiHeadLatentAttention(Module):
     def forward(
         self,
         x: Tensor,
-        mask: Optional[np.ndarray] = None,
+        mask: Optional[Union[Tensor, np.ndarray]] = None,
         is_causal: bool = True,
     ) -> Tensor:
         """Forward pass of Multi-Head Latent Attention."""
@@ -288,78 +326,80 @@ class MultiHeadLatentAttention(Module):
             self.q_latent_dim is not None
             and self.q_down is not None
             and self.q_up is not None
+            and self.q_rope is not None
         ):
             c_q = self.q_down(x_flat)
             q_c = (
                 self.q_up(c_q)
-                .data.reshape(N, S, self.num_heads, self.head_dim)
+                .reshape(N, S, self.num_heads, self.head_dim)
                 .swapaxes(1, 2)
             )
             q_r = (
                 self.q_rope(c_q)
-                .data.reshape(N, S, self.num_heads, self.rope_dim)
+                .reshape(N, S, self.num_heads, self.rope_dim)
                 .swapaxes(1, 2)
             )
         else:
+            assert self.q_proj is not None
             q_c = (
                 self.q_proj(x_flat)
-                .data.reshape(N, S, self.num_heads, self.head_dim)
+                .reshape(N, S, self.num_heads, self.head_dim)
                 .swapaxes(1, 2)
             )
             q_r = (
                 self.q_rope(x_flat)
-                .data.reshape(N, S, self.num_heads, self.rope_dim)
+                .reshape(N, S, self.num_heads, self.rope_dim)
                 .swapaxes(1, 2)
             )
 
-        q_r = self.rope.apply_rope(q_r, seq_len=S)
+        q_r_rope = self.rope.apply_rope(q_r, seq_len=S)
+        assert isinstance(q_r_rope, Tensor)
 
         c_kv = self.kv_down(x_flat)
         k_c = (
-            self.k_up(c_kv)
-            .data.reshape(N, S, self.num_heads, self.head_dim)
-            .swapaxes(1, 2)
+            self.k_up(c_kv).reshape(N, S, self.num_heads, self.head_dim).swapaxes(1, 2)
         )
         v_c = (
-            self.v_up(c_kv)
-            .data.reshape(N, S, self.num_heads, self.head_dim)
-            .swapaxes(1, 2)
+            self.v_up(c_kv).reshape(N, S, self.num_heads, self.head_dim).swapaxes(1, 2)
         )
         k_r = (
             self.k_rope(x_flat)
-            .data.reshape(N, S, self.num_heads, self.rope_dim)
+            .reshape(N, S, self.num_heads, self.rope_dim)
             .swapaxes(1, 2)
         )
-        k_r = self.rope.apply_rope(k_r, seq_len=S)
+        k_r_rope = self.rope.apply_rope(k_r, seq_len=S)
+        assert isinstance(k_r_rope, Tensor)
 
-        q = np.concatenate([q_c, q_r], axis=-1)
-        k = np.concatenate([k_c, k_r], axis=-1)
+        q = concat([q_c, q_r_rope], axis=-1)
+        k = concat([k_c, k_r_rope], axis=-1)
 
         scale = 1.0 / np.sqrt(self.total_head_dim)
-        scores = np.matmul(q, k.swapaxes(-2, -1)) * scale
+        scores = (q @ k.swapaxes(-2, -1)) * scale
 
         if is_causal:
             causal_mask: np.ndarray = np.tril(np.ones((S, S), dtype=bool))[
                 np.newaxis, np.newaxis, :, :
             ]
-            scores = np.where(causal_mask, scores, -1e9)
-
-        if mask is not None:
-            if mask.dtype == bool:
-                scores = np.where(mask, scores, -1e9)
+            if mask is not None:
+                mask_arr = mask.data if isinstance(mask, Tensor) else mask
+                mask_arr = mask_arr & causal_mask
             else:
-                scores = scores + mask
+                mask_arr = causal_mask
+        else:
+            mask_arr = mask.data if isinstance(mask, Tensor) else mask
 
-        max_s = np.max(scores, axis=-1, keepdims=True)
-        exp_s = np.exp(scores - max_s)
-        attn_w = exp_s / (np.sum(exp_s, axis=-1, keepdims=True) + 1e-12)
+        if mask_arr is not None:
+            if mask_arr.dtype == bool:
+                mask_add = np.where(mask_arr, 0.0, -1e9).astype(np.float64)
+                scores = scores + Tensor(mask_add, requires_grad=False)
+            else:
+                scores = scores + Tensor(mask_arr, requires_grad=False)
 
+        attn_w = scores.softmax(axis=-1)
         context = (
-            np.matmul(attn_w, v_c)
-            .swapaxes(1, 2)
-            .reshape(N * S, self.num_heads * self.head_dim)
+            (attn_w @ v_c).swapaxes(1, 2).reshape(N * S, self.num_heads * self.head_dim)
         )
-        out = self.out_proj(Tensor(context, requires_grad=x.requires_grad))
+        out = self.out_proj(context)
         return out.reshape(N, S, self.embed_dim)
 
 
@@ -393,7 +433,7 @@ class SlidingWindowAttention(Module):
     def forward(
         self,
         x: Tensor,
-        mask: Optional[np.ndarray] = None,
+        mask: Optional[Union[Tensor, np.ndarray]] = None,
     ) -> Tensor:
         """Forward pass with sliding window causal mask."""
         N, S, D = x.shape
@@ -401,44 +441,50 @@ class SlidingWindowAttention(Module):
 
         q = (
             self.q_proj(x_flat)
-            .data.reshape(N, S, self.num_heads, self.head_dim)
+            .reshape(N, S, self.num_heads, self.head_dim)
             .swapaxes(1, 2)
         )
         k = (
             self.k_proj(x_flat)
-            .data.reshape(N, S, self.num_kv_heads, self.head_dim)
+            .reshape(N, S, self.num_kv_heads, self.head_dim)
             .swapaxes(1, 2)
         )
         v = (
             self.v_proj(x_flat)
-            .data.reshape(N, S, self.num_kv_heads, self.head_dim)
+            .reshape(N, S, self.num_kv_heads, self.head_dim)
             .swapaxes(1, 2)
         )
 
         if self.num_queries_per_kv > 1:
-            k = np.repeat(k, self.num_queries_per_kv, axis=1)
-            v = np.repeat(v, self.num_queries_per_kv, axis=1)
+            repeated_k = []
+            repeated_v = []
+            for i in range(self.num_kv_heads):
+                k_head = k[:, i : i + 1, :, :]
+                v_head = v[:, i : i + 1, :, :]
+                for _ in range(self.num_queries_per_kv):
+                    repeated_k.append(k_head)
+                    repeated_v.append(v_head)
+            k = concat(repeated_k, axis=1)
+            v = concat(repeated_v, axis=1)
 
         scale = 1.0 / np.sqrt(self.head_dim)
-        scores = np.matmul(q, k.swapaxes(-2, -1)) * scale
+        scores = (q @ k.swapaxes(-2, -1)) * scale
 
         row_idx = np.arange(S)[:, None]
         col_idx = np.arange(S)[None, :]
         sliding_causal = (col_idx <= row_idx) & (row_idx - col_idx < self.window_size)
         sliding_mask = sliding_causal[np.newaxis, np.newaxis, :, :]
 
-        scores = np.where(sliding_mask, scores, -1e9)
-
         if mask is not None:
-            if mask.dtype == bool:
-                scores = np.where(mask, scores, -1e9)
-            else:
-                scores = scores + mask
+            mask_arr = mask.data if isinstance(mask, Tensor) else mask
+            effective_mask = sliding_mask & mask_arr
+        else:
+            effective_mask = sliding_mask
 
-        max_s = np.max(scores, axis=-1, keepdims=True)
-        exp_s = np.exp(scores - max_s)
-        attn_w = exp_s / (np.sum(exp_s, axis=-1, keepdims=True) + 1e-12)
+        mask_add = np.where(effective_mask, 0.0, -1e9).astype(np.float64)
+        scores = scores + Tensor(mask_add, requires_grad=False)
 
-        context = np.matmul(attn_w, v).swapaxes(1, 2).reshape(N * S, self.embed_dim)
-        out = self.out_proj(Tensor(context, requires_grad=x.requires_grad))
+        attn_w = scores.softmax(axis=-1)
+        context = (attn_w @ v).swapaxes(1, 2).reshape(N * S, self.embed_dim)
+        out = self.out_proj(context)
         return out.reshape(N, S, self.embed_dim)

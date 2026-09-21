@@ -1,28 +1,36 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional, Set, Tuple, Union
+from typing import Any, List, Optional, Sequence, Set, Tuple, Union
 import numpy as np
 
 
 class Tensor:
     """Pure NumPy Autograd Tensor with Dynamic Computational Graph and Automatic Differentiation."""
 
+    data: np.ndarray
+    requires_grad: bool
+
     def __init__(
         self,
-        data: Union[int, float, list, np.ndarray],
+        data: Union[int, float, list, tuple, np.ndarray, Tensor],
         requires_grad: bool = False,
         creator: Optional[Function] = None,
     ) -> None:
-        if isinstance(data, (int, float)):
+        if isinstance(data, Tensor):
+            self.data = data.data.copy()
+            self.requires_grad = requires_grad or data.requires_grad
+        elif isinstance(data, (int, float)):
             self.data = np.array(data, dtype=np.float64)
-        elif isinstance(data, list):
+            self.requires_grad = requires_grad
+        elif isinstance(data, (list, tuple)):
             self.data = np.array(data, dtype=np.float64)
+            self.requires_grad = requires_grad
         elif isinstance(data, np.ndarray):
             self.data = data.astype(np.float64) if data.dtype != np.float64 else data
+            self.requires_grad = requires_grad
         else:
             raise TypeError(f"Unsupported data type for Tensor: {type(data)}")
 
-        self.requires_grad = requires_grad
         self.creator = creator
         self.grad: Optional[np.ndarray] = None
         self._generation = 0 if creator is None else creator.generation + 1
@@ -139,6 +147,9 @@ class Tensor:
     def __pow__(self, power: float) -> Tensor:
         return Pow(power)(self)
 
+    def __getitem__(self, key: Any) -> Tensor:
+        return Slice(key)(self)
+
     def sum(
         self, axis: Optional[Union[int, Tuple[int, ...]]] = None, keepdims: bool = False
     ) -> Tensor:
@@ -169,6 +180,22 @@ class Tensor:
             axes = tuple(axes[0])
         return Transpose(axes if axes else None)(self)
 
+    def swapaxes(self, axis1: int, axis2: int) -> Tensor:
+        axes = list(range(self.ndim))
+        axes[axis1], axes[axis2] = axes[axis2], axes[axis1]
+        return self.transpose(tuple(axes))
+
+    def squeeze(self, axis: Optional[Union[int, Tuple[int, ...]]] = None) -> Tensor:
+        out_shape = np.squeeze(self.data, axis=axis).shape
+        return self.reshape(out_shape)
+
+    def unsqueeze(self, axis: int) -> Tensor:
+        shape = list(self.shape)
+        if axis < 0:
+            axis += len(shape) + 1
+        shape.insert(axis, 1)
+        return self.reshape(tuple(shape))
+
     @property
     def T(self) -> Tensor:
         return self.transpose()
@@ -184,6 +211,17 @@ class Tensor:
 
     def gelu(self) -> Tensor:
         return GELU()(self)
+
+    def softmax(self, axis: int = -1) -> Tensor:
+        return Softmax(axis=axis)(self)
+
+    def __abs__(self) -> Tensor:
+        return Abs()(self)
+
+    def __array__(self, dtype: Any = None) -> np.ndarray:
+        if dtype is None:
+            return self.data
+        return self.data.astype(dtype)
 
     def __repr__(self) -> str:
         grad_fn = (
@@ -291,6 +329,15 @@ class Neg(Function):
         return -gy
 
 
+class Abs(Function):
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        return np.abs(x)
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        x = self.inputs[0].data
+        return gy * np.sign(x)
+
+
 class Pow(Function):
     def __init__(self, power: float) -> None:
         super().__init__()
@@ -372,6 +419,66 @@ class Transpose(Function):
             return np.transpose(gy)
         inv_axes = np.argsort(self.axes)
         return np.transpose(gy, inv_axes)
+
+
+class Slice(Function):
+    """Differentiable Tensor Slicing."""
+
+    def __init__(self, key: Any) -> None:
+        super().__init__()
+        self.key = key
+
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        return x[self.key]
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        gx: np.ndarray = np.zeros(self.inputs[0].shape, dtype=gy.dtype)
+        np.add.at(gx, self.key, gy)
+        return gx
+
+
+class Concat(Function):
+    """Differentiable Tensor Concatenation along an axis."""
+
+    def __init__(self, axis: int = 0) -> None:
+        super().__init__()
+        self.axis = axis
+        self.split_indices: List[int] = []
+
+    def forward(self, *xs: Any) -> Any:  # type: ignore[override]
+        lengths = [x.shape[self.axis] for x in xs]
+        self.split_indices = list(np.cumsum(lengths)[:-1])
+        return np.concatenate(xs, axis=self.axis)
+
+    def backward(self, gy: np.ndarray) -> Tuple[np.ndarray, ...]:
+        splits = np.split(gy, self.split_indices, axis=self.axis)
+        return tuple(splits)
+
+
+def concat(tensors: Sequence[Tensor], axis: int = 0) -> Tensor:
+    """Concatenate a sequence of tensors along a specified axis."""
+    return Concat(axis=axis)(*tensors)
+
+
+class Softmax(Function):
+    """Differentiable Numerically Stable Softmax."""
+
+    def __init__(self, axis: int = -1) -> None:
+        super().__init__()
+        self.axis = axis
+        self.probs: Optional[np.ndarray] = None
+
+    def forward(self, x: Any, *args: Any) -> Any:  # type: ignore[override]
+        max_x = np.max(x, axis=self.axis, keepdims=True)
+        exp_x = np.exp(x - max_x)
+        self.probs = exp_x / np.sum(exp_x, axis=self.axis, keepdims=True)
+        return self.probs
+
+    def backward(self, gy: np.ndarray) -> np.ndarray:
+        assert self.probs is not None
+        # dL/dx = p * (gy - sum(gy * p, axis=axis, keepdims=True))
+        sum_gy_p = np.sum(gy * self.probs, axis=self.axis, keepdims=True)
+        return self.probs * (gy - sum_gy_p)
 
 
 class ReLU(Function):

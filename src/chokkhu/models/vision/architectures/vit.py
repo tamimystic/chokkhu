@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 import numpy as np
 
-from chokkhu.core.tensor import Tensor
+from chokkhu.core.tensor import Tensor, concat
 from ...base import ChokkhuModel
 from ...dl.layers import LayerNorm, Linear, Module, Parameter
 from ...dl.activations import GELU
@@ -30,18 +30,14 @@ class PatchEmbedding(Module):
         # x: (N, C, H, W)
         N, C, H, W = x.shape
         p = self.patch_size
-        # Extract patches (N, num_patches, patch_dim)
         patches = []
         for i in range(0, H, p):
             for j in range(0, W, p):
-                patch = x.data[:, :, i : i + p, j : j + p].reshape(N, -1)
-                patches.append(patch[:, np.newaxis, :])
+                patch = x[:, :, i : i + p, j : j + p].reshape(N, 1, -1)
+                patches.append(patch)
 
-        cat_patches = np.concatenate(patches, axis=1)  # (N, num_patches, patch_dim)
-        cat_t = Tensor(
-            cat_patches.reshape(-1, self.patch_dim), requires_grad=x.requires_grad
-        )
-        projected = self.projection(cat_t)
+        cat_patches = concat(patches, axis=1)  # (N, num_patches, patch_dim)
+        projected = self.projection(cat_patches.reshape(-1, self.patch_dim))
         return projected.reshape(N, self.num_patches, -1)
 
 
@@ -67,30 +63,26 @@ class MultiHeadSelfAttention(Module):
 
         q = (
             self.q_proj(x_flat)
-            .data.reshape(N, seq_len, self.num_heads, self.head_dim)
+            .reshape(N, seq_len, self.num_heads, self.head_dim)
             .transpose(0, 2, 1, 3)
         )
         k = (
             self.k_proj(x_flat)
-            .data.reshape(N, seq_len, self.num_heads, self.head_dim)
+            .reshape(N, seq_len, self.num_heads, self.head_dim)
             .transpose(0, 2, 1, 3)
         )
         v = (
             self.v_proj(x_flat)
-            .data.reshape(N, seq_len, self.num_heads, self.head_dim)
+            .reshape(N, seq_len, self.num_heads, self.head_dim)
             .transpose(0, 2, 1, 3)
         )
 
         # Attention: Softmax(Q K^T / sqrt(d)) V
-        scores = np.matmul(q, k.transpose(0, 1, 3, 2)) * self.scale
-        max_scores = np.max(scores, axis=-1, keepdims=True)
-        exp_s = np.exp(scores - max_scores)
-        attn_weights = exp_s / np.sum(exp_s, axis=-1, keepdims=True)
+        scores = (q @ k.transpose(0, 1, 3, 2)) * self.scale
+        attn_weights = scores.softmax(axis=-1)
+        attn_out = (attn_weights @ v).transpose(0, 2, 1, 3).reshape(N * seq_len, D)
 
-        attn_out = np.matmul(attn_weights, v)  # (N, num_heads, seq_len, head_dim)
-        attn_out = attn_out.transpose(0, 2, 1, 3).reshape(N * seq_len, D)
-
-        out = self.out_proj(Tensor(attn_out, requires_grad=x.requires_grad))
+        out = self.out_proj(attn_out)
         return out.reshape(N, seq_len, D)
 
 
@@ -161,16 +153,19 @@ class VisionTransformer(Module, ChokkhuModel):
     def forward(self, x: Tensor) -> Tensor:
         N = x.shape[0]
         patches = self.patch_embed(x)  # (N, num_patches, D)
-        cls_tokens = np.repeat(self.cls_token.data, N, axis=0)
-        x_tok = np.concatenate([cls_tokens, patches.data], axis=1)
-        x_emb = Tensor(x_tok, requires_grad=x.requires_grad) + self.pos_embed
+        cls_tokens = (
+            concat([self.cls_token for _ in range(N)], axis=0)
+            if N > 1
+            else self.cls_token
+        )
+        x_tok = concat([cls_tokens, patches], axis=1)
+        x_emb = x_tok + self.pos_embed
 
         for b in self.blocks:
             x_emb = b(x_emb)
 
         # Class token output
-        cls_out = x_emb.data[:, 0, :]
-        cls_t = Tensor(cls_out, requires_grad=x.requires_grad)
+        cls_t = x_emb[:, 0, :]
         normed = self.norm(cls_t)
         return self.head(normed)
 

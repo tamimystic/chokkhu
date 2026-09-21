@@ -20,10 +20,9 @@ class RMSNorm(Module):
         self.weight = Parameter(np.ones((dim,), dtype=np.float64))
 
     def forward(self, x: Tensor) -> Tensor:
-        x_data = x.data
-        rms = np.sqrt(np.mean(x_data**2, axis=-1, keepdims=True) + self.eps)
-        normed = (x_data / rms) * self.weight.data
-        return Tensor(normed, requires_grad=x.requires_grad)
+        variance = (x**2).mean(axis=-1, keepdims=True)
+        rms = (variance + self.eps) ** 0.5
+        return (x / rms) * self.weight
 
 
 class SwiGLU(Module):

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 import numpy as np
 
 from chokkhu.core.tensor import Function, Tensor
@@ -63,6 +63,7 @@ class TokenEmbedding(Module):
         Returns:
             Tensor of shape (batch_size, seq_len, embed_dim)
         """
+        indices: np.ndarray
         if isinstance(x, Tensor):
             indices = x.data.astype(np.int64)
         else:
@@ -112,10 +113,7 @@ class LearnedPositionalEmbedding(Module):
     def forward(self, x: Tensor) -> Tensor:
         """Add learned positional embedding to input token embeddings."""
         seq_len = x.shape[1]
-        pos_slice = Tensor(
-            self.weight.data[:seq_len, :][np.newaxis, :, :],
-            requires_grad=self.weight.requires_grad,
-        )
+        pos_slice = self.weight[:seq_len, :].unsqueeze(0)
         return x + pos_slice
 
 
@@ -134,24 +132,46 @@ class RotaryPositionEmbedding:
         self.cos_cached = np.cos(freqs)  # (max_seq_len, dim // 2)
         self.sin_cached = np.sin(freqs)  # (max_seq_len, dim // 2)
 
-    def apply_rope(self, x: np.ndarray, seq_len: int) -> np.ndarray:
-        """Apply 2D complex rotations to Query or Key numpy array.
+    def apply_rope(
+        self, x: Union[Tensor, np.ndarray], seq_len: int
+    ) -> Union[Tensor, np.ndarray]:
+        """Apply 2D complex rotations to Query or Key tensor/array.
 
         Args:
-            x: Array of shape (batch, num_heads, seq_len, head_dim)
+            x: Tensor or Array of shape (batch, num_heads, seq_len, head_dim)
             seq_len: sequence length
         """
+        if isinstance(x, Tensor):
+            from chokkhu.core.tensor import concat
+
+            N, H, S, D = x.shape
+            cos = Tensor(
+                self.cos_cached[:seq_len, :][np.newaxis, np.newaxis, :, :],
+                requires_grad=False,
+            )
+            sin = Tensor(
+                self.sin_cached[:seq_len, :][np.newaxis, np.newaxis, :, :],
+                requires_grad=False,
+            )
+            x1 = x[:, :, :, 0::2]
+            x2 = x[:, :, :, 1::2]
+            r1 = x1 * cos - x2 * sin
+            r2 = x1 * sin + x2 * cos
+            return concat([r1.unsqueeze(-1), r2.unsqueeze(-1)], axis=-1).reshape(
+                N, H, S, D
+            )
+
         cos = self.cos_cached[:seq_len, :][
             np.newaxis, np.newaxis, :, :
         ]  # (1, 1, seq_len, head_dim/2)
         sin = self.sin_cached[:seq_len, :][np.newaxis, np.newaxis, :, :]
+        arr = np.asarray(x)
+        arr1 = arr[..., 0::2]
+        arr2 = arr[..., 1::2]
+        rotated_1 = arr1 * cos - arr2 * sin
+        rotated_2 = arr1 * sin + arr2 * cos
 
-        x1 = x[..., 0::2]
-        x2 = x[..., 1::2]
-        rotated_1 = x1 * cos - x2 * sin
-        rotated_2 = x1 * sin + x2 * cos
-
-        out = np.empty_like(x)
+        out = np.empty_like(arr)
         out[..., 0::2] = rotated_1
         out[..., 1::2] = rotated_2
         return out

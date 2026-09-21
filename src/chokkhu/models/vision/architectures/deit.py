@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Tuple, Union
 import numpy as np
 
-from chokkhu.core.tensor import Tensor
+from chokkhu.core.tensor import Tensor, concat
 from ...base import ChokkhuModel
 from ...dl.layers import LayerNorm, Linear, Module, Parameter
 from .vit import PatchEmbedding, ViTBlock
@@ -54,22 +54,26 @@ class DeiT(Module, ChokkhuModel):
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         N = x.shape[0]
         patches = self.patch_embed(x)  # (N, num_patches, D)
-        cls_tokens = np.repeat(self.cls_token.data, N, axis=0)
-        dist_tokens = np.repeat(self.dist_token.data, N, axis=0)
+        cls_tokens = (
+            concat([self.cls_token for _ in range(N)], axis=0)
+            if N > 1
+            else self.cls_token
+        )
+        dist_tokens = (
+            concat([self.dist_token for _ in range(N)], axis=0)
+            if N > 1
+            else self.dist_token
+        )
 
         # Concatenate [CLS, DIST, PATCHES]
-        x_tok = np.concatenate([cls_tokens, dist_tokens, patches.data], axis=1)
-        x_emb = Tensor(x_tok, requires_grad=x.requires_grad) + self.pos_embed
+        x_tok = concat([cls_tokens, dist_tokens, patches], axis=1)
+        x_emb = x_tok + self.pos_embed
 
         for b in self.blocks:
             x_emb = b(x_emb)
 
-        cls_out = self.head_cls(
-            self.norm(Tensor(x_emb.data[:, 0, :], requires_grad=x.requires_grad))
-        )
-        dist_out = self.head_dist(
-            self.norm(Tensor(x_emb.data[:, 1, :], requires_grad=x.requires_grad))
-        )
+        cls_out = self.head_cls(self.norm(x_emb[:, 0, :]))
+        dist_out = self.head_dist(self.norm(x_emb[:, 1, :]))
         if return_dist:
             return cls_out, dist_out
         return (cls_out + dist_out) / 2.0

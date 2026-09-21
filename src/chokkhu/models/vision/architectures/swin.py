@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Tuple
 import numpy as np
 
-from chokkhu.core.tensor import Tensor
+from chokkhu.core.tensor import Tensor, concat
 from ...base import ChokkhuModel
 from ...dl.layers import Dropout, LayerNorm, Linear, Module, Parameter
 from ...dl.activations import GELU
@@ -40,24 +40,25 @@ class WindowAttention(Module):
     def forward(self, x: Tensor) -> Tensor:
         # x: (num_windows * N, window_size * window_size, C)
         B_w, N, C = x.shape
-        qkv = self.qkv(x.reshape(-1, C)).data.reshape(
-            B_w, N, 3, self.num_heads, self.head_dim
+        qkv = (
+            self.qkv(x.reshape(-1, C))
+            .reshape(B_w, N, 3, self.num_heads, self.head_dim)
+            .transpose(2, 0, 3, 1, 4)
         )
-        qkv = qkv.transpose(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]  # (B_w, num_heads, N, head_dim)
+        q = qkv[0]
+        k = qkv[1]
+        v = qkv[2]  # (B_w, num_heads, N, head_dim)
 
-        scores = np.matmul(q, k.swapaxes(-2, -1)) * self.scale
-        max_s = np.max(scores, axis=-1, keepdims=True)
-        exp_s = np.exp(scores - max_s)
-        attn = exp_s / (np.sum(exp_s, axis=-1, keepdims=True) + 1e-12)
+        scores = (q @ k.swapaxes(-2, -1)) * self.scale
+        attn = scores.softmax(axis=-1)
 
-        out = np.matmul(attn, v).swapaxes(1, 2).reshape(B_w * N, C)
-        proj_out = self.proj(Tensor(out, requires_grad=x.requires_grad))
+        out = (attn @ v).swapaxes(1, 2).reshape(B_w * N, C)
+        proj_out = self.proj(out)
         return proj_out.reshape(B_w, N, C)
 
 
 class PatchMerging(Module):
-    """Patch Merging Layer (Hierarchical Resolution Downsampling $2x$ and Channel Doubling $2x$)."""
+    """Patch Merging Layer (Hierarchical Resolution Downsampling 2x and Channel Doubling 2x)."""
 
     def __init__(self, dim: int) -> None:
         super().__init__()
@@ -68,18 +69,18 @@ class PatchMerging(Module):
     def forward(self, x: Tensor, H: int, W: int) -> Tuple[Tensor, int, int]:
         # x: (N, H * W, C)
         N, L, C = x.shape
-        x_data = x.data.reshape(N, H, W, C)
+        x_reshaped = x.reshape(N, H, W, C)
 
         # Downsample by picking 2x2 neighboring patches
-        x0 = x_data[:, 0::2, 0::2, :]
-        x1 = x_data[:, 1::2, 0::2, :]
-        x2 = x_data[:, 0::2, 1::2, :]
-        x3 = x_data[:, 1::2, 1::2, :]
-        cat = np.concatenate([x0, x1, x2, x3], axis=-1)  # (N, H/2, W/2, 4*C)
+        x0 = x_reshaped[:, 0::2, 0::2, :]
+        x1 = x_reshaped[:, 1::2, 0::2, :]
+        x2 = x_reshaped[:, 0::2, 1::2, :]
+        x3 = x_reshaped[:, 1::2, 1::2, :]
+        cat = concat([x0, x1, x2, x3], axis=-1)  # (N, H/2, W/2, 4*C)
 
         H_out, W_out = H // 2, W // 2
         flat = cat.reshape(N * H_out * W_out, 4 * C)
-        normed = self.norm(Tensor(flat, requires_grad=x.requires_grad))
+        normed = self.norm(flat)
         out = self.reduction(normed).reshape(N, H_out * W_out, 2 * C)
         return out, H_out, W_out
 
@@ -177,12 +178,12 @@ class SwinTransformer(Module, ChokkhuModel):
         patches = []
         for i in range(0, H, p):
             for j in range(0, W, p):
-                patch = x.data[:, :, i : i + p, j : j + p].reshape(N, -1)
-                patches.append(patch[:, np.newaxis, :])
-        cat_p = np.concatenate(patches, axis=1)  # (N, H_patches*W_patches, patch_dim)
-        x_emb = self.patch_proj(
-            Tensor(cat_p.reshape(-1, self.patch_dim), requires_grad=x.requires_grad)
-        ).reshape(N, H_patches * W_patches, self.embed_dim)
+                patch = x[:, :, i : i + p, j : j + p].reshape(N, 1, -1)
+                patches.append(patch)
+        cat_p = concat(patches, axis=1)  # (N, H_patches*W_patches, patch_dim)
+        x_emb = self.patch_proj(cat_p.reshape(-1, self.patch_dim)).reshape(
+            N, H_patches * W_patches, self.embed_dim
+        )
 
         # Stage 0
         H_curr, W_curr = H_patches, W_patches

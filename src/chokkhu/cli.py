@@ -3,6 +3,11 @@ from __future__ import annotations
 import argparse
 import sys
 import chokkhu as ck
+from chokkhu.io import load, save
+from chokkhu.cleaning import clean
+from chokkhu.eda.tabular.engine import tabular as eda_tabular
+from chokkhu.pipeline.engine import pipeline
+from chokkhu.automl.autotrainer import train, auto_train
 
 
 def main(args: list[str] | None = None) -> int:
@@ -107,26 +112,24 @@ def main(args: list[str] | None = None) -> int:
         return 0
 
     if parsed_args.command == "eda":
-        df = ck.load(parsed_args.data)
-        ck.eda.tabular(
+        df = load(parsed_args.data)
+        eda_tabular(
             df,
             target_col=parsed_args.target,
             save_reports=parsed_args.save_reports,
             save_dir=parsed_args.save_dir,
         )
     elif parsed_args.command == "clean":
-        df = ck.load(parsed_args.data)
-        cleaned = ck.clean(
-            df, missing=parsed_args.missing, outliers=parsed_args.outliers
-        )
+        df = load(parsed_args.data)
+        cleaned = clean(df, missing=parsed_args.missing, outliers=parsed_args.outliers)
         if parsed_args.output:
-            ck.save(cleaned, parsed_args.output)
+            save(cleaned, parsed_args.output)
             print(f"Cleaned dataset saved to {parsed_args.output}")
         else:
             print(cleaned.head())
     elif parsed_args.command == "pipeline":
-        df = ck.load(parsed_args.data)
-        result = ck.pipeline(
+        df = load(parsed_args.data)
+        result = pipeline(
             data=df,
             target=parsed_args.target,
             model=parsed_args.model,
@@ -136,10 +139,10 @@ def main(args: list[str] | None = None) -> int:
         if parsed_args.save:
             result.save(parsed_args.save)
     elif parsed_args.command == "train":
-        df = ck.load(parsed_args.data)
+        df = load(parsed_args.data)
         X = df.drop(columns=[parsed_args.target]).to_numpy()
         y = df[parsed_args.target].to_numpy()
-        trained_model = ck.train(
+        trained_model = train(
             model=parsed_args.model,
             X=X,
             y=y,
@@ -149,10 +152,10 @@ def main(args: list[str] | None = None) -> int:
         )
         print(f"Successfully trained {parsed_args.model}: {trained_model}")
     elif parsed_args.command == "automl":
-        df = ck.load(parsed_args.data)
+        df = load(parsed_args.data)
         X = df.drop(columns=[parsed_args.target]).to_numpy()
         y = df[parsed_args.target].to_numpy()
-        res = ck.auto_train(
+        res = auto_train(
             X=X,
             y=y,
             task=parsed_args.task,
