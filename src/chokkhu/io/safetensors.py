@@ -1,7 +1,8 @@
 """Pure NumPy HuggingFace SafeTensors Serializer & Deserializer.
 
 Zero-dependency, byte-level SafeTensors parser supporting open-weights loading
-for SmolLM, TinyLlama, GPT-2, LLaMA, Mistral, and Vision Transformers.
+for SmolLM, TinyLlama, GPT-2, LLaMA, Mistral, Gemma, and Vision Transformers.
+Supports FP64, FP32, FP16, BF16 (bfloat16), INT64, INT32, INT16, INT8, UINT8, and BOOL.
 """
 
 from __future__ import annotations
@@ -9,7 +10,7 @@ from __future__ import annotations
 import json
 import struct
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
@@ -40,10 +41,26 @@ _STR_TO_DTYPE: Dict[str, np.dtype] = {
 }
 
 
+def _encode_bf16(arr: np.ndarray) -> bytes:
+    """Encode float array to bfloat16 bytes in pure NumPy."""
+    arr_f32: np.ndarray = arr.astype(np.float32)
+    u32: np.ndarray = arr_f32.view(np.uint32)
+    u16: np.ndarray = (u32 >> 16).astype(np.uint16)
+    return u16.tobytes()
+
+
+def _decode_bf16(raw_bytes: bytes, shape: Tuple[int, ...]) -> np.ndarray:
+    """Decode bfloat16 bytes to float64 NumPy array."""
+    u16 = np.frombuffer(raw_bytes, dtype=np.uint16)
+    u32 = u16.astype(np.uint32) << 16
+    return u32.view(np.float32).reshape(shape).astype(np.float64)
+
+
 def save_safetensors(
     tensors: Dict[str, Union[np.ndarray, Tensor]],
     filepath: Union[str, Path],
     metadata: Optional[Dict[str, str]] = None,
+    bf16: bool = False,
 ) -> None:
     """Save a dictionary of tensors to a SafeTensors binary file.
 
@@ -51,6 +68,7 @@ def save_safetensors(
         tensors: Dictionary mapping tensor names to Tensors or NumPy arrays.
         filepath: Target destination file path.
         metadata: Optional string dictionary metadata.
+        bf16: If True, saves floating point weights in bfloat16 format.
     """
     header: Dict[str, Any] = {}
     current_offset = 0
@@ -58,12 +76,17 @@ def save_safetensors(
 
     for name, t in tensors.items():
         arr = t.data if isinstance(t, Tensor) else np.asarray(t)
-        # Ensure array is contiguous in memory
         arr = np.ascontiguousarray(arr)
-        arr_bytes = arr.tobytes()
+
+        if bf16 and np.issubdtype(arr.dtype, np.floating):
+            arr_bytes = _encode_bf16(arr)
+            dtype_str = "BF16"
+        else:
+            arr_bytes = arr.tobytes()
+            dtype_str = _DTYPE_TO_STR.get(arr.dtype, "F64")
+
         byte_len = len(arr_bytes)
 
-        dtype_str = _DTYPE_TO_STR.get(arr.dtype, "F64")
         header[name] = {
             "dtype": dtype_str,
             "shape": list(arr.shape),
@@ -105,19 +128,14 @@ def load_safetensors(filepath: Union[str, Path]) -> Dict[str, Tensor]:
         raise FileNotFoundError(f"SafeTensors file not found: {path}")
 
     with open(path, "rb") as f:
-        # 1. Read 8-byte uint64 header length
         header_len_bytes = f.read(8)
         if len(header_len_bytes) < 8:
             raise ValueError(
                 f"Invalid SafeTensors file: too short ({len(header_len_bytes)} bytes)"
             )
         header_len = struct.unpack("<Q", header_len_bytes)[0]
-
-        # 2. Read JSON header
         header_json_bytes = f.read(header_len)
         header = json.loads(header_json_bytes.decode("utf-8"))
-
-        # 3. Read raw data buffer
         data_buffer = f.read()
 
     tensors: Dict[str, Tensor] = {}
@@ -127,15 +145,61 @@ def load_safetensors(filepath: Union[str, Path]) -> Dict[str, Tensor]:
         dtype_str = info["dtype"]
         shape = tuple(info["shape"])
         start_off, end_off = info["data_offsets"]
-
-        np_dtype = _STR_TO_DTYPE.get(dtype_str, np.dtype("float64"))
         chunk_bytes = data_buffer[start_off:end_off]
-        arr = np.frombuffer(chunk_bytes, dtype=np_dtype).reshape(shape)
 
-        # Convert to float64 Tensor for Chokkhu execution if float
-        if np.issubdtype(arr.dtype, np.floating) and arr.dtype != np.float64:
-            arr = arr.astype(np.float64)
+        if dtype_str == "BF16":
+            arr = _decode_bf16(chunk_bytes, shape)
+        else:
+            np_dtype = _STR_TO_DTYPE.get(dtype_str, np.dtype("float64"))
+            arr = np.frombuffer(chunk_bytes, dtype=np_dtype).reshape(shape)
+            if np.issubdtype(arr.dtype, np.floating) and arr.dtype != np.float64:
+                arr = arr.astype(np.float64)
 
         tensors[name] = Tensor(arr, requires_grad=False)
 
     return tensors
+
+
+def save_quantized_safetensors(
+    tensors: Dict[str, Union[np.ndarray, Tensor]],
+    filepath: Union[str, Path],
+    metadata: Optional[Dict[str, str]] = None,
+) -> None:
+    """Quantize floating point tensors to symmetric INT8 with per-tensor scale and save."""
+    quantized_dict: Dict[str, Union[np.ndarray, Tensor]] = {}
+    meta = dict(metadata or {})
+    meta["quantization"] = "int8_symmetric"
+
+    for name, t in tensors.items():
+        arr = t.data if isinstance(t, Tensor) else np.asarray(t)
+        if np.issubdtype(arr.dtype, np.floating):
+            max_val = float(np.max(np.abs(arr)))
+            scale = max(1e-12, max_val / 127.0)
+            int8_arr = np.clip(np.round(arr / scale), -128, 127).astype(np.int8)
+            quantized_dict[name] = int8_arr
+            quantized_dict[f"{name}.scale"] = np.array([scale], dtype=np.float32)
+        else:
+            quantized_dict[name] = arr
+
+    save_safetensors(quantized_dict, filepath, metadata=meta)
+
+
+def load_quantized_safetensors(filepath: Union[str, Path]) -> Dict[str, Tensor]:
+    """Load INT8 quantized SafeTensors file and dequantize back to float64."""
+    loaded = load_safetensors(filepath)
+    dequantized: Dict[str, Tensor] = {}
+
+    scale_keys = {k for k in loaded.keys() if k.endswith(".scale")}
+
+    for name, tensor in loaded.items():
+        if name.endswith(".scale"):
+            continue
+        scale_key = f"{name}.scale"
+        if scale_key in scale_keys:
+            scale_val = float(loaded[scale_key].data[0])
+            deq_arr = tensor.data.astype(np.float64) * scale_val
+            dequantized[name] = Tensor(deq_arr, requires_grad=False)
+        else:
+            dequantized[name] = tensor
+
+    return dequantized

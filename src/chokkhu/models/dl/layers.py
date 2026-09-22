@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Mapping, Union
 import numpy as np
 from chokkhu.core.tensor import Tensor
 
@@ -47,6 +47,43 @@ class Module:
 
     def eval(self) -> Module:
         return self.train(False)
+
+    def state_dict(self, prefix: str = "") -> Dict[str, Tensor]:
+        """Return a dictionary containing all named parameters in the module."""
+        state: Dict[str, Tensor] = {}
+        for name, param in self._parameters.items():
+            key = f"{prefix}{name}" if prefix else name
+            state[key] = param
+        for name, mod in self._modules.items():
+            mod_prefix = f"{prefix}{name}." if prefix else f"{name}."
+            state.update(mod.state_dict(prefix=mod_prefix))
+        return state
+
+    def load_state_dict(
+        self,
+        state_dict: Mapping[str, Union[Tensor, np.ndarray]],
+        strict: bool = True,
+    ) -> None:
+        """Copy parameters from state_dict into this module and its submodules."""
+        current_state = self.state_dict()
+        for name, param in current_state.items():
+            if name in state_dict:
+                val = state_dict[name]
+                arr = val.data if isinstance(val, Tensor) else np.asarray(val)
+                if param.data.shape != arr.shape:
+                    raise ValueError(
+                        f"Size mismatch for {name}: copying param with shape {arr.shape}, target model shape is {param.data.shape}."
+                    )
+                param.data[...] = arr.astype(param.data.dtype)
+            elif strict:
+                raise KeyError(f"Missing key in state_dict: {name}")
+
+    def load_weights(self, filepath: Union[str, Any], strict: bool = False) -> None:
+        """Load model weights directly from a .safetensors file."""
+        from chokkhu.io.safetensors import load_safetensors
+
+        tensors = load_safetensors(filepath)
+        self.load_state_dict(tensors, strict=strict)
 
     def __setattr__(self, name: str, value: Any) -> None:
         if isinstance(value, Parameter):
