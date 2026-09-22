@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import base64
 import os
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import numpy as np
 
@@ -137,9 +137,45 @@ class HTMLReportBuilder:
                     Logger.warning(f"Could not generate primary diagnostic chart: {e}")
 
         if feat_names:
+            imp_scores = None
+            if hasattr(pipeline_result, "model") and pipeline_result.model is not None:
+                m = pipeline_result.model
+                if (
+                    hasattr(m, "feature_importances_")
+                    and m.feature_importances_ is not None
+                ):
+                    try:
+                        imp_scores = np.asarray(
+                            m.feature_importances_, dtype=float
+                        ).flatten()
+                    except Exception:
+                        imp_scores = None
+                elif hasattr(m, "coef_") and m.coef_ is not None:
+                    try:
+                        imp_scores = np.abs(np.asarray(m.coef_, dtype=float)).flatten()
+                    except Exception:
+                        imp_scores = None
+
             svg_charts_html += HTMLReportBuilder._generate_feature_importance_svg(
-                feat_names[:10]
+                feat_names, scores=imp_scores
             )
+
+        if (
+            getattr(pipeline_result, "conformal_model", None) is not None
+            and "y_test" in splits
+            and "X_test" in splits
+        ):
+            try:
+                if hasattr(pipeline_result, "predict_interval"):
+                    preds_c, low_c, high_c = pipeline_result.predict_interval(
+                        splits["X_test"]
+                    )
+                    y_te_c = np.asarray(splits["y_test"], dtype=float)
+                    svg_charts_html += HTMLReportBuilder._generate_conformal_svg(
+                        y_te_c[:40], preds_c[:40], low_c[:40], high_c[:40]
+                    )
+            except Exception as e:
+                Logger.warning(f"Could not generate conformal band chart: {e}")
 
         svg_charts_html += "</div>\n"
 
@@ -202,8 +238,12 @@ class HTMLReportBuilder:
     @staticmethod
     def _generate_confusion_svg(y_true: np.ndarray, y_pred: np.ndarray) -> str:
         """Generates inline SVG Confusion Matrix."""
+        if len(y_true) == 0 or len(y_pred) == 0:
+            return ""
         classes = np.unique(np.concatenate([y_true, y_pred]))
         n_c = min(5, len(classes))
+        if n_c == 0:
+            return ""
         cls_map = {c: i for i, c in enumerate(classes[:n_c])}
         cm: np.ndarray = np.zeros((n_c, n_c), dtype=int)
         for yt, yp in zip(y_true, y_pred):
@@ -211,6 +251,7 @@ class HTMLReportBuilder:
                 cm[cls_map[yt], cls_map[yp]] += 1
 
         total = max(1, int(np.sum(cm)))
+        acc_pct = np.trace(cm) / total
         svg_w, svg_h = 500, 320
         cell_size = 50
         start_x, start_y = 120, 70
@@ -219,7 +260,7 @@ class HTMLReportBuilder:
             '<div class="chart-card">\n'
             '<div class="chart-title">\n'
             "<span>Confusion Matrix</span>\n"
-            f'<span style="font-size:0.8em; color:#38bdf8;">Accuracy: {np.trace(cm)/total:.2%}</span>\n'
+            f'<span style="font-size:0.8em; color:#38bdf8;">Accuracy: {acc_pct:.2%}</span>\n'
             "</div>\n"
             f'<svg class="chart-svg" viewBox="0 0 {svg_w} {svg_h}" xmlns="http://www.w3.org/2000/svg">\n'
             f'<text x="{svg_w/2}" y="30" fill="#f8fafc" font-size="14" text-anchor="middle">Predicted</text>\n'
@@ -244,6 +285,8 @@ class HTMLReportBuilder:
     @staticmethod
     def _generate_residual_svg(y_true: np.ndarray, y_pred: np.ndarray) -> str:
         """Generates inline SVG Residuals vs Predicted Chart."""
+        if len(y_true) == 0 or len(y_pred) == 0:
+            return ""
         residuals = y_true - y_pred
         svg_w, svg_h = 520, 280
         padding = 40
@@ -277,11 +320,25 @@ class HTMLReportBuilder:
         return svg_content
 
     @staticmethod
-    def _generate_feature_importance_svg(feature_names: List[str]) -> str:
+    def _generate_feature_importance_svg(
+        feature_names: List[str], scores: Any = None
+    ) -> str:
         """Generates inline SVG horizontal feature importance bar chart."""
+        if not feature_names:
+            return ""
         n_feats = min(8, len(feature_names))
-        feats = feature_names[:n_feats]
-        scores = np.linspace(1.0, 0.2, n_feats)
+
+        if scores is not None and len(scores) >= len(feature_names):
+            score_arr = np.asarray(scores[: len(feature_names)], dtype=float)
+            max_s = float(np.max(score_arr)) if float(np.max(score_arr)) > 0 else 1.0
+            norm_scores = score_arr / max_s
+            # Sort top features
+            top_indices = np.argsort(norm_scores)[::-1][:n_feats]
+            feats = [feature_names[i] for i in top_indices]
+            final_scores = norm_scores[top_indices]
+        else:
+            feats = feature_names[:n_feats]
+            final_scores = np.linspace(1.0, 0.2, n_feats)
 
         svg_w, svg_h = 520, 40 * n_feats + 60
         bar_h = 22
@@ -291,20 +348,76 @@ class HTMLReportBuilder:
         svg_content = (
             '<div class="chart-card">\n'
             '<div class="chart-title">\n'
-            "<span>Top Feature Importances (TreeSHAP)</span>\n"
+            "<span>Top Feature Importances</span>\n"
             f'<span style="font-size:0.8em; color:#fbbf24;">{n_feats} Features</span>\n'
             "</div>\n"
             f'<svg class="chart-svg" viewBox="0 0 {svg_w} {svg_h}" xmlns="http://www.w3.org/2000/svg">\n'
         )
-        for i, (fn, sc) in enumerate(zip(feats, scores)):
+        for i, (fn, sc) in enumerate(zip(feats, final_scores)):
             y = start_y + i * 38
-            w = sc * max_bar_w
+            w = float(sc) * max_bar_w
             svg_content += (
                 f'<text x="{start_x - 10}" y="{y + 16}" fill="#e2e8f0" font-size="12" text-anchor="end">{fn[:15]}</text>\n'
-                f'<rect x="{start_x}" y="{y}" width="{w:.1f}" height="{bar_h}" fill="#38bdf8" rx="4"/>\n'
+                f'<rect x="{start_x}" y="{y}" width="{max(2.0, w):.1f}" height="{bar_h}" fill="#38bdf8" rx="4"/>\n'
                 f'<text x="{start_x + w + 8}" y="{y + 16}" fill="#94a3b8" font-size="11">{sc:.2f}</text>\n'
             )
         svg_content += "</svg></div>\n"
+        return svg_content
+
+    @staticmethod
+    def _generate_conformal_svg(
+        y_true: np.ndarray, y_pred: np.ndarray, y_low: np.ndarray, y_high: np.ndarray
+    ) -> str:
+        """Generates inline SVG Conformal Prediction Uncertainty Interval Chart."""
+        n = min(len(y_true), len(y_pred), len(y_low), len(y_high))
+        if n < 2:
+            return ""
+
+        svg_w, svg_h = 540, 280
+        padding = 40
+        min_v = float(min(np.min(y_true[:n]), np.min(y_low[:n])))
+        max_v = float(max(np.max(y_true[:n]), np.max(y_high[:n])))
+        range_v = max(1e-6, max_v - min_v)
+
+        def to_coord(idx: int, val: float) -> Tuple[float, float]:
+            cx = padding + (idx / (n - 1)) * (svg_w - 2 * padding)
+            cy = (svg_h - padding) - ((val - min_v) / range_v) * (svg_h - 2 * padding)
+            return cx, cy
+
+        band_points = []
+        for i in range(n):
+            cx, cy = to_coord(i, float(y_high[i]))
+            band_points.append(f"{cx:.1f},{cy:.1f}")
+        for i in reversed(range(n)):
+            cx, cy = to_coord(i, float(y_low[i]))
+            band_points.append(f"{cx:.1f},{cy:.1f}")
+        band_poly = " ".join(band_points)
+
+        svg_content = (
+            '<div class="chart-card">\n'
+            '<div class="chart-title">\n'
+            "<span>Conformal Uncertainty Bands (95% Coverage)</span>\n"
+            f'<span style="font-size:0.8em; color:#a855f7;">{n} Samples</span>\n'
+            "</div>\n"
+            f'<svg class="chart-svg" viewBox="0 0 {svg_w} {svg_h}" xmlns="http://www.w3.org/2000/svg">\n'
+            f'<polygon points="{band_poly}" fill="rgba(168, 85, 247, 0.25)"/>\n'
+        )
+        for i in range(n):
+            cx, cy = to_coord(i, float(y_pred[i]))
+            svg_content += (
+                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="3" fill="#38bdf8"/>\n'
+            )
+            cx_t, cy_t = to_coord(i, float(y_true[i]))
+            svg_content += (
+                f'<circle cx="{cx_t:.1f}" cy="{cy_t:.1f}" r="3" fill="#34d399"/>\n'
+            )
+
+        svg_content += (
+            f'<text x="{padding + 10}" y="25" fill="#34d399" font-size="11">&bull; Ground Truth</text>\n'
+            f'<text x="{padding + 110}" y="25" fill="#38bdf8" font-size="11">&bull; Point Prediction</text>\n'
+            f'<text x="{padding + 220}" y="25" fill="#c084fc" font-size="11">&FilledSmallSquare; Conformal Band</text>\n'
+            "</svg></div>\n"
+        )
         return svg_content
 
 
