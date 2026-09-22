@@ -13,14 +13,22 @@ class VarianceThresholdSelector:
 
     def fit(self, df: pd.DataFrame):
         num_df = df.select_dtypes(include=[np.number])
+        if num_df.shape[1] == 0:
+            self.selected_columns = []
+            return self
         variances = num_df.var()
-        self.selected_columns = variances[variances >= self.threshold].index.tolist()
+        selected = variances[variances >= self.threshold].index.tolist()
+        if not selected and not variances.empty:
+            selected = [variances.idxmax()]
+        self.selected_columns = selected
         return self
 
     def transform(self, df: pd.DataFrame):
         num_cols = df.select_dtypes(include=[np.number]).columns
         cat_cols = df.select_dtypes(exclude=[np.number]).columns.tolist()
         keep = [c for c in num_cols if c in self.selected_columns] + cat_cols
+        if not keep:
+            keep = df.columns.tolist()
         return df[keep]
 
     def fit_transform(self, df: pd.DataFrame):

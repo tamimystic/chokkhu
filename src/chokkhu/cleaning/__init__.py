@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from chokkhu.core.logger import Logger
@@ -44,6 +45,8 @@ def clean(
         df = load(data)
     else:
         df = data if inplace else data.copy()
+    # Replace inf and -inf with NaN for robust downstream handling
+    df = df.replace([np.inf, -np.inf], np.nan)
     initial_shape = df.shape
     if fix_data_types:
         df = fix_dtypes(

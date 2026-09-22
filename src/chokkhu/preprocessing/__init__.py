@@ -43,6 +43,7 @@ class PreprocessorState:
         self.encoded_cols = []
         self.num_cols = []
         self.cat_cols = []
+        self.feature_names_out = []
 
     def transform(self, data: pd.DataFrame | str) -> pd.DataFrame:
         if isinstance(data, str):
@@ -67,6 +68,11 @@ class PreprocessorState:
                 df[col] = sc.transform(df[[col]].values).flatten()
         if self.feature_selector is not None:
             df = self.feature_selector.transform(df)
+        if self.feature_names_out:
+            for feat in self.feature_names_out:
+                if feat not in df.columns:
+                    df[feat] = 0.0
+            df = df[[c for c in self.feature_names_out if c in df.columns]]
         return df
 
 
@@ -163,6 +169,8 @@ def preprocess(
             fs = RFESelector(k=k)
             features_df = fs.fit_transform(features_df, target_series)
             state.feature_selector = fs
+
+    state.feature_names_out = [c for c in features_df.columns if c != target]
 
     if target_series is not None and target is not None:
         features_df[target] = target_series

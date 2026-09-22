@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 
@@ -40,9 +41,18 @@ def fix_dtypes(
                 "y": True,
                 "n": False,
             }
-            lower_s = df[col].astype(str).str.lower().str.strip()
-            if lower_s.isin(bool_map.keys()).all():
-                df[col] = lower_s.map(bool_map).astype(bool)
+            lower_s = s.astype(str).str.lower().str.strip()
+            if len(lower_s) > 0 and lower_s.isin(bool_map.keys()).all():
+                lower_full = df[col].astype(str).str.lower().str.strip()
+                mapped = lower_full.map(bool_map)
+                if df[col].isna().any():
+                    mapped.loc[df[col].isna()] = np.nan
+                    try:
+                        df[col] = mapped.astype("boolean")
+                    except Exception:
+                        df[col] = mapped
+                else:
+                    df[col] = mapped.astype(bool)
                 continue
             if df[col].nunique() <= category_threshold:
                 df[col] = df[col].astype("category")
