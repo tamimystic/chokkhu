@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Optional, Tuple, Union
 import numpy as np
 
-from chokkhu.core.tensor import Function, Tensor
+from chokkhu.core.tensor import Function, Tensor, concat
 from ..dl.layers import Module, Parameter
 
 
@@ -223,13 +223,9 @@ class GroupedConv2D(Module):
         in_group = self.in_channels // self.groups
         outs = []
         for i, c in enumerate(self.convs):
-            x_i = Tensor(
-                x.data[:, i * in_group : (i + 1) * in_group, :, :],
-                requires_grad=x.requires_grad,
-            )
-            outs.append(c(x_i).data)
-        cat_data = np.concatenate(outs, axis=1)
-        return Tensor(cat_data, requires_grad=x.requires_grad)
+            x_i = x[:, i * in_group : (i + 1) * in_group, :, :]
+            outs.append(c(x_i))
+        return concat(outs, axis=1)
 
 
 class ChannelShuffle(Module):
@@ -244,10 +240,9 @@ class ChannelShuffle(Module):
         N, C, H, W = x.shape
         g = self.groups
         channels_per_group = C // g
-        x_reshaped = x.data.reshape(N, g, channels_per_group, H, W)
+        x_reshaped = x.reshape(N, g, channels_per_group, H, W)
         x_transposed = x_reshaped.transpose(0, 2, 1, 3, 4)
-        out = x_transposed.reshape(N, C, H, W)
-        return Tensor(out, requires_grad=x.requires_grad)
+        return x_transposed.reshape(N, C, H, W)
 
 
 class MaxPool2DFunction(Function):
@@ -387,6 +382,55 @@ class DepthwiseSeparableConv2D(Module):
         return self.pointwise(out)
 
 
+class ConvTranspose2DFunction(Function):
+    """Vectorized Differentiable Transposed 2D Convolution (Fractionally Strided)."""
+
+    def __init__(self, kernel_size: int = 2, stride: int = 2, padding: int = 0) -> None:
+        super().__init__()
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+
+    def forward(self, x: Any, weight: Any = None) -> Any:  # type: ignore[override]
+        N, C_in, H_in, W_in = x.shape
+        C_out = weight.shape[1]
+        kh, kw = self.kernel_size, self.kernel_size
+        out_h = (H_in - 1) * self.stride + kh - 2 * self.padding
+        out_w = (W_in - 1) * self.stride + kw - 2 * self.padding
+
+        x_reshaped = x.transpose(1, 0, 2, 3).reshape(C_in, -1)
+        w_reshaped = weight.transpose(1, 2, 3, 0).reshape(C_out * kh * kw, C_in)
+        col = np.dot(w_reshaped, x_reshaped)
+
+        out = col2im_indices(
+            col,
+            (N, C_out, out_h, out_w),
+            kh,
+            kw,
+            padding=self.padding,
+            stride=self.stride,
+        )
+        return out
+
+    def backward(self, gy: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        x = self.inputs[0].data
+        weight = self.inputs[1].data
+        N, C_in, H_in, W_in = x.shape
+        C_out = weight.shape[1]
+        kh, kw = self.kernel_size, self.kernel_size
+
+        gy_col = im2col_indices(gy, kh, kw, padding=self.padding, stride=self.stride)
+        w_reshaped = weight.transpose(1, 2, 3, 0).reshape(C_out * kh * kw, C_in)
+        dx_reshaped = np.dot(w_reshaped.T, gy_col)
+        dx = dx_reshaped.reshape(C_in, N, H_in, W_in).transpose(1, 0, 2, 3)
+
+        x_reshaped = x.transpose(1, 0, 2, 3).reshape(C_in, -1)
+        dw_reshaped = np.dot(gy_col, x_reshaped.T)
+        dw = dw_reshaped.reshape(C_out, kh, kw, C_in).transpose(3, 0, 1, 2)
+
+        return dx, dw
+
+
 class ConvTranspose2D(Module):
     """Fractionally Strided Transposed 2D Convolution for Upsampling."""
 
@@ -396,42 +440,22 @@ class ConvTranspose2D(Module):
         out_channels: int,
         kernel_size: int = 2,
         stride: int = 2,
+        padding: int = 0,
     ) -> None:
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
         self.stride = stride
+        self.padding = padding
 
+        scale = np.sqrt(2.0 / (in_channels * kernel_size * kernel_size))
         w_data = (
-            np.random.randn(in_channels, out_channels, kernel_size, kernel_size) * 0.05
+            np.random.randn(in_channels, out_channels, kernel_size, kernel_size) * scale
         )
         self.weight = Parameter(w_data)
 
     def forward(self, x: Tensor) -> Tensor:
-        N, C, H, W = x.shape
-        out_h = H * self.stride
-        out_w = W * self.stride
-        out: np.ndarray = np.zeros(
-            (N, self.out_channels, out_h, out_w), dtype=np.float64
+        return ConvTranspose2DFunction(self.kernel_size, self.stride, self.padding)(
+            x, self.weight
         )
-
-        for n in range(N):
-            for oc in range(self.out_channels):
-                for ic in range(C):
-                    for h in range(H):
-                        for w in range(W):
-                            h_end = min(out_h, h * self.stride + self.kernel_size)
-                            w_end = min(out_w, w * self.stride + self.kernel_size)
-                            kh_slice = h_end - (h * self.stride)
-                            kw_slice = w_end - (w * self.stride)
-                            out[
-                                n,
-                                oc,
-                                h * self.stride : h_end,
-                                w * self.stride : w_end,
-                            ] += (
-                                x.data[n, ic, h, w]
-                                * self.weight.data[ic, oc, :kh_slice, :kw_slice]
-                            )
-        return Tensor(out, requires_grad=x.requires_grad)
