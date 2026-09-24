@@ -1,33 +1,41 @@
-﻿site_name: Chokkhu Documentation
-site_description: A Complete High-Performance Machine Learning Toolkit
+site_name: Chokkhu Documentation
+site_description: A Sovereign, Zero-Heavy-Dependency ML, Deep Learning, Vision, NLP, Audio, Generative AI & AutoML Ecosystem Built from First Principles
 site_author: tamimystic
+site_url: https://tamimystic.github.io/chokkhu/
 repo_name: tamimystic/chokkhu
 repo_url: https://github.com/tamimystic/chokkhu
 
 theme:
   name: material
+  language: en
   features:
     - navigation.sections
     - navigation.top
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
+    - content.code.annotate
     - content.tabs.link
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: deep purple
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: deep purple
+      primary: cyan
+      accent: sky
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: cyan
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -43,11 +51,20 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
-  - admonition
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.details
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - admonition
   - tables
   - attr_list
   - md_in_html
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:
   - search
@@ -55,15 +72,44 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting_started.md
-  - API Reference:
-    - Load (Data I/O): api/load.md
-    - Exploratory Data Analysis: api/eda.md
-    - Data Cleaning: api/clean.md
-    - Preprocessing: api/preprocess.md
-    - Transformation: api/transform.md
-    - Data Splitting: api/split.md
-    - Model Training: api/train.md
-    - Model Evaluation: api/evaluate.md
-  - Examples:
-    - Tabular Pipeline: examples/tabular.md
-    - Image Pipeline: examples/image.md
+  - Architecture:
+      - Autograd & Computation Graph: architecture/autograd.md
+      - Zero-Leakage Pipeline Flow: architecture/zero_leakage_pipeline.md
+      - PEP 562 Lazy Loading Engine: architecture/lazy_engine.md
+  - Core Data Lifecycle:
+      - Data Loading (I/O): api/load.md
+      - Exploratory Data Analysis: api/eda.md
+      - Data Cleaning & Sanitation: api/clean.md
+      - Preprocessing & Encoders: api/preprocess.md
+      - Transformations & PCA: api/transform.md
+      - Data Splitting & Stratification: api/split.md
+      - Classical Model Training: api/train.md
+      - Model Evaluation & Metrics: api/evaluate.md
+  - Advanced Subsystems API:
+      - AutoML & Pipelines: api/pipeline.md
+      - Frontier LLMs & KV-Cache: api/llm.md
+      - SafeTensors & Quantization: api/safetensors.md
+      - 2D Vision & Vectorized Convolutions: api/vision.md
+      - 3D Computer Vision & NeRF / 3DGS: api/vision_3d.md
+      - Vector Retrieval & ANN: api/retrieval.md
+      - Recommendation Systems: api/recommendation.md
+      - Causal Inference & Uplift: api/causal.md
+      - Survival Analysis: api/survival.md
+      - Scientific ML & PINNs: api/sciml.md
+      - Graph Neural Networks (GNNs): api/gnn.md
+      - Reinforcement Learning: api/rl.md
+      - Autonomous AI Agents: api/agents.md
+      - Explainable AI (XAI): api/xai.md
+      - Algorithmic Fairness: api/fairness.md
+      - Model Compression & Edge AI: api/compression.md
+      - Interactive SVG Diagnostics: api/reports.md
+      - Advanced Frontiers (SNN, DEQ, Quantum, TDA): api/frontiers.md
+  - End-to-End Tutorials:
+      - Tabular AutoML & Conformal Bands: examples/tabular_automl.md
+      - Classical Tabular Pipeline: examples/tabular.md
+      - Image Augmentation & Vision: examples/image.md
+      - LLM Weight Loading & Generation: examples/llm_inference.md
+      - Physics-Informed Neural Networks (PINNs): examples/pinns_physics.md
+      - 2D Object Detection & 3D Point Clouds: examples/vision_detection_3d.md
+      - Causal Treatment & Patient Survival: examples/causal_survival.md
+

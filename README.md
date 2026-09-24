@@ -2,18 +2,22 @@
 
 <img src="https://raw.githubusercontent.com/tamimystic/chokkhu/main/profile.jpg" width="140" height="140" style="border-radius:50%;" alt="Author Profile">
 
-# Chokkhu
+# Chokkhu (চক্ষু)
 
 **A Sovereign, Zero-Heavy-Dependency ML, Deep Learning, Computer Vision, NLP, Audio, Generative AI, GNN, Time Series, XAI, and AutoML Ecosystem Built from First Principles.**
 
 [![PyPI version](https://img.shields.io/pypi/v/chokkhu.svg?color=blue&style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/chokkhu/)
 [![Python versions](https://img.shields.io/pypi/pyversions/chokkhu.svg?style=for-the-badge&logo=python&logoColor=white)](https://pypi.org/project/chokkhu/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/tamimystic/chokkhu/ci.yml?branch=main&style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/tamimystic/chokkhu/actions)
+[![Documentation](https://img.shields.io/badge/Documentation-Live_Docs-00b4d8.svg?style=for-the-badge&logo=material-for-mkdocs&logoColor=white)](https://tamimystic.github.io/chokkhu/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://github.com/tamimystic/chokkhu/blob/main/LICENSE)
 
-> "Minimalistic Code. Sovereign Execution. Ultra-Lightweight Wheel (< 1 MB). Zero Heavy Dependencies. First Principles."
+> *"Minimalistic Code. Sovereign Execution. Ultra-Lightweight Wheel (< 1 MB). Zero Heavy Dependencies. First Principles."*
+
+📖 **[Explore Official Documentation & Full API Reference](https://tamimystic.github.io/chokkhu/)**
 
 </div>
+
 
 ---
 
