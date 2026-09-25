@@ -62,3 +62,15 @@ Represents scenes as explicit 3D Gaussian distributions with covariance matrix $
 $$\Sigma = R S S^T R^T, \quad \Sigma' = J W \Sigma W^T J^T$$
 
 Where $R$ is rotation (quaternion), $S$ is 3D scaling vector, $W$ is viewing transformation, and $J$ is the Jacobian of the projective transformation.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.vision_3d.pointnet import PointNet
+
+points = np.random.rand(32, 1024, 3) # Batch, Points, Dims
+model = PointNet(num_classes=10)
+logits = model.forward(points)
+print("Prediction logits shape:", logits.shape)
+```

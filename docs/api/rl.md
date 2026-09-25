@@ -35,3 +35,16 @@ Maximum entropy off-policy actor-critic optimizing reward plus policy entropy $\
 
 ### Decision Transformer (`DecisionTransformer`)
 Frames reinforcement learning as conditional autoregressive sequence modeling over trajectories $\tau = (\hat{R}_1, s_1, a_1, \hat{R}_2, s_2, a_2, \dots)$ using causal self-attention.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.rl.q_learning import QLearningAgent
+
+agent = QLearningAgent(n_states=10, n_actions=4)
+state = 0
+action = agent.select_action(state)
+agent.update(state, action, reward=1.0, next_state=1, done=False)
+print("Q-values updated for state", state)
+```

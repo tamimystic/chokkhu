@@ -41,3 +41,18 @@ Reweighs samples by the inverse of their estimated propensity score to create a 
 Measures the area between the cumulative uplift curve and the random targeting diagonal:
 
 $$Q = \int_0^1 (U(p) - p \cdot U(1)) \, dp$$
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.causality import CausalInference
+
+X = np.random.rand(100, 5)
+treatment = np.random.randint(0, 2, 100)
+y = 2.0 * treatment + np.random.randn(100)
+
+causal_model = CausalInference()
+ate = causal_model.estimate_ate(X, treatment, y)
+print(f"Average Treatment Effect: {ate}")
+```

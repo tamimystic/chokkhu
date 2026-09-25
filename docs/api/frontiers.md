@@ -41,3 +41,15 @@ $$\min_{P \in U(a, b)} \langle P, M \rangle - \epsilon H(P)$$
 Interpolates between conditional and unconditional score estimations:
 
 $$\hat{\epsilon}_\theta(x_t, c) = \epsilon_\theta(x_t, \emptyset) + s \cdot (\epsilon_\theta(x_t, c) - \epsilon_\theta(x_t, \emptyset))$$
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.nlp import FrontierLLM
+
+llm = FrontierLLM(vocab_size=1000, d_model=128)
+input_ids = np.array([[10, 25, 30]])
+logits = llm.forward(input_ids)
+print("Logits shape:", logits.shape)
+```

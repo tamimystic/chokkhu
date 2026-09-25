@@ -46,3 +46,18 @@ $$\alpha_{i,j} = \frac{\exp\left( \text{LeakyReLU}\left( a^T [W h_i \,\|\, W h_j
 - **Equivariant GNN (`EGNN`)**: Guarantees $E(n)$ rotation and translation equivariance over 3D coordinates.
 - **Temporal Graph Network (`TemporalGraphNetwork`)**: Continuous-time dynamic graph learning with memory modules.
 - **Hypergraph Neural Network (`HGNN`)**: Models high-order complex relational interactions connecting $>2$ nodes per hyperedge.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.gnn import GraphConv
+
+# Adjacency matrix and node features
+A = np.array([[0, 1], [1, 0]])
+X = np.random.rand(2, 4)
+
+gcn = GraphConv(in_features=4, out_features=2)
+out = gcn.forward(X, A)
+print("Node embeddings shape:", out.shape)
+```

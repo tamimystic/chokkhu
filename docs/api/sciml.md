@@ -59,3 +59,16 @@ trajectory = node.forward(h0, t_span=(0.0, 1.0))
 ## 3. Symbolic Regression (`SymbolicRegressor`)
 
 Discovers closed-form mathematical equations $y = f(x_1, x_2, \dots)$ from raw experimental data using Genetic Programming and evolutionary expression tree mutations.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.sciml.pinn import PhysicsInformedNN
+
+# Simple PDE dataset
+X = np.random.rand(100, 2)
+pinn = PhysicsInformedNN(layers=[2, 32, 32, 1])
+pinn.train(X, epochs=50)
+print("PINN trained successfully.")
+```

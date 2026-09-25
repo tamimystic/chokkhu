@@ -133,3 +133,19 @@ Density-based spatial clustering.
   - `discount_factor` (float): Default `0.99`.
   - `epsilon` (float): Default `1.0`. Exploration rate.
   - `epsilon_decay` (float): Default `0.995`.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.engine import Trainer
+from chokkhu.models.ml import NeuralNetwork
+
+model = NeuralNetwork(layers=[10, 5, 1])
+trainer = Trainer(model, optimizer="sgd", lr=0.01)
+
+X = np.random.rand(100, 10)
+y = np.random.rand(100, 1)
+trainer.fit(X, y, epochs=10)
+print("Training completed.")
+```

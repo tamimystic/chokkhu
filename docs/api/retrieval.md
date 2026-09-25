@@ -47,3 +47,17 @@ sparse_ranks = ["doc_B", "doc_D", "doc_A"]
 fused_ranks = reciprocal_rank_fusion([dense_ranks, sparse_ranks], k=60)
 print(f"Fused Hybrid Ranking: {fused_ranks}")
 ```
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.retrieval.dense_retriever import DenseRetriever
+
+query_embeddings = np.random.rand(1, 128)
+document_embeddings = np.random.rand(1000, 128)
+
+retriever = DenseRetriever(document_embeddings)
+top_k_indices = retriever.search(query_embeddings, k=5)
+print("Top 5 document indices:", top_k_indices)
+```

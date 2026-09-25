@@ -49,3 +49,14 @@ You can customize everything. Here are the detailed parameters:
 
 ### Data Type Parameters
 - **`fix_data_types`** (bool): Default `True`. Automatically downcasts numerical columns to save memory and converts objects to categorical types.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.cleaning.missing import handle_missing
+
+data = np.array([[1.0, 2.0], [np.nan, 3.0], [4.0, np.nan]])
+cleaned_data = handle_missing(data, strategy="mean")
+print(cleaned_data)
+```

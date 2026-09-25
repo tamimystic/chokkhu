@@ -43,3 +43,15 @@ dashboard_file = create_diagnostic_dashboard(
 - **Zero External Network Requests**: Standalone HTML works 100% offline in air-gapped secure enterprise environments.
 - **Pure Vector SVGs**: Crisp rendering at any screen resolution or DPI without pixelation.
 - **Mobile Responsive**: Built using CSS CSS Grid with automatic layout wrapping.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.reports.html_builder import HTMLReportBuilder
+
+builder = HTMLReportBuilder(title="AutoML Diagnostics")
+builder.add_section("Feature Importance", "<p>Feature X is the most important.</p>")
+report_path = builder.save("report.html")
+print(f"Report saved to {report_path}")
+```

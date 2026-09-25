@@ -38,3 +38,15 @@ $$\text{Mask}_{i,j} = \mathbb{I}(|W_{i,j}| \ge \tau_s)$$
 Trains a compact student model $S_\theta$ to match the softened probability distribution of a large teacher model $T_\phi$ with temperature scaling $\tau$:
 
 $$\mathcal{L}_{\text{KD}} = \alpha \mathcal{L}_{\text{CE}}(S(x), y) + (1 - \alpha) \tau^2 D_{\text{KL}}\left( \sigma\left(\frac{T(x)}{\tau}\right) \;\Bigg\|\; \sigma\left(\frac{S(x)}{\tau}\right) \right)$$
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.compression import Quantizer
+
+weights = np.random.randn(10, 10).astype(np.float32)
+quantizer = Quantizer(bits=8)
+quantized_weights, scale = quantizer.quantize(weights)
+print("Quantized shape:", quantized_weights.shape)
+```

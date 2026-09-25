@@ -54,3 +54,18 @@ $$C = \frac{\sum_{i,j} \mathbb{I}(T_i < T_j) \cdot \mathbb{I}(\hat{r}_i > \hat{r
 
 ### Integrated Brier Score (`integrated_brier_score`)
 Assesses both discrimination and calibration of predicted survival curves over time.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.survival.cox_ph import CoxPH
+
+X = np.random.rand(50, 3)
+durations = np.random.randint(1, 100, 50)
+events = np.random.randint(0, 2, 50)
+
+model = CoxPH()
+model.fit(X, durations, events)
+print("Cox Proportional Hazards model fitted.")
+```

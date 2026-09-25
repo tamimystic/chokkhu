@@ -43,3 +43,17 @@ scores = model.predict(user_ids, item_ids)
 
 ### Self-Attentive Sequential Recommender (`SASRec`)
 Uses multi-head self-attention over user historical interaction sequences to predict the next item.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.recommendation.matrix_factorization import MatrixFactorization
+
+# User-item interactions
+interactions = np.array([[1, 0, 3], [0, 2, 1]])
+mf = MatrixFactorization(n_users=2, n_items=3, n_factors=5)
+mf.fit(interactions, epochs=10)
+predictions = mf.predict_all()
+print("Predicted interactions:", predictions.shape)
+```

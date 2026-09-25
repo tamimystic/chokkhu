@@ -40,3 +40,19 @@ $$\phi_i = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!(|N|-|S|-1)!}{|N|!} (f
 
 ### Causal Activation Patching
 Replaces specific intermediate layer activations from a clean run with corrupted activations to isolate the exact computational circuit responsible for a model's prediction.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.xai import SHAPExplainer
+
+# Mock model prediction function
+predict_fn = lambda x: np.sum(x, axis=1)
+X_background = np.random.rand(100, 5)
+X_explain = np.random.rand(1, 5)
+
+explainer = SHAPExplainer(predict_fn, X_background)
+shap_values = explainer.explain(X_explain)
+print("SHAP values:", shap_values)
+```

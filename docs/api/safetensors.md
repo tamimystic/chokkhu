@@ -71,3 +71,16 @@ weights = model.state_dict()
 # Load weights into a new model instance
 new_model.load_state_dict(weights)
 ```
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.safetensors import save_file, load_file
+
+tensors = {"weight": np.random.randn(10, 10).astype(np.float32)}
+save_file(tensors, "model.safetensors")
+
+loaded = load_file("model.safetensors")
+print("Loaded tensor shape:", loaded["weight"].shape)
+```

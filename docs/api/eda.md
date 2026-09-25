@@ -20,3 +20,14 @@ Chokkhu provides powerful, automated EDA engines for both tabular and image data
 - **Dynamic Parameters (Changeable):**
   - `save_reports` (bool): Default `False`. If True, saves all metric figures and generates an HTML report.
   - `save_dir` (str): Default `"./chokkhu_outputs/image_reports"`. Directory to save the generated reports.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.eda import univariate
+
+data = np.random.randn(1000)
+stats = univariate.summary_statistics(data)
+print(stats)
+```

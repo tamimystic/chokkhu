@@ -43,3 +43,16 @@ If you run `ck.preprocess(df, target="price")`, the default behavior is:
 ## The State Object
 The function returns `df_processed, state`. 
 The `state` dictionary contains the trained scalers and encoders. You must save this state if you want to preprocess new, unseen testing data later using the exact same scaling parameters!
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.preprocessing.scaling import StandardScaler
+
+X = np.random.rand(50, 3) * 10
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+print("Mean:", np.mean(X_scaled, axis=0))
+print("Std:", np.std(X_scaled, axis=0))
+```

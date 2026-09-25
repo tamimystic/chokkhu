@@ -73,3 +73,22 @@ result = ck.auto_train(
 - `knn`: $k$-Nearest Neighbors classifier / regressor with KD-Tree.
 - `naive_bayes`: Gaussian & Multinomial Naive Bayes.
 - `svm`: Support Vector Classifier with SMO solver.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.pipeline import Pipeline
+from chokkhu.preprocessing import StandardScaler
+from chokkhu.models.ml import LogisticRegression
+
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("classifier", LogisticRegression())
+])
+
+X = np.random.rand(100, 5)
+y = np.random.randint(0, 2, 100)
+pipe.fit(X, y)
+print("Pipeline trained successfully.")
+```

@@ -23,3 +23,15 @@ Handles advanced dataset transformations including dimensionality reduction (PCA
   - `augment` (bool): Default `False`. Must be True to enable augmentation.
   - `augment_techniques` (list): Default `[]` (randomly applies all). Options: `"horizontal_flip"`, `"rotate"`, `"brightness"`, `"noise"`, `"crop"`, `"blur"`, `"cutout"`.
   - `augment_factor` (int): Default `1`. The multiplier for the dataset size.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.transformation.pca import PCA
+
+X = np.random.rand(100, 10)
+pca = PCA(n_components=2)
+X_reduced = pca.fit_transform(X)
+print("Reduced shape:", X_reduced.shape)
+```

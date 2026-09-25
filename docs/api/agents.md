@@ -37,3 +37,14 @@ graph TD
 - **Graph of Thoughts (`GraphOfThoughts`)**: Synthesizes and combines insights from multiple divergent thought trajectories into a single DAG.
 - **Reflexion Engine (`ReflexionEngine`)**: Evaluates trial outcomes, generates linguistic self-reflections, and stores critiques into episodic memory to improve future attempts.
 - **Multi-Agent Coordinator (`MultiAgentCoordinator`)**: Orchestrates cooperative or debate-driven agent coalitions with consensus voting.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.nlp.agents import SimpleAgent
+
+agent = SimpleAgent(model_name="tiny_llm")
+response = agent.run("Analyze the dataset and provide insights.")
+print(response)
+```

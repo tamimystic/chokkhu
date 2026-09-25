@@ -68,3 +68,15 @@ output_tokens = model.generate(
 | `top_k` | `int` / `None` | `None` | Restricts sampling pool to the $K$ highest-probability candidate tokens. |
 | `top_p` | `float` / `None` | `None` | Nucleus sampling: cumulative probability mass threshold (e.g. `0.9`). |
 | `repetition_penalty` | `float` | `1.0` | Exponential penalty scaling factor applied to previously generated token logits. |
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.models.nlp import TransformerBlock
+
+block = TransformerBlock(d_model=256, n_heads=8)
+x = np.random.randn(1, 10, 256)
+out = block.forward(x)
+print("Transformer block output shape:", out.shape)
+```

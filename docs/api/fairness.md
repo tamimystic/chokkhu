@@ -42,3 +42,17 @@ Edits continuous feature values via quantile alignment so that group conditional
 
 ### Post-Processing: Threshold Optimizer (`ThresholdOptimizer`)
 Finds group-specific decision classification thresholds $(\theta_{A=0}, \theta_{A=1})$ that maximize accuracy while satisfying equalized odds constraints.
+
+## Example
+
+```python
+import numpy as np
+from chokkhu.fairness import DemographicParity
+
+y_pred = np.array([1, 1, 0, 0])
+protected_attributes = np.array([0, 1, 0, 1])
+
+metric = DemographicParity()
+score = metric.evaluate(y_pred, protected_attributes)
+print(f"Demographic Parity Difference: {score}")
+```
