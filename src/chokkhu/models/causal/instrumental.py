@@ -9,7 +9,7 @@ and Durbin-Wu-Hausman endogeneity testing.
 from __future__ import annotations
 
 import numpy as np
-from scipy import stats
+from chokkhu.core.math import chi2, norm
 from typing import Dict, Optional, Union
 
 
@@ -126,7 +126,7 @@ class TwoStageLeastSquares:
 
         se = np.sqrt(np.maximum(np.diag(cov), 1e-12))
         t_stat = beta_2sls / se
-        p_val = 2.0 * stats.norm.sf(np.abs(t_stat))
+        p_val = 2.0 * norm.sf(np.abs(t_stat))
 
         if self.fit_intercept:
             self.intercept_ = float(beta_2sls[0])
@@ -174,7 +174,7 @@ class TwoStageLeastSquares:
             sargan_stat = float(N * r2_sargan)
             df_overid = L - K
             self.sargan_stat_ = sargan_stat
-            self.sargan_p_val_ = float(stats.chi2.sf(sargan_stat, df=df_overid))
+            self.sargan_p_val_ = float(chi2.sf(sargan_stat, df=df_overid))
         else:
             self.sargan_stat_ = None
             self.sargan_p_val_ = None
@@ -305,7 +305,7 @@ class InstrumentalGMM:
         j_stat = float(N * np.dot(np.dot(g_bar.T, W2), g_bar))
         df_j = max(1, L - K)
         self.j_stat_ = j_stat
-        self.j_p_val_ = float(stats.chi2.sf(j_stat, df=df_j))
+        self.j_p_val_ = float(chi2.sf(j_stat, df=df_j))
 
         return self
 

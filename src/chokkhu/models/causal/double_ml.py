@@ -9,7 +9,7 @@ R-Learner for heterogeneous treatment effect (CATE) estimation.
 from __future__ import annotations
 
 import numpy as np
-from scipy import stats
+from chokkhu.core.math import norm
 from typing import Dict, Optional
 
 
@@ -159,7 +159,7 @@ class DoubleMLPLR:
         self.se_ = float(np.sqrt(max(1e-12, var_hat / N)))
 
         self.t_stat_ = float(self.coef_ / self.se_)
-        self.p_val_ = float(2.0 * stats.norm.sf(np.abs(self.t_stat_)))
+        self.p_val_ = float(2.0 * norm.sf(np.abs(self.t_stat_)))
         self.ci_lower_ = float(self.coef_ - 1.96 * self.se_)
         self.ci_upper_ = float(self.coef_ + 1.96 * self.se_)
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-from scipy.stats import skew
+from chokkhu.core.math import skew
 
 
 class ColorAnalyzer:
@@ -13,7 +13,7 @@ class ColorAnalyzer:
         if gray_img.size == 0:
             gray_skew = 0.0
         else:
-            gray_skew = skew(gray_img.flatten())
+            gray_skew = float(skew(gray_img.flatten()))
         overexposed = np.sum(gray_img >= 250) / gray_img.size * 100
         underexposed = np.sum(gray_img <= 5) / gray_img.size * 100
         return {

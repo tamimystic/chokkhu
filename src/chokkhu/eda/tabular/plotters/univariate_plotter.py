@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import scipy.stats as sp_stats
+from chokkhu.core import math as sp_stats
 import seaborn as sns
 
 from chokkhu.core.visualizer import PlotVisualizer

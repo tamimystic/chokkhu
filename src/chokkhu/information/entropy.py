@@ -7,7 +7,7 @@ digamma statistics and multivariate kernel density estimation in pure NumPy and 
 from typing import Optional, Union
 
 import numpy as np
-from scipy.special import digamma
+from chokkhu.core.math import digamma
 
 
 class KraskovMutualInformation:

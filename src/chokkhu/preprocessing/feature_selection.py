@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from typing import Any
-from scipy import stats
+from chokkhu.core import math as stats
 
 
 class VarianceThresholdSelector:

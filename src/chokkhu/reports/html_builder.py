@@ -225,7 +225,7 @@ class HTMLReportBuilder:
             f"{cards_html}\n"
             f"{svg_charts_html}\n"
             '<div class="footer">\n'
-            "Powered by <strong>Chokkhu Sovereign AI Framework</strong> &bull; 100% Pure NumPy & SciPy\n"
+            "Powered by <strong>Chokkhu Sovereign AI Framework</strong> &bull; 100% Pure NumPy\n"
             "</div>\n</div>\n</body>\n</html>\n"
         )
 

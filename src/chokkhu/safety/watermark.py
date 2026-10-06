@@ -5,7 +5,7 @@ of vocabulary into green/red lists, logit bias injection, and z-score hypothesis
 """
 
 import numpy as np
-from scipy import special
+from chokkhu.core.math import erfc
 from typing import Dict, Any
 
 
@@ -148,7 +148,7 @@ class StatisticalTextWatermark:
             z_score = 0.0
 
         # One-sided asymptotic p-value using complementary error function
-        p_val = float(0.5 * special.erfc(z_score / np.sqrt(2.0)))
+        p_val = float(0.5 * erfc(z_score / np.sqrt(2.0)))
 
         return {
             "num_tokens": int(T),

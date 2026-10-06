@@ -5,7 +5,7 @@ Formulated from first principles using continuous non-combinatorial optimization
 """
 
 import numpy as np
-from scipy import linalg, optimize, stats
+from chokkhu.core.math import expm, minimize, norm
 from typing import Optional, Tuple, List, Dict, Set
 
 
@@ -55,7 +55,7 @@ class NOTEARSCausalDiscovery:
         """Compute acyclicity constraint h(W) = tr(expm(W * W)) - d and its gradient."""
         d = W.shape[0]
         M = W * W
-        E = linalg.expm(M)
+        E = expm(M)
         h = float(np.trace(E) - d)
         grad_h = 2.0 * E.T * W
         return h, grad_h
@@ -97,7 +97,7 @@ class NOTEARSCausalDiscovery:
                     grad = loss_grad + l1_grad + (alpha + rho * h_val) * h_grad
                     return float(obj), grad.flatten()
 
-                res = optimize.minimize(
+                res = minimize(
                     fun=lambda w: objective(w)[0],
                     x0=w_est.flatten(),
                     jac=lambda w: objective(w)[1],
@@ -178,7 +178,7 @@ class PCAlgorithm:
         idx = [i, j] + list(cond)
         sub_cov = np.cov(X[:, idx], rowvar=False)
         try:
-            sub_prec = linalg.pinv(sub_cov)
+            sub_prec = np.linalg.pinv(sub_cov)
             r = -sub_prec[0, 1] / np.sqrt(
                 np.abs(sub_prec[0, 0] * sub_prec[1, 1]) + 1e-12
             )
@@ -198,7 +198,7 @@ class PCAlgorithm:
         r = self._partial_corr(X, i, j, cond)
         z = 0.5 * np.log((1.0 + r) / max(1e-12, (1.0 - r)))
         stat = np.sqrt(n - k - 3) * np.abs(z)
-        crit = stats.norm.ppf(1.0 - self.alpha / 2.0)
+        crit = norm.ppf(1.0 - self.alpha / 2.0)
         return bool(stat <= crit)
 
     def fit(self, X: np.ndarray) -> "PCAlgorithm":

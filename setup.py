@@ -18,7 +18,7 @@ setuptools.setup(
     description=(
         "Sovereign, zero-heavy-dependency Machine Learning, Deep Learning, Computer Vision, "
         "NLP, Audio, Generative AI, GNN, Time Series, XAI, and AutoML toolkit built from "
-        "first principles in pure NumPy and SciPy."
+        "first principles in pure NumPy."
     ),
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -47,9 +47,16 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     install_requires=[
         "numpy",
-        "scipy",
     ],
-    extras_require={"all": ["Pillow", "matplotlib", "seaborn", "pandas", "opencv-python-headless", "tqdm"], 
+    extras_require={
+        "all": [
+            "Pillow",
+            "matplotlib",
+            "seaborn",
+            "pandas",
+            "opencv-python-headless",
+            "tqdm",
+        ],
         "dev": [
             "pytest>=7.2",
             "pytest-cov",
@@ -57,7 +64,7 @@ setuptools.setup(
             "mypy>=1.5",
             "black>=23.3",
             "isort>=5.12",
-        ]
+        ],
     },
     entry_points={
         "console_scripts": [
@@ -65,4 +72,3 @@ setuptools.setup(
         ]
     },
 )
-

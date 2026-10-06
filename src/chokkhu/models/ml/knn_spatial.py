@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Optional
 import numpy as np
-from scipy.spatial.distance import cdist
+from chokkhu.core.math import cdist
 
 from chokkhu.models.base import ChokkhuModel
 

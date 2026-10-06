@@ -199,9 +199,9 @@ class QuantileScaler:
         for j in range(X_arr.shape[1]):
             out[:, j] = np.interp(X_arr[:, j], self.quantiles[:, j], self.references)
         if self.output_distribution == "normal":
-            from scipy import stats
+            from chokkhu.core.math import norm
 
-            out = stats.norm.ppf(np.clip(out, 1e-4, 1.0 - 1e-4))
+            out = norm.ppf(np.clip(out, 1e-4, 1.0 - 1e-4))
         return out
 
     def fit_transform(self, X):

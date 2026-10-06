@@ -1,4 +1,4 @@
-"""Chokkhu: Pure NumPy and SciPy Enterprise AI and Machine Learning Library."""
+"""Chokkhu: Pure NumPy Enterprise AI and Machine Learning Library."""
 
 from __future__ import annotations
 
