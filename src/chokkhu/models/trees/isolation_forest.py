@@ -48,9 +48,15 @@ class IsolationTreeNode:
 class IsolationTree:
     """Single Isolation Tree constructed via recursive random attribute partitioning."""
 
-    def __init__(self, max_height: int, rng: np.random.RandomState) -> None:
+    def __init__(
+        self,
+        max_height: int,
+        rng: np.random.RandomState,
+        feature_indices: Optional[np.ndarray] = None,
+    ) -> None:
         self.max_height = max_height
         self.rng = rng
+        self.feature_indices = feature_indices
         self.root: Optional[IsolationTreeNode] = None
 
     def fit(self, X: np.ndarray) -> IsolationTree:
@@ -62,13 +68,17 @@ class IsolationTree:
         if current_height >= self.max_height or n_samples <= 1:
             return IsolationTreeNode(size=n_samples, is_leaf=True)
 
-        # Find features that are non-constant
+        candidate_feats = (
+            self.feature_indices
+            if self.feature_indices is not None
+            else np.arange(n_features)
+        )
         valid_features: List[int] = []
-        for feat in range(n_features):
+        for feat in candidate_feats:
             col_min = float(np.min(X[:, feat]))
             col_max = float(np.max(X[:, feat]))
             if col_min < col_max:
-                valid_features.append(feat)
+                valid_features.append(int(feat))
 
         if not valid_features:
             return IsolationTreeNode(size=n_samples, is_leaf=True)
@@ -118,48 +128,82 @@ class IsolationForest(ChokkhuModel):
     def __init__(
         self,
         n_estimators: int = 100,
-        max_samples: Union[str, int] = "auto",
-        contamination: float = 0.1,
-        random_state: int = 42,
+        max_samples: Union[str, int, float] = "auto",
+        contamination: Union[str, float] = "auto",
+        max_features: Union[int, float] = 1.0,
+        bootstrap: bool = False,
+        n_jobs: Optional[int] = None,
+        random_state: Optional[int] = None,
+        verbose: int = 0,
+        warm_start: bool = False,
     ) -> None:
         super().__init__()
         self.n_estimators = int(n_estimators)
         self.max_samples = max_samples
-        self.contamination = float(contamination)
+        self.contamination = contamination
+        self.max_features = max_features
+        self.bootstrap = bootstrap
+        self.n_jobs = n_jobs
         self.random_state = random_state
+        self.verbose = verbose
+        self.warm_start = warm_start
         self.rng = np.random.RandomState(random_state)
 
         self.trees: List[IsolationTree] = []
+        self.estimators_: List[IsolationTree] = []
+        self.estimators_features_: List[np.ndarray] = []
         self.max_samples_val: int = 256
         self.threshold_: float = 0.5
+        self.offset_: float = -0.5
         self.is_fitted: bool = False
 
     def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> IsolationForest:
         """Fit Isolation Forest ensemble."""
         x_arr = np.asarray(X, dtype=np.float64)
-        n_samples = x_arr.shape[0]
+        n_samples, n_features = x_arr.shape
 
         if self.max_samples == "auto":
             self.max_samples_val = min(256, n_samples)
+        elif isinstance(self.max_samples, float) and 0.0 < self.max_samples <= 1.0:
+            self.max_samples_val = max(1, int(self.max_samples * n_samples))
         else:
             self.max_samples_val = min(int(self.max_samples), n_samples)
 
-        max_height = int(np.ceil(np.log2(max(self.max_samples_val, 2))))
-        self.trees = []
+        if isinstance(self.max_features, float) and 0.0 < self.max_features <= 1.0:
+            n_features_sub = max(1, int(self.max_features * n_features))
+        else:
+            n_features_sub = min(int(self.max_features), n_features)
 
-        for _ in range(self.n_estimators):
+        max_height = int(np.ceil(np.log2(max(self.max_samples_val, 2))))
+        if not self.warm_start or not self.trees:
+            self.trees = []
+            self.estimators_features_ = []
+
+        for _ in range(len(self.trees), self.n_estimators):
             subsample_idx = self.rng.choice(
-                n_samples, size=self.max_samples_val, replace=False
+                n_samples, size=self.max_samples_val, replace=self.bootstrap
             )
-            itree = IsolationTree(max_height=max_height, rng=self.rng)
+            feat_idx = self.rng.choice(n_features, size=n_features_sub, replace=False)
+            self.estimators_features_.append(feat_idx)
+
+            itree = IsolationTree(
+                max_height=max_height, rng=self.rng, feature_indices=feat_idx
+            )
             itree.fit(x_arr[subsample_idx])
             self.trees.append(itree)
 
+        self.estimators_ = self.trees
+
         # Compute threshold based on contamination
         scores = self.score_samples(x_arr)
-        self.threshold_ = float(
-            np.percentile(scores, 100.0 * (1.0 - self.contamination))
-        )
+        if self.contamination == "auto":
+            self.offset_ = -0.5
+            self.threshold_ = 0.5
+        else:
+            contam_val = float(self.contamination)
+            self.threshold_ = float(np.percentile(scores, 100.0 * (1.0 - contam_val)))
+            self.offset_ = -self.threshold_
+
         self.is_fitted = True
         return self
 
