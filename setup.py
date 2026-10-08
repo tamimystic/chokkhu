@@ -47,15 +47,9 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     install_requires=[
         "numpy",
-        "Pillow",
-        "matplotlib",
-        "seaborn",
-        "pandas",
-        "opencv-python-headless",
-        "tqdm",
         "scipy",
     ],
-    extras_require={
+    extras_require={"all": ["Pillow", "matplotlib", "seaborn", "pandas", "opencv-python-headless", "tqdm"], 
         "dev": [
             "pytest>=7.2",
             "pytest-cov",
@@ -71,3 +65,4 @@ setuptools.setup(
         ]
     },
 )
+

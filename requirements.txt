@@ -1,9 +1,2 @@
-# Sovereign Runtime dependencies for Chokkhu
 numpy>=1.23
 scipy>=1.10
-pandas>=2.0.0
-Pillow>=9.0
-matplotlib>=3.7
-seaborn>=0.12
-opencv-python-headless>=4.8.0
-tqdm>=4.65.0
