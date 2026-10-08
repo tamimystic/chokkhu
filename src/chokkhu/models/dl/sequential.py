@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from typing import Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
 
 from chokkhu.core.logger import Logger
 from chokkhu.core.tensor import Tensor
+
 from ..base import ChokkhuModel
 from .callbacks import Callback
 from .layers import Module

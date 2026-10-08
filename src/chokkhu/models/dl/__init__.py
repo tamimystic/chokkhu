@@ -1,52 +1,54 @@
 from __future__ import annotations
 
-from .layers import (
-    Module,
-    Parameter,
-    Linear,
-    Dense,
-    Dropout,
-    BatchNorm1d,
-    LayerNorm,
-    Flatten,
-)
 from .activations import (
+    ELU,
+    GELU,
+    Identity,
+    LeakyReLU,
     ReLU,
     Sigmoid,
-    Tanh,
-    GELU,
     SiLU,
-    LeakyReLU,
     Softmax,
-    ELU,
-    Identity,
+    Tanh,
+)
+from .biological import (
+    DecoupledSyntheticGradientLayer,
+    DifferenceTargetPropagationNetwork,
+    DirectFeedbackAlignmentNetwork,
+)
+from .callbacks import Callback, EarlyStopping
+from .deq import DeepEquilibriumModel
+from .layers import (
+    BatchNorm1d,
+    Dense,
+    Dropout,
+    Flatten,
+    LayerNorm,
+    Linear,
+    Module,
+    Parameter,
 )
 from .losses import (
-    Loss,
-    MSELoss,
-    MAELoss,
-    CrossEntropyLoss,
     BinaryCrossEntropyLoss,
+    CrossEntropyLoss,
     HuberLoss,
+    KLDivLoss,
+    Loss,
+    MAELoss,
+    MSELoss,
+    SmoothL1Loss,
 )
-from .optimizers import Optimizer, SGD, Adam, AdamW, RMSProp, Adagrad
+from .optimizers import SGD, Adadelta, Adagrad, Adam, AdamW, NAdam, Optimizer, RMSProp
 from .schedulers import (
-    LRScheduler,
-    StepLR,
     CosineAnnealingLR,
     ExponentialLR,
     InverseScalingLR,
     LinearLR,
+    LRScheduler,
+    StepLR,
 )
-from .callbacks import Callback, EarlyStopping
 from .sequential import Sequential
-from .biological import (
-    DirectFeedbackAlignmentNetwork,
-    DifferenceTargetPropagationNetwork,
-    DecoupledSyntheticGradientLayer,
-)
 from .spiking import LIFNeuron, SpikingNeuralNetwork
-from .deq import DeepEquilibriumModel
 
 __all__ = [
     "Module",
@@ -72,12 +74,16 @@ __all__ = [
     "CrossEntropyLoss",
     "BinaryCrossEntropyLoss",
     "HuberLoss",
+    "SmoothL1Loss",
+    "KLDivLoss",
     "Optimizer",
     "SGD",
     "Adam",
     "AdamW",
     "RMSProp",
     "Adagrad",
+    "Adadelta",
+    "NAdam",
     "LRScheduler",
     "StepLR",
     "CosineAnnealingLR",

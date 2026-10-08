@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from typing import Any, Optional, Tuple
+
 import numpy as np
+
 from chokkhu.core.tensor import Function, Tensor
 
 
@@ -157,3 +159,39 @@ class HuberLoss(Loss):
 
     def forward(self, y_pred: Tensor, y_true: Tensor) -> Tensor:
         return HuberFunction(self.delta)(y_pred, y_true)
+
+
+SmoothL1Loss = HuberLoss
+
+
+class KLDivFunction(Function):
+    def __init__(self, reduction: str = "mean") -> None:
+        super().__init__()
+        self.reduction = reduction
+
+    def forward(self, y_pred: Any, y_true: Any = None) -> Any:  # type: ignore[override]
+        eps = 1e-12
+        p = np.clip(y_pred, eps, 1.0)
+        q = np.clip(y_true, eps, 1.0)
+        kl = q * np.log(q / p)
+        if self.reduction == "mean":
+            return np.array(np.mean(kl), dtype=np.float64)
+        return np.array(np.sum(kl), dtype=np.float64)
+
+    def backward(self, gy: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        y_pred, y_true = self.inputs[0].data, self.inputs[1].data
+        eps = 1e-12
+        p = np.clip(y_pred, eps, 1.0)
+        grad = -y_true / p
+        scale = float(y_pred.size) if self.reduction == "mean" else 1.0
+        return (grad / scale) * gy, np.zeros_like(y_true)
+
+
+class KLDivLoss(Loss):
+    """Kullback-Leibler Divergence Loss."""
+
+    def __init__(self, reduction: str = "mean") -> None:
+        self.reduction = reduction
+
+    def forward(self, y_pred: Tensor, y_true: Tensor) -> Tensor:
+        return KLDivFunction(self.reduction)(y_pred, y_true)

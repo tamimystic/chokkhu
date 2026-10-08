@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Union
+
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
 
 

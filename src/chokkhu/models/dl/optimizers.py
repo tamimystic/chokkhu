@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from typing import List
+
 import numpy as np
+
 from .layers import Parameter
 
 
@@ -167,3 +169,77 @@ class Adagrad(Optimizer):
 
             self.accumulators[i] += grad**2
             p.data -= self.lr * grad / (np.sqrt(self.accumulators[i]) + self.eps)
+
+
+class Adadelta(Optimizer):
+    """Adadelta optimizer (Zeiler, 2012)."""
+
+    def __init__(
+        self,
+        params: List[Parameter],
+        lr: float = 1.0,
+        rho: float = 0.9,
+        eps: float = 1e-6,
+        weight_decay: float = 0.0,
+    ) -> None:
+        super().__init__(params, lr, weight_decay)
+        self.rho = rho
+        self.eps = eps
+        self.square_avgs = [np.zeros_like(p.data) for p in self.params]
+        self.acc_deltas = [np.zeros_like(p.data) for p in self.params]
+
+    def step(self) -> None:
+        for i, p in enumerate(self.params):
+            if p.grad is None:
+                continue
+            grad = p.grad
+            if self.weight_decay != 0.0:
+                grad = grad + self.weight_decay * p.data
+
+            self.square_avgs[i] = self.rho * self.square_avgs[i] + (1.0 - self.rho) * (
+                grad**2
+            )
+            std = np.sqrt(self.square_avgs[i] + self.eps)
+            delta = np.sqrt(self.acc_deltas[i] + self.eps) / std * grad
+            p.data -= self.lr * delta
+            self.acc_deltas[i] = self.rho * self.acc_deltas[i] + (1.0 - self.rho) * (
+                delta**2
+            )
+
+
+class NAdam(Optimizer):
+    """NAdam (Nesterov-accelerated Adaptive Moment Estimation)."""
+
+    def __init__(
+        self,
+        params: List[Parameter],
+        lr: float = 0.002,
+        betas: tuple[float, float] = (0.9, 0.999),
+        eps: float = 1e-8,
+        weight_decay: float = 0.0,
+    ) -> None:
+        super().__init__(params, lr, weight_decay)
+        self.beta1, self.beta2 = betas
+        self.eps = eps
+        self.m = [np.zeros_like(p.data) for p in self.params]
+        self.v = [np.zeros_like(p.data) for p in self.params]
+        self.t = 0
+
+    def step(self) -> None:
+        self.t += 1
+        for i, p in enumerate(self.params):
+            if p.grad is None:
+                continue
+            grad = p.grad
+            if self.weight_decay != 0.0:
+                grad = grad + self.weight_decay * p.data
+
+            self.m[i] = self.beta1 * self.m[i] + (1.0 - self.beta1) * grad
+            self.v[i] = self.beta2 * self.v[i] + (1.0 - self.beta2) * (grad**2)
+
+            m_hat = self.m[i] / (1.0 - (self.beta1**self.t))
+            v_hat = self.v[i] / (1.0 - (self.beta2**self.t))
+            g_hat = grad / (1.0 - (self.beta1**self.t))
+
+            nesterov_m = self.beta1 * m_hat + (1.0 - self.beta1) * g_hat
+            p.data -= self.lr * nesterov_m / (np.sqrt(v_hat) + self.eps)
