@@ -45,3 +45,17 @@ class Softmax(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         return x.softmax(axis=self.dim)
+
+
+class ELU(Module):
+    def __init__(self, alpha: float = 1.0) -> None:
+        super().__init__()
+        self.alpha = alpha
+
+    def forward(self, x: Tensor) -> Tensor:
+        return x.elu(alpha=self.alpha) if hasattr(x, "elu") else x.relu()
+
+
+class Identity(Module):
+    def forward(self, x: Tensor) -> Tensor:
+        return x

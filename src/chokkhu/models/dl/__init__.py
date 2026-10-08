@@ -10,7 +10,17 @@ from .layers import (
     LayerNorm,
     Flatten,
 )
-from .activations import ReLU, Sigmoid, Tanh, GELU, SiLU, LeakyReLU, Softmax
+from .activations import (
+    ReLU,
+    Sigmoid,
+    Tanh,
+    GELU,
+    SiLU,
+    LeakyReLU,
+    Softmax,
+    ELU,
+    Identity,
+)
 from .losses import (
     Loss,
     MSELoss,
@@ -19,8 +29,15 @@ from .losses import (
     BinaryCrossEntropyLoss,
     HuberLoss,
 )
-from .optimizers import Optimizer, SGD, Adam, AdamW, RMSProp
-from .schedulers import LRScheduler, StepLR, CosineAnnealingLR
+from .optimizers import Optimizer, SGD, Adam, AdamW, RMSProp, Adagrad
+from .schedulers import (
+    LRScheduler,
+    StepLR,
+    CosineAnnealingLR,
+    ExponentialLR,
+    InverseScalingLR,
+    LinearLR,
+)
 from .callbacks import Callback, EarlyStopping
 from .sequential import Sequential
 from .biological import (
@@ -47,6 +64,8 @@ __all__ = [
     "SiLU",
     "LeakyReLU",
     "Softmax",
+    "ELU",
+    "Identity",
     "Loss",
     "MSELoss",
     "MAELoss",
@@ -58,9 +77,13 @@ __all__ = [
     "Adam",
     "AdamW",
     "RMSProp",
+    "Adagrad",
     "LRScheduler",
     "StepLR",
     "CosineAnnealingLR",
+    "ExponentialLR",
+    "InverseScalingLR",
+    "LinearLR",
     "Callback",
     "EarlyStopping",
     "Sequential",

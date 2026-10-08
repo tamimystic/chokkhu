@@ -19,6 +19,8 @@ _ALIASES: dict[str, list[str]] = {
     "KNeighborsClassifier": [".models.ml.knn_spatial", "KNNClassifier"],
     "KNeighborsRegressor": [".models.ml.knn_spatial", "KNNRegressor"],
     "Pipeline": [".pipeline.engine", "ChokkhuPipeline"],
+    "MLPClassifier": [".models.ml.neural_network", "MLPClassifier"],
+    "MLPRegressor": [".models.ml.neural_network", "MLPRegressor"],
     "pipeline": [".pipeline.engine", "pipeline"],
 }
 

@@ -141,3 +141,29 @@ class RMSProp(Optimizer):
 
             self.v[i] = self.alpha * self.v[i] + (1.0 - self.alpha) * (grad**2)
             p.data -= self.lr * grad / (np.sqrt(self.v[i]) + self.eps)
+
+
+class Adagrad(Optimizer):
+    """Adagrad Optimizer."""
+
+    def __init__(
+        self,
+        params: List[Parameter],
+        lr: float = 0.01,
+        eps: float = 1e-8,
+        weight_decay: float = 0.0,
+    ) -> None:
+        super().__init__(params, lr, weight_decay)
+        self.eps = eps
+        self.accumulators = [np.zeros_like(p.data) for p in self.params]
+
+    def step(self) -> None:
+        for i, p in enumerate(self.params):
+            if p.grad is None:
+                continue
+            grad = p.grad
+            if self.weight_decay != 0.0:
+                grad = grad + self.weight_decay * p.data
+
+            self.accumulators[i] += grad**2
+            p.data -= self.lr * grad / (np.sqrt(self.accumulators[i]) + self.eps)

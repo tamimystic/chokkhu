@@ -19,7 +19,11 @@ from .random_forest import (
     RandomForestRegressor,
 )
 from .svm import SVM
-from .neural_network import NeuralNetwork
+from .neural_network import (
+    NeuralNetwork,
+    MLPClassifier,
+    MLPRegressor,
+)
 
 from .adaboost import AdaBoostClassifier, AdaBoostRegressor
 from .extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
@@ -83,6 +87,8 @@ __all__ = [
     "DBSCAN",
     "HierarchicalClustering",
     "NeuralNetwork",
+    "MLPClassifier",
+    "MLPRegressor",
     "AdaBoostClassifier",
     "AdaBoostRegressor",
     "ExtraTreesClassifier",
