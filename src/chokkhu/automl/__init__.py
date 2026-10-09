@@ -23,6 +23,7 @@ from .autotrainer import (
     AutoTrainer,
     AutoMLResult,
     auto_train,
+    automl,
 )
 
 __all__ = [
@@ -41,4 +42,5 @@ __all__ = [
     "AutoTrainer",
     "AutoMLResult",
     "auto_train",
+    "automl",
 ]

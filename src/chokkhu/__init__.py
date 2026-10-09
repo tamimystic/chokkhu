@@ -41,6 +41,7 @@ _LAZY_IMPORTS: dict[str, str] = {
     "AutoTrainer": ".automl",
     "AutoMLResult": ".automl",
     "auto_train": ".automl",
+    "automl": ".automl",
     "Logger": ".utils",
     "fix_dtypes": ".cleaning",
     "remove_duplicates": ".cleaning",
