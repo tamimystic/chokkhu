@@ -6,7 +6,11 @@ from .decision_tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
 )
-from .gradient_boosting import GradientBoosting
+from .gradient_boosting import (
+    GradientBoosting,
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
+)
 from .hierarchical import HierarchicalClustering
 from .kmeans import KMeans
 from .knn import KNN
@@ -84,6 +88,8 @@ __all__ = [
     "RandomForestClassifier",
     "RandomForestRegressor",
     "GradientBoosting",
+    "GradientBoostingClassifier",
+    "GradientBoostingRegressor",
     "DBSCAN",
     "HierarchicalClustering",
     "NeuralNetwork",
