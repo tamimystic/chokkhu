@@ -28,7 +28,7 @@ from .gradient_boosting import (
     GradientBoostingClassifier,
     GradientBoostingRegressor,
 )
-from .hierarchical import HierarchicalClustering
+from .hierarchical import AgglomerativeClustering, HierarchicalClustering
 from .hist_gradient_boosting import (
     HistGradientBoostingClassifier,
     HistGradientBoostingRegressor,
@@ -46,6 +46,7 @@ from .logistic_regression import LogisticRegression
 from .naive_bayes import NaiveBayes
 from .naive_bayes_extended import (
     BernoulliNB,
+    CategoricalNB,
     ComplementNB,
     GaussianNB,
     LDAClassifier,
@@ -91,6 +92,7 @@ __all__ = [
     "GradientBoostingRegressor",
     "DBSCAN",
     "HierarchicalClustering",
+    "AgglomerativeClustering",
     "NeuralNetwork",
     "MLPClassifier",
     "MLPRegressor",
@@ -119,6 +121,7 @@ __all__ = [
     "PassiveAggressiveClassifier",
     "PassiveAggressiveRegressor",
     "GaussianNB",
+    "CategoricalNB",
     "MultinomialNB",
     "BernoulliNB",
     "ComplementNB",
