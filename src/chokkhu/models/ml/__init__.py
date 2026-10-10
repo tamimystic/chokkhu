@@ -1,10 +1,27 @@
 from __future__ import annotations
 
+from .adaboost import AdaBoostClassifier, AdaBoostRegressor
+from .clustering_advanced import (
+    GaussianMixture,
+    MiniBatchKMeans,
+    SpectralClustering,
+)
 from .dbscan import DBSCAN
 from .decision_tree import (
     DecisionTree,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
+)
+from .extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
+from .glm import (
+    ARDRegression,
+    BayesianRidge,
+    ElasticNet,
+    HuberRegressor,
+    LassoRegression,
+    PassiveAggressiveClassifier,
+    PassiveAggressiveRegressor,
+    RidgeRegression,
 )
 from .gradient_boosting import (
     GradientBoosting,
@@ -12,67 +29,49 @@ from .gradient_boosting import (
     GradientBoostingRegressor,
 )
 from .hierarchical import HierarchicalClustering
+from .hist_gradient_boosting import (
+    HistGradientBoostingClassifier,
+    HistGradientBoostingRegressor,
+)
+from .isolation_forest import IsolationForest
 from .kmeans import KMeans
+from .kmedoids import KMedoids
 from .knn import KNN
+from .knn_spatial import (
+    KNNClassifier,
+    KNNRegressor,
+)
 from .linear_regression import LinearRegression
 from .logistic_regression import LogisticRegression
 from .naive_bayes import NaiveBayes
+from .naive_bayes_extended import (
+    BernoulliNB,
+    ComplementNB,
+    GaussianNB,
+    LDAClassifier,
+    LinearDiscriminantAnalysis,
+    MultinomialNB,
+    QDAClassifier,
+    QuadraticDiscriminantAnalysis,
+)
+from .nearest_neighbors import (
+    NearestCentroid,
+    RadiusNeighborsClassifier,
+    RadiusNeighborsRegressor,
+)
+from .neural_network import (
+    MLPClassifier,
+    MLPRegressor,
+    NeuralNetwork,
+)
+from .optics import OPTICS
 from .random_forest import (
     RandomForest,
     RandomForestClassifier,
     RandomForestRegressor,
 )
 from .svm import SVM
-from .neural_network import (
-    NeuralNetwork,
-    MLPClassifier,
-    MLPRegressor,
-)
-
-from .adaboost import AdaBoostClassifier, AdaBoostRegressor
-from .extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
-from .kmedoids import KMedoids
-from .optics import OPTICS
-from .isolation_forest import IsolationForest
-from .hist_gradient_boosting import (
-    HistGradientBoostingClassifier,
-    HistGradientBoostingRegressor,
-)
-from .svm_kernels import SVC, SVR, OneClassSVM, LinearSVC
-from .nearest_neighbors import (
-    NearestCentroid,
-    RadiusNeighborsClassifier,
-    RadiusNeighborsRegressor,
-)
-from .glm import (
-    RidgeRegression,
-    LassoRegression,
-    ElasticNet,
-    HuberRegressor,
-    BayesianRidge,
-    ARDRegression,
-    PassiveAggressiveClassifier,
-    PassiveAggressiveRegressor,
-)
-from .naive_bayes_extended import (
-    GaussianNB,
-    MultinomialNB,
-    BernoulliNB,
-    ComplementNB,
-    LinearDiscriminantAnalysis,
-    QuadraticDiscriminantAnalysis,
-    LDAClassifier,
-    QDAClassifier,
-)
-from .clustering_advanced import (
-    MiniBatchKMeans,
-    GaussianMixture,
-    SpectralClustering,
-)
-from .knn_spatial import (
-    KNNClassifier,
-    KNNRegressor,
-)
+from .svm_kernels import SVC, SVR, LinearSVC, OneClassSVM
 
 __all__ = [
     "LinearRegression",

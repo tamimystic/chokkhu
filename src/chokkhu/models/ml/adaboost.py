@@ -1,8 +1,12 @@
 from __future__ import annotations
+
 from typing import Any, List, Optional
+
 import numpy as np
+
 from chokkhu.models.base import ChokkhuModel
 from chokkhu.models.ml.decision_tree import DecisionTree
+
 
 class AdaBoostClassifier(ChokkhuModel):
     def __init__(
@@ -43,7 +47,12 @@ class AdaBoostClassifier(ChokkhuModel):
                 pass
         return DecisionTree(max_depth=self.max_depth, task="classification")
 
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None, sample_weight: Optional[np.ndarray] = None) -> AdaBoostClassifier:
+    def fit(
+        self,
+        X: np.ndarray,
+        y: Optional[np.ndarray] = None,
+        sample_weight: Optional[np.ndarray] = None,
+    ) -> AdaBoostClassifier:
         if y is None:
             raise ValueError("y cannot be None for AdaBoostClassifier")
         x_arr = np.asarray(X, dtype=np.float64)
@@ -52,13 +61,19 @@ class AdaBoostClassifier(ChokkhuModel):
         self.classes = np.unique(y_arr)
         self.n_classes = len(self.classes)
 
-        w: np.ndarray = np.copy(sample_weight).astype(np.float64) if sample_weight is not None else np.ones(n_samples, dtype=np.float64) / float(n_samples)
+        w: np.ndarray = (
+            np.copy(sample_weight).astype(np.float64)
+            if sample_weight is not None
+            else np.ones(n_samples, dtype=np.float64) / float(n_samples)
+        )
         w = w / np.sum(w)
         self.estimators, self.estimator_weights = [], []
 
         for _ in range(self.n_estimators):
             tree = self._make_estimator()
-            sample_indices = self.rng.choice(n_samples, size=n_samples, replace=True, p=w)
+            sample_indices = self.rng.choice(
+                n_samples, size=n_samples, replace=True, p=w
+            )
             tree.fit(x_arr[sample_indices], y_arr[sample_indices])
             preds = np.asarray(tree.predict(x_arr), dtype=np.int64)
             incorrect = (preds != y_arr).astype(np.float64)
@@ -74,7 +89,10 @@ class AdaBoostClassifier(ChokkhuModel):
                     self.estimator_weights.append(1.0)
                 break
 
-            alpha = self.learning_rate * (float(np.log((1.0 - err) / max(err, 1e-12))) + (float(np.log(self.n_classes - 1)) if self.n_classes > 2 else 0.0))
+            alpha = self.learning_rate * (
+                float(np.log((1.0 - err) / max(err, 1e-12)))
+                + (float(np.log(self.n_classes - 1)) if self.n_classes > 2 else 0.0)
+            )
             w = w * np.exp(alpha * incorrect)
             w = w / np.sum(w)
             self.estimators.append(tree)
@@ -101,6 +119,7 @@ class AdaBoostClassifier(ChokkhuModel):
     def predict(self, X: np.ndarray) -> np.ndarray:
         probs = self.predict_proba(X)
         return self.classes[np.argmax(probs, axis=1)]
+
 
 class AdaBoostRegressor(ChokkhuModel):
     def __init__(
@@ -151,7 +170,9 @@ class AdaBoostRegressor(ChokkhuModel):
 
         for _ in range(self.n_estimators):
             tree = self._make_estimator()
-            sample_indices = self.rng.choice(n_samples, size=n_samples, replace=True, p=w)
+            sample_indices = self.rng.choice(
+                n_samples, size=n_samples, replace=True, p=w
+            )
             tree.fit(x_arr[sample_indices], y_arr[sample_indices])
             preds = np.asarray(tree.predict(x_arr), dtype=np.float64)
             diff = np.abs(preds - y_arr)

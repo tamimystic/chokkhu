@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+
 import numpy as np
-from chokkhu.models.base import ChokkhuModel
+
 from chokkhu.core.math import minimize
+from chokkhu.models.base import ChokkhuModel
 
 
 class NeuralNetwork(ChokkhuModel):

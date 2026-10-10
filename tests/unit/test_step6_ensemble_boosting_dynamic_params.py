@@ -1,17 +1,19 @@
 import numpy as np
 import pytest
+
 from chokkhu.models.ml import (
+    AdaBoostClassifier,
+    AdaBoostRegressor,
+    DecisionTree,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
     GradientBoosting,
     GradientBoostingClassifier,
     GradientBoostingRegressor,
-    AdaBoostClassifier,
-    AdaBoostRegressor,
-    ExtraTreesClassifier,
-    ExtraTreesRegressor,
     HistGradientBoostingClassifier,
     HistGradientBoostingRegressor,
-    DecisionTree,
 )
+
 
 @pytest.fixture
 def binary_data():
@@ -20,6 +22,7 @@ def binary_data():
     y = (X[:, 0] + X[:, 1] > 0).astype(int)
     return X, y
 
+
 @pytest.fixture
 def regression_data():
     np.random.seed(42)
@@ -27,8 +30,13 @@ def regression_data():
     y = 2.0 * X[:, 0] - 1.5 * X[:, 1] + 0.5 * np.random.randn(60)
     return X, y
 
+
 def test_gradient_boosting_classifier_dynamic_params(binary_data):
     X, y = binary_data
+    base = GradientBoosting(task="classification", n_estimators=5, random_state=42)
+    base.fit(X, y)
+    assert len(base.predict(X)) == len(y)
+
     clf = GradientBoostingClassifier(
         n_estimators=8,
         learning_rate=0.05,
@@ -47,6 +55,7 @@ def test_gradient_boosting_classifier_dynamic_params(binary_data):
     assert probs.shape == (len(y), 2)
     assert np.allclose(np.sum(probs, axis=1), 1.0)
 
+
 def test_gradient_boosting_regressor_dynamic_params(regression_data):
     X, y = regression_data
     reg = GradientBoostingRegressor(
@@ -64,6 +73,7 @@ def test_gradient_boosting_regressor_dynamic_params(regression_data):
     assert preds.shape == y.shape
     assert np.isfinite(preds).all()
 
+
 def test_adaboost_classifier_dynamic_estimator(binary_data):
     X, y = binary_data
     base = DecisionTree(max_depth=2, task="classification")
@@ -80,6 +90,7 @@ def test_adaboost_classifier_dynamic_estimator(binary_data):
     assert probs.shape == (len(y), 2)
     assert np.allclose(np.sum(probs, axis=1), 1.0)
 
+
 def test_adaboost_regressor_dynamic_loss(regression_data):
     X, y = regression_data
     for loss in ["linear", "square", "exponential"]:
@@ -92,6 +103,7 @@ def test_adaboost_regressor_dynamic_loss(regression_data):
         reg.fit(X, y)
         preds = reg.predict(X)
         assert preds.shape == y.shape
+
 
 def test_extra_trees_dynamic_params(binary_data, regression_data):
     X_bin, y_bin = binary_data
@@ -119,6 +131,7 @@ def test_extra_trees_dynamic_params(binary_data, regression_data):
     reg.fit(X_reg, y_reg)
     preds_reg = reg.predict(X_reg)
     assert preds_reg.shape == y_reg.shape
+
 
 def test_hist_gradient_boosting_dynamic_params(binary_data, regression_data):
     X_bin, y_bin = binary_data

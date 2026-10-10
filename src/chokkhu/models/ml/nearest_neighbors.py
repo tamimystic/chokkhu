@@ -7,9 +7,10 @@ References:
 from __future__ import annotations
 
 from typing import Optional
-import numpy as np
-from chokkhu.core.math import cdist
 
+import numpy as np
+
+from chokkhu.core.math import cdist
 from chokkhu.models.base import ChokkhuModel
 
 

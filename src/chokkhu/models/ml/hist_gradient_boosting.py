@@ -1,7 +1,11 @@
 from __future__ import annotations
+
 from typing import Any, List, Optional
+
 import numpy as np
+
 from chokkhu.models.base import ChokkhuModel
+
 
 class HistBinMapper:
     def __init__(self, max_bins: int = 256) -> None:
@@ -29,6 +33,7 @@ class HistBinMapper:
             binned[:, f] = np.digitize(X[:, f], thresholds).astype(np.uint8)
         return binned
 
+
 class HistNode:
     def __init__(
         self,
@@ -46,6 +51,7 @@ class HistNode:
         self.right = right
         self.is_leaf = is_leaf
 
+
 class HistTree:
     def __init__(
         self,
@@ -58,9 +64,13 @@ class HistTree:
         self.l2_regularization = l2_regularization
         self.root: Optional[HistNode] = None
 
-    def fit(self, X_binned: np.ndarray, gradients: np.ndarray, hessians: np.ndarray) -> HistTree:
+    def fit(
+        self, X_binned: np.ndarray, gradients: np.ndarray, hessians: np.ndarray
+    ) -> HistTree:
         sample_indices = np.arange(len(gradients))
-        self.root = self._build_tree(X_binned, gradients, hessians, sample_indices, depth=0)
+        self.root = self._build_tree(
+            X_binned, gradients, hessians, sample_indices, depth=0
+        )
         return self
 
     def _build_tree(
@@ -90,8 +100,12 @@ class HistTree:
             if max_b == 0:
                 continue
 
-            g_hist = np.bincount(feat_bins, weights=gradients[sample_indices], minlength=max_b + 1)
-            h_hist = np.bincount(feat_bins, weights=hessians[sample_indices], minlength=max_b + 1)
+            g_hist = np.bincount(
+                feat_bins, weights=gradients[sample_indices], minlength=max_b + 1
+            )
+            h_hist = np.bincount(
+                feat_bins, weights=hessians[sample_indices], minlength=max_b + 1
+            )
             cum_g = np.cumsum(g_hist)
             cum_h = np.cumsum(h_hist)
             cum_count = np.cumsum(np.bincount(feat_bins, minlength=max_b + 1))
@@ -107,7 +121,11 @@ class HistTree:
                 g_r = G - g_l
                 h_r = H - h_l
 
-                score = (g_l**2) / (h_l + self.l2_regularization) + (g_r**2) / (h_r + self.l2_regularization) - parent_score
+                score = (
+                    (g_l**2) / (h_l + self.l2_regularization)
+                    + (g_r**2) / (h_r + self.l2_regularization)
+                    - parent_score
+                )
                 if score > best_gain:
                     best_gain = score
                     best_feat = feat
@@ -120,9 +138,20 @@ class HistTree:
         left_indices = sample_indices[left_mask]
         right_indices = sample_indices[~left_mask]
 
-        left_child = self._build_tree(X_binned, gradients, hessians, left_indices, depth + 1)
-        right_child = self._build_tree(X_binned, gradients, hessians, right_indices, depth + 1)
-        return HistNode(feature=best_feat, bin_idx=best_bin, value=leaf_val, left=left_child, right=right_child, is_leaf=False)
+        left_child = self._build_tree(
+            X_binned, gradients, hessians, left_indices, depth + 1
+        )
+        right_child = self._build_tree(
+            X_binned, gradients, hessians, right_indices, depth + 1
+        )
+        return HistNode(
+            feature=best_feat,
+            bin_idx=best_bin,
+            value=leaf_val,
+            left=left_child,
+            right=right_child,
+            is_leaf=False,
+        )
 
     def predict(self, X_binned: np.ndarray) -> np.ndarray:
         n_samples = X_binned.shape[0]
@@ -131,11 +160,18 @@ class HistTree:
             curr = self.root
             while curr is not None and not curr.is_leaf:
                 if curr.feature is not None and curr.bin_idx is not None:
-                    curr = curr.left if X_binned[i, curr.feature] <= curr.bin_idx else curr.right
+                    curr = (
+                        curr.left
+                        if X_binned[i, curr.feature] <= curr.bin_idx
+                        else curr.right
+                    )
                 else:
                     break
-            preds[i] = curr.value if curr is not None and curr.value is not None else 0.0
+            preds[i] = (
+                curr.value if curr is not None and curr.value is not None else 0.0
+            )
         return preds
+
 
 class HistGradientBoostingClassifier(ChokkhuModel):
     def __init__(
@@ -188,20 +224,28 @@ class HistGradientBoostingClassifier(ChokkhuModel):
         self.classes: np.ndarray = np.array([], dtype=np.int64)
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> HistGradientBoostingClassifier:
+    def fit(
+        self, X: np.ndarray, y: Optional[np.ndarray] = None
+    ) -> HistGradientBoostingClassifier:
         if y is None:
             raise ValueError("y cannot be None for HistGradientBoostingClassifier")
         x_arr = np.asarray(X, dtype=np.float64)
         y_arr = np.asarray(y, dtype=np.int64)
         self.classes = np.unique(y_arr)
 
-        y_binary = (y_arr == self.classes[1]).astype(np.float64) if len(self.classes) == 2 else y_arr.astype(np.float64)
+        y_binary = (
+            (y_arr == self.classes[1]).astype(np.float64)
+            if len(self.classes) == 2
+            else y_arr.astype(np.float64)
+        )
         p_mean = np.clip(np.mean(y_binary), 1e-6, 1.0 - 1e-6)
         self.base_score = float(np.log(p_mean / (1.0 - p_mean)))
 
         self.bin_mapper.fit(x_arr)
         x_binned = self.bin_mapper.transform(x_arr)
-        raw_preds = np.full(len(y_binary), self.base_score, dtype=np.float64)
+        raw_preds: np.ndarray = np.full(
+            len(y_binary), self.base_score, dtype=np.float64
+        )
         if not self.warm_start or not self.trees:
             self.trees = []
 
@@ -226,7 +270,7 @@ class HistGradientBoostingClassifier(ChokkhuModel):
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         x_arr = np.asarray(X, dtype=np.float64)
         x_binned = self.bin_mapper.transform(x_arr)
-        raw_preds = np.full(len(x_arr), self.base_score, dtype=np.float64)
+        raw_preds: np.ndarray = np.full(len(x_arr), self.base_score, dtype=np.float64)
         for tree in self.trees:
             raw_preds += self.learning_rate * tree.predict(x_binned)
         p1 = 1.0 / (1.0 + np.exp(-raw_preds))
@@ -236,6 +280,7 @@ class HistGradientBoostingClassifier(ChokkhuModel):
     def predict(self, X: np.ndarray) -> np.ndarray:
         probs = self.predict_proba(X)
         return self.classes[np.argmax(probs, axis=1)]
+
 
 class HistGradientBoostingRegressor(ChokkhuModel):
     def __init__(
@@ -287,7 +332,9 @@ class HistGradientBoostingRegressor(ChokkhuModel):
         self.base_score: float = 0.0
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> HistGradientBoostingRegressor:
+    def fit(
+        self, X: np.ndarray, y: Optional[np.ndarray] = None
+    ) -> HistGradientBoostingRegressor:
         if y is None:
             raise ValueError("y cannot be None for HistGradientBoostingRegressor")
         x_arr = np.asarray(X, dtype=np.float64)
@@ -296,7 +343,7 @@ class HistGradientBoostingRegressor(ChokkhuModel):
         self.base_score = float(np.mean(y_arr))
         self.bin_mapper.fit(x_arr)
         x_binned = self.bin_mapper.transform(x_arr)
-        raw_preds = np.full(len(y_arr), self.base_score, dtype=np.float64)
+        raw_preds: np.ndarray = np.full(len(y_arr), self.base_score, dtype=np.float64)
         if not self.warm_start or not self.trees:
             self.trees = []
 
@@ -320,7 +367,7 @@ class HistGradientBoostingRegressor(ChokkhuModel):
     def predict(self, X: np.ndarray) -> np.ndarray:
         x_arr = np.asarray(X, dtype=np.float64)
         x_binned = self.bin_mapper.transform(x_arr)
-        raw_preds = np.full(len(x_arr), self.base_score, dtype=np.float64)
+        raw_preds: np.ndarray = np.full(len(x_arr), self.base_score, dtype=np.float64)
         for tree in self.trees:
             raw_preds += self.learning_rate * tree.predict(x_binned)
         return raw_preds

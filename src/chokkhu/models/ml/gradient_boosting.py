@@ -1,8 +1,12 @@
 from __future__ import annotations
+
 from typing import Any, Optional, Union
+
 import numpy as np
+
 from ..base import ChokkhuModel
 from .decision_tree import DecisionTree
+
 
 class GradientBoosting(ChokkhuModel):
     def __init__(
@@ -67,7 +71,6 @@ class GradientBoosting(ChokkhuModel):
         if not self.warm_start or not self.trees:
             self.trees = []
 
-        val_mask = None
         if self.n_iter_no_change and 0.0 < self.validation_fraction < 1.0:
             val_size = max(1, int(n_samples * self.validation_fraction))
             perm = rng.permutation(n_samples)
@@ -95,7 +98,11 @@ class GradientBoosting(ChokkhuModel):
                     X_sub, res_sub = X_trn, residuals
 
                 tree = DecisionTree(
-                    criterion="squared_error" if self.criterion == "friedman_mse" else self.criterion,
+                    criterion=(
+                        "squared_error"
+                        if self.criterion == "friedman_mse"
+                        else self.criterion
+                    ),
                     max_depth=self.max_depth,
                     min_samples_split=self.min_samples_split,
                     min_samples_leaf=self.min_samples_leaf,
@@ -139,7 +146,11 @@ class GradientBoosting(ChokkhuModel):
                     X_sub, res_sub = X_trn, residuals
 
                 tree = DecisionTree(
-                    criterion="squared_error" if self.criterion == "friedman_mse" else self.criterion,
+                    criterion=(
+                        "squared_error"
+                        if self.criterion == "friedman_mse"
+                        else self.criterion
+                    ),
                     max_depth=self.max_depth,
                     min_samples_split=self.min_samples_split,
                     min_samples_leaf=self.min_samples_leaf,
@@ -157,7 +168,12 @@ class GradientBoosting(ChokkhuModel):
 
                 if X_val is not None and self.n_iter_no_change:
                     v_prob = self.predict_proba(X_val)[:, 1]
-                    v_loss = -float(np.mean(y_val * np.log(np.clip(v_prob, 1e-12, 1.0)) + (1.0 - y_val) * np.log(np.clip(1.0 - v_prob, 1e-12, 1.0))))
+                    v_loss = -float(
+                        np.mean(
+                            y_val * np.log(np.clip(v_prob, 1e-12, 1.0))
+                            + (1.0 - y_val) * np.log(np.clip(1.0 - v_prob, 1e-12, 1.0))
+                        )
+                    )
                     if v_loss < best_loss - self.tol:
                         best_loss, no_improve = v_loss, 0
                     else:
@@ -192,11 +208,13 @@ class GradientBoosting(ChokkhuModel):
             return np.where(p >= 0.5, 1, 0)
         return y_pred
 
+
 class GradientBoostingClassifier(GradientBoosting):
     def __init__(self, **kwargs: Any) -> None:
         kwargs.setdefault("task", "classification")
         kwargs.setdefault("loss", "log_loss")
         super().__init__(**kwargs)
+
 
 class GradientBoostingRegressor(GradientBoosting):
     def __init__(self, **kwargs: Any) -> None:

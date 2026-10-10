@@ -1,8 +1,12 @@
 from __future__ import annotations
+
 from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
+
 from chokkhu.models.base import ChokkhuModel
 from chokkhu.models.ml.decision_tree import DecisionTree
+
 
 class ExtraTreesClassifier(ChokkhuModel):
     def __init__(
@@ -51,7 +55,9 @@ class ExtraTreesClassifier(ChokkhuModel):
         self.classes: np.ndarray = np.array([], dtype=np.int64)
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> ExtraTreesClassifier:
+    def fit(
+        self, X: np.ndarray, y: Optional[np.ndarray] = None
+    ) -> ExtraTreesClassifier:
         if y is None:
             raise ValueError("y cannot be None for ExtraTreesClassifier")
         x_arr = np.asarray(X, dtype=np.float64)
@@ -63,7 +69,11 @@ class ExtraTreesClassifier(ChokkhuModel):
 
         for _ in range(len(self.trees), self.n_estimators):
             if self.bootstrap:
-                size = int(self.max_samples * n_samples) if isinstance(self.max_samples, float) else (self.max_samples or n_samples)
+                size = (
+                    int(self.max_samples * n_samples)
+                    if isinstance(self.max_samples, float)
+                    else (self.max_samples or n_samples)
+                )
                 idx = self.rng.choice(n_samples, size=size, replace=True)
                 x_sub, y_sub = x_arr[idx], y_arr[idx]
             else:
@@ -81,7 +91,9 @@ class ExtraTreesClassifier(ChokkhuModel):
                 min_impurity_decrease=self.min_impurity_decrease,
                 class_weight=self.class_weight,
                 ccp_alpha=self.ccp_alpha,
-                random_state=self.rng.randint(0, 1000000) if self.random_state else None,
+                random_state=(
+                    self.rng.randint(0, 1000000) if self.random_state else None
+                ),
                 task="classification",
             )
             tree.fit(x_sub, y_sub)
@@ -104,6 +116,7 @@ class ExtraTreesClassifier(ChokkhuModel):
     def predict(self, X: np.ndarray) -> np.ndarray:
         probs = self.predict_proba(X)
         return self.classes[np.argmax(probs, axis=1)]
+
 
 class ExtraTreesRegressor(ChokkhuModel):
     def __init__(
@@ -160,7 +173,11 @@ class ExtraTreesRegressor(ChokkhuModel):
 
         for _ in range(len(self.trees), self.n_estimators):
             if self.bootstrap:
-                size = int(self.max_samples * n_samples) if isinstance(self.max_samples, float) else (self.max_samples or n_samples)
+                size = (
+                    int(self.max_samples * n_samples)
+                    if isinstance(self.max_samples, float)
+                    else (self.max_samples or n_samples)
+                )
                 idx = self.rng.choice(n_samples, size=size, replace=True)
                 x_sub, y_sub = x_arr[idx], y_arr[idx]
             else:
@@ -177,7 +194,9 @@ class ExtraTreesRegressor(ChokkhuModel):
                 max_leaf_nodes=self.max_leaf_nodes,
                 min_impurity_decrease=self.min_impurity_decrease,
                 ccp_alpha=self.ccp_alpha,
-                random_state=self.rng.randint(0, 1000000) if self.random_state else None,
+                random_state=(
+                    self.rng.randint(0, 1000000) if self.random_state else None
+                ),
                 task="regression",
             )
             tree.fit(x_sub, y_sub)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Union
+
 import numpy as np
 
 from ..base import ChokkhuModel

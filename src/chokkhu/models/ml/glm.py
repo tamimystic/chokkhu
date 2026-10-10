@@ -12,6 +12,7 @@ References:
 from __future__ import annotations
 
 from typing import Optional
+
 import numpy as np
 
 from chokkhu.models.base import ChokkhuModel
