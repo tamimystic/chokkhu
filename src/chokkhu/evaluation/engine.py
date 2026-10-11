@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 from chokkhu.core.logger import Logger
 from chokkhu.core.visualizer import PlotVisualizer
@@ -148,15 +147,23 @@ def evaluate(
 
         if cm.size > 0 and len(classes) > 0:
             fig, ax = plt.subplots(figsize=(8, 6))
-            sns.heatmap(
-                cm,
-                annot=True,
-                fmt="d",
-                cmap="Blues",
-                xticklabels=classes,
-                yticklabels=classes,
-                ax=ax,
-            )
+            cax = ax.imshow(cm, cmap="Blues", interpolation="nearest")
+            fig.colorbar(cax, ax=ax)
+            for r in range(cm.shape[0]):
+                for c in range(cm.shape[1]):
+                    val = cm[r, c]
+                    ax.text(
+                        c,
+                        r,
+                        str(int(val)),
+                        ha="center",
+                        va="center",
+                        color="white" if val > cm.max() / 2 else "black",
+                    )
+            ax.set_xticks(np.arange(len(classes)))
+            ax.set_yticks(np.arange(len(classes)))
+            ax.set_xticklabels(classes)
+            ax.set_yticklabels(classes)
             ax.set_title("Confusion Matrix")
             ax.set_xlabel("Predicted Label")
             ax.set_ylabel("True Label")

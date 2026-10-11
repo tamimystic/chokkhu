@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 class PlotVisualizer:
@@ -11,9 +10,17 @@ class PlotVisualizer:
     @staticmethod
     def setup_theme() -> None:
         plt.switch_backend("Agg")
-        sns.set_theme(style="whitegrid")
+        try:
+            import seaborn as sns
+
+            sns.set_theme(style="whitegrid")
+        except (ImportError, Exception):
+            pass
         plt.rcParams.update(
             {
+                "axes.grid": True,
+                "grid.color": "#e0e0e0",
+                "grid.linestyle": "--",
                 "font.size": 12,
                 "axes.titlesize": 16,
                 "axes.labelsize": 14,
@@ -43,34 +50,8 @@ class PlotVisualizer:
     @staticmethod
     def display_markdown(text: str) -> None:
         try:
-            from IPython.display import display, Markdown
+            from IPython.display import Markdown, display
 
             display(Markdown(text))
         except ImportError:
             print(f"\n{text.replace('#', '').strip()}\n")
-
-    @staticmethod
-    def add_bar_labels(ax, vertical: bool = True) -> None:
-        for p in ax.patches:
-            if vertical:
-                val = p.get_height()
-                if val > 0:
-                    ax.annotate(
-                        f"{int(val)}",
-                        (p.get_x() + p.get_width() / 2.0, val),
-                        ha="center",
-                        va="center",
-                        xytext=(0, 8),
-                        textcoords="offset points",
-                    )
-            else:
-                val = p.get_width()
-                if val > 0:
-                    ax.annotate(
-                        f"{int(val)}",
-                        (val, p.get_y() + p.get_height() / 2.0),
-                        ha="left",
-                        va="center",
-                        xytext=(8, 0),
-                        textcoords="offset points",
-                    )
