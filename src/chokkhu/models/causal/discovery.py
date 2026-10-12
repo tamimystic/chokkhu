@@ -4,9 +4,11 @@ Formulated from first principles using continuous non-combinatorial optimization
 (NOTEARS matrix exponential trace) and constraint-based PC algorithm in pure NumPy and SciPy.
 """
 
+from typing import Dict, List, Optional, Set, Tuple
+
 import numpy as np
+
 from chokkhu.core.math import expm, minimize, norm
-from typing import Optional, Tuple, List, Dict, Set
 
 
 class NOTEARSCausalDiscovery:

@@ -5,19 +5,24 @@ Guarantees unbiased estimation of treatment effects if EITHER the outcome models
 OR the propensity score model is correctly specified.
 """
 
-from typing import Optional, Tuple
+from __future__ import annotations
+
+from typing import Any, Optional, Tuple
+
 import numpy as np
+
+from ..base import ChokkhuModel
 
 
 class _LinearRegressionSolver:
     """Internal OLS / Ridge regression solver for outcome modeling."""
 
     def __init__(self, alpha: float = 1.0) -> None:
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.coef: Optional[np.ndarray] = None
         self.intercept: float = 0.0
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "_LinearRegressionSolver":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> _LinearRegressionSolver:
         X_arr = np.asarray(X, dtype=np.float32)
         y_arr = np.asarray(y, dtype=np.float32).ravel()
         n_samples, n_features = X_arr.shape
@@ -41,7 +46,7 @@ class _LinearRegressionSolver:
         return np.dot(X_arr, self.coef) + self.intercept
 
 
-class DoublyRobustLearner:
+class DoublyRobustLearner(ChokkhuModel):
     r"""Doubly Robust Estimator for ATE and CATE :math:`	au(X)`.
 
         Combines outcome regression models :math:`\mu_1(X), \mu_0(X)` and propensity scores :math:`e(X)`:
@@ -68,14 +73,16 @@ class DoublyRobustLearner:
         clip_range: Tuple[float, float] = (0.01, 0.99),
         alpha: float = 1.0,
         seed: Optional[int] = 42,
+        **kwargs: Any,
     ) -> None:
+        super().__init__()
         self.clip_range = clip_range
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.seed = seed
 
-        self.mu1_model = _LinearRegressionSolver(alpha=alpha)
-        self.mu0_model = _LinearRegressionSolver(alpha=alpha)
-        self.cate_model = _LinearRegressionSolver(alpha=alpha)
+        self.mu1_model = _LinearRegressionSolver(alpha=self.alpha)
+        self.mu0_model = _LinearRegressionSolver(alpha=self.alpha)
+        self.cate_model = _LinearRegressionSolver(alpha=self.alpha)
 
         # Propensity weights
         self.prop_w: Optional[np.ndarray] = None
@@ -109,13 +116,19 @@ class DoublyRobustLearner:
     def fit(
         self,
         X: np.ndarray,
-        T: np.ndarray,
-        Y: np.ndarray,
-    ) -> "DoublyRobustLearner":
+        T: Any = None,
+        Y: Any = None,
+        y: Any = None,
+        **kwargs: Any,
+    ) -> DoublyRobustLearner:
         """Fit doubly robust model on covariates X, treatment T, and outcome Y."""
+        treatment = T
+        outcome = Y if Y is not None else y
+        if treatment is None or outcome is None:
+            raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.float32).ravel()
-        Y_arr = np.asarray(Y, dtype=np.float32).ravel()
+        T_arr = np.asarray(treatment, dtype=np.float32).ravel()
+        Y_arr = np.asarray(outcome, dtype=np.float32).ravel()
 
         treated_idx = np.where(T_arr == 1.0)[0]
         control_idx = np.where(T_arr == 0.0)[0]
@@ -161,3 +174,7 @@ class DoublyRobustLearner:
         if not self.is_fitted:
             raise RuntimeError("Model must be fitted before calling predict_cate.")
         return self.cate_model.predict(X)
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict Conditional Average Treatment Effect (CATE)."""
+        return self.predict_cate(X)

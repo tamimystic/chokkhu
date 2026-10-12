@@ -8,9 +8,11 @@ R-Learner for heterogeneous treatment effect (CATE) estimation.
 
 from __future__ import annotations
 
-import numpy as np
-from chokkhu.core.math import norm
 from typing import Dict, Optional
+
+import numpy as np
+
+from chokkhu.core.math import norm
 
 
 class _RidgeRegressor:

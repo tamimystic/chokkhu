@@ -6,19 +6,24 @@ Pure NumPy implementations of:
 - XLearner: Crossover Imputation Learner (Kunzel et al., 2019)
 """
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import Any, Optional
+
 import numpy as np
+
+from ..base import ChokkhuModel
 
 
 class _LinearRegressionSolver:
     """Internal OLS / Ridge solver."""
 
     def __init__(self, alpha: float = 1.0) -> None:
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.coef: Optional[np.ndarray] = None
         self.intercept: float = 0.0
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "_LinearRegressionSolver":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> _LinearRegressionSolver:
         X_arr = np.asarray(X, dtype=np.float32)
         y_arr = np.asarray(y, dtype=np.float32).ravel()
         n_samples, n_features = X_arr.shape
@@ -42,7 +47,7 @@ class _LinearRegressionSolver:
         return np.dot(X_arr, self.coef) + self.intercept
 
 
-class SLearner:
+class SLearner(ChokkhuModel):
     r"""S-Learner (Single Model Meta-Learner).
 
     Estimates treatment effects using a single joint model :math:`\mu(X, T)`:
@@ -56,16 +61,23 @@ class SLearner:
         L2 regularization weight for ridge regression solver.
     """
 
-    def __init__(self, alpha: float = 1.0) -> None:
-        self.alpha = alpha
-        self.model = _LinearRegressionSolver(alpha=alpha)
+    def __init__(self, alpha: float = 1.0, **kwargs: Any) -> None:
+        super().__init__()
+        self.alpha = float(alpha)
+        self.model = _LinearRegressionSolver(alpha=self.alpha)
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, T: np.ndarray, Y: np.ndarray) -> "SLearner":
+    def fit(
+        self, X: np.ndarray, T: Any = None, Y: Any = None, y: Any = None, **kwargs: Any
+    ) -> SLearner:
         """Fit joint model on concatenated features [X, T]."""
+        treatment = T
+        outcome = Y if Y is not None else y
+        if treatment is None or outcome is None:
+            raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.float32).reshape(-1, 1)
-        Y_arr = np.asarray(Y, dtype=np.float32).ravel()
+        T_arr = np.asarray(treatment, dtype=np.float32).reshape(-1, 1)
+        Y_arr = np.asarray(outcome, dtype=np.float32).ravel()
 
         X_joint = np.concatenate([X_arr, T_arr], axis=1)
         self.model.fit(X_joint, Y_arr)
@@ -86,12 +98,16 @@ class SLearner:
         mu0 = self.model.predict(np.concatenate([X_arr, zeros], axis=1))
         return mu1 - mu0
 
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict Conditional Average Treatment Effect (CATE)."""
+        return self.predict_cate(X)
+
     def estimate_ate(self, X: np.ndarray) -> float:
         """Estimate sample Average Treatment Effect."""
         return float(np.mean(self.predict_cate(X)))
 
 
-class TLearner:
+class TLearner(ChokkhuModel):
     r"""T-Learner (Two Models Meta-Learner).
 
     Estimates treatment effects by fitting separate response models for treated and control groups:
@@ -105,17 +121,24 @@ class TLearner:
         L2 regularization weight.
     """
 
-    def __init__(self, alpha: float = 1.0) -> None:
-        self.alpha = alpha
-        self.model_1 = _LinearRegressionSolver(alpha=alpha)
-        self.model_0 = _LinearRegressionSolver(alpha=alpha)
+    def __init__(self, alpha: float = 1.0, **kwargs: Any) -> None:
+        super().__init__()
+        self.alpha = float(alpha)
+        self.model_1 = _LinearRegressionSolver(alpha=self.alpha)
+        self.model_0 = _LinearRegressionSolver(alpha=self.alpha)
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, T: np.ndarray, Y: np.ndarray) -> "TLearner":
+    def fit(
+        self, X: np.ndarray, T: Any = None, Y: Any = None, y: Any = None, **kwargs: Any
+    ) -> TLearner:
         """Fit independent models on treated (T=1) and control (T=0) cohorts."""
+        treatment = T
+        outcome = Y if Y is not None else y
+        if treatment is None or outcome is None:
+            raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.int32).ravel()
-        Y_arr = np.asarray(Y, dtype=np.float32).ravel()
+        T_arr = np.asarray(treatment, dtype=np.int32).ravel()
+        Y_arr = np.asarray(outcome, dtype=np.float32).ravel()
 
         treated_idx = np.where(T_arr == 1)[0]
         control_idx = np.where(T_arr == 0)[0]
@@ -137,12 +160,16 @@ class TLearner:
         X_arr = np.asarray(X, dtype=np.float32)
         return self.model_1.predict(X_arr) - self.model_0.predict(X_arr)
 
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict Conditional Average Treatment Effect (CATE)."""
+        return self.predict_cate(X)
+
     def estimate_ate(self, X: np.ndarray) -> float:
         """Estimate sample Average Treatment Effect."""
         return float(np.mean(self.predict_cate(X)))
 
 
-class XLearner:
+class XLearner(ChokkhuModel):
     r"""X-Learner (Crossover Meta-Learner - Künzel et al. 2019).
 
     Designed for unbalanced treatment assignments by imputing counterfactuals
@@ -162,24 +189,33 @@ class XLearner:
         Random seed.
     """
 
-    def __init__(self, alpha: float = 1.0, seed: Optional[int] = 42) -> None:
-        self.alpha = alpha
+    def __init__(
+        self, alpha: float = 1.0, seed: Optional[int] = 42, **kwargs: Any
+    ) -> None:
+        super().__init__()
+        self.alpha = float(alpha)
         self.seed = seed
 
-        self.mu1 = _LinearRegressionSolver(alpha=alpha)
-        self.mu0 = _LinearRegressionSolver(alpha=alpha)
-        self.tau1 = _LinearRegressionSolver(alpha=alpha)
-        self.tau0 = _LinearRegressionSolver(alpha=alpha)
+        self.mu1 = _LinearRegressionSolver(alpha=self.alpha)
+        self.mu0 = _LinearRegressionSolver(alpha=self.alpha)
+        self.tau1 = _LinearRegressionSolver(alpha=self.alpha)
+        self.tau0 = _LinearRegressionSolver(alpha=self.alpha)
 
         self.prop_w: Optional[np.ndarray] = None
         self.prop_b: float = 0.0
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, T: np.ndarray, Y: np.ndarray) -> "XLearner":
+    def fit(
+        self, X: np.ndarray, T: Any = None, Y: Any = None, y: Any = None, **kwargs: Any
+    ) -> XLearner:
         """Fit X-Learner through two-stage counterfactual imputation and weighting."""
+        treatment = T
+        outcome = Y if Y is not None else y
+        if treatment is None or outcome is None:
+            raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.float32).ravel()
-        Y_arr = np.asarray(Y, dtype=np.float32).ravel()
+        T_arr = np.asarray(treatment, dtype=np.float32).ravel()
+        Y_arr = np.asarray(outcome, dtype=np.float32).ravel()
 
         treated_idx = np.where(T_arr == 1.0)[0]
         control_idx = np.where(T_arr == 0.0)[0]
@@ -233,6 +269,10 @@ class XLearner:
         pred_tau1 = self.tau1.predict(X_arr)
 
         return e_x * pred_tau0 + (1.0 - e_x) * pred_tau1
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict Conditional Average Treatment Effect (CATE)."""
+        return self.predict_cate(X)
 
     def estimate_ate(self, X: np.ndarray) -> float:
         """Estimate sample Average Treatment Effect."""

@@ -8,12 +8,17 @@ Pure NumPy implementation of Cox PH model with:
 - Individual survival curve prediction S(t|X) = S_0(t)^exp(X beta)
 """
 
+from __future__ import annotations
+
 import math
 from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
 
+from ..base import ChokkhuModel
 
-class CoxPHRegression:
+
+class CoxPHRegression(ChokkhuModel):
     r"""Cox Proportional Hazards Semi-Parametric Regression Model.
 
     Models hazard as:
@@ -39,16 +44,18 @@ class CoxPHRegression:
         tie_method: str = "efron",
         max_iter: int = 100,
         tol: float = 1e-6,
+        **kwargs: Any,
     ) -> None:
+        super().__init__()
         if tie_method not in ("efron", "breslow"):
             raise ValueError(
                 f"tie_method must be 'efron' or 'breslow', got '{tie_method}'"
             )
 
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.tie_method = tie_method
-        self.max_iter = max_iter
-        self.tol = tol
+        self.max_iter = int(max_iter)
+        self.tol = float(tol)
 
         self.coef_: Optional[np.ndarray] = None
         self.standard_errors_: Optional[np.ndarray] = None
@@ -65,12 +72,17 @@ class CoxPHRegression:
     def fit(
         self,
         X: np.ndarray,
-        durations: np.ndarray,
+        durations: Any = None,
         events: Optional[np.ndarray] = None,
-    ) -> "CoxPHRegression":
+        y: Any = None,
+        **kwargs: Any,
+    ) -> CoxPHRegression:
         """Fit Cox PH model to covariate matrix X, durations T, and event indicators E."""
+        dur_raw = durations if durations is not None else y
+        if dur_raw is None:
+            raise ValueError("Durations must be provided.")
         X_arr = np.asarray(X, dtype=np.float64)
-        T_arr = np.asarray(durations, dtype=np.float64).ravel()
+        T_arr = np.asarray(dur_raw, dtype=np.float64).ravel()
         if events is None:
             E_arr = np.ones_like(T_arr, dtype=np.int32)
         else:
@@ -239,6 +251,10 @@ class CoxPHRegression:
         X_arr = np.asarray(X, dtype=np.float64)
         X_c = X_arr - self._x_mean
         return np.dot(X_c, self.coef_)
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict linear risk score X beta."""
+        return self.predict_risk(X)
 
     def predict_survival_function(
         self,

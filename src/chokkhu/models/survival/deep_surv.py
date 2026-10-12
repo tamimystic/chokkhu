@@ -7,11 +7,16 @@ Pure NumPy implementation of Faraggi-Simon / Katzman DeepSurv architecture:
 - Pure sovereign implementation with zero external deep learning frameworks
 """
 
-from typing import List, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import Any, List, Optional, Tuple, Union
+
 import numpy as np
 
+from ..base import ChokkhuModel
 
-class DeepSurv:
+
+class DeepSurv(ChokkhuModel):
     r"""DeepSurv: Non-Linear Deep Feedforward Cox Model.
 
     Maximizes Cox partial log-likelihood using a neural network parameterizing :math:`h_\theta(X)`:
@@ -44,12 +49,14 @@ class DeepSurv:
         weight_decay: float = 1e-4,
         n_epochs: int = 100,
         seed: Optional[int] = 42,
+        **kwargs: Any,
     ) -> None:
+        super().__init__()
         self.hidden_layers = hidden_layers or [32, 16]
         self.activation = activation
-        self.lr = lr
-        self.weight_decay = weight_decay
-        self.n_epochs = n_epochs
+        self.lr = float(lr)
+        self.weight_decay = float(weight_decay)
+        self.n_epochs = int(n_epochs)
         self.seed = seed
 
         self.weights: List[np.ndarray] = []
@@ -113,12 +120,17 @@ class DeepSurv:
     def fit(
         self,
         X: np.ndarray,
-        durations: np.ndarray,
+        durations: Any = None,
         events: Optional[np.ndarray] = None,
-    ) -> "DeepSurv":
+        y: Any = None,
+        **kwargs: Any,
+    ) -> DeepSurv:
         """Train DeepSurv model via Adam optimization."""
+        dur_raw = durations if durations is not None else y
+        if dur_raw is None:
+            raise ValueError("Durations must be provided.")
         X_arr = np.asarray(X, dtype=np.float64)
-        T_arr = np.asarray(durations, dtype=np.float64).ravel()
+        T_arr = np.asarray(dur_raw, dtype=np.float64).ravel()
         if events is None:
             E_arr = np.ones_like(T_arr, dtype=np.int32)
         else:
@@ -269,6 +281,10 @@ class DeepSurv:
         X_arr = np.asarray(X, dtype=np.float64)
         activations, _ = self._forward(X_arr)
         return activations[-1].ravel()
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict linear risk score h_theta(X)."""
+        return self.predict_risk(X)
 
     def predict_partial_hazard(self, X: np.ndarray) -> np.ndarray:
         """Predict exponentiated hazard ratio exp(h_theta(X))."""

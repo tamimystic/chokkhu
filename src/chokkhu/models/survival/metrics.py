@@ -7,7 +7,9 @@ Pure NumPy implementations of:
 """
 
 from typing import Callable, List, Optional, Union
+
 import numpy as np
+
 from .non_parametric import KaplanMeierFitter
 
 

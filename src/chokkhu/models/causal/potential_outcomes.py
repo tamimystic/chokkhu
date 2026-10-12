@@ -6,11 +6,16 @@ Pure NumPy implementations of:
 - InverseProbabilityWeighting (IPW): Horvitz-Thompson and Hajek stabilized estimators
 """
 
-from typing import List, Optional, Tuple
+from __future__ import annotations
+
+from typing import Any, List, Optional, Tuple
+
 import numpy as np
 
+from ..base import ChokkhuModel
 
-class PropensityModel:
+
+class PropensityModel(ChokkhuModel):
     r"""Logistic Regression Propensity Score Estimator :math:`e(X) = P(T=1|X)`.
 
     Parameters
@@ -31,20 +36,27 @@ class PropensityModel:
         n_epochs: int = 100,
         reg: float = 0.01,
         seed: Optional[int] = 42,
+        **kwargs: Any,
     ) -> None:
-        self.lr = lr
-        self.n_epochs = n_epochs
-        self.reg = reg
+        super().__init__()
+        self.lr = float(lr)
+        self.n_epochs = int(n_epochs)
+        self.reg = float(reg)
         self.seed = seed
 
         self.weights: Optional[np.ndarray] = None
         self.bias: float = 0.0
         self.is_fitted: bool = False
 
-    def fit(self, X: np.ndarray, T: np.ndarray) -> "PropensityModel":
+    def fit(
+        self, X: np.ndarray, T: Any = None, y: Any = None, **kwargs: Any
+    ) -> PropensityModel:
         """Fit propensity model predicting treatment assignment T from covariates X."""
+        target = T if T is not None else y
+        if target is None:
+            raise ValueError("Treatment labels T must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.float32).ravel()
+        T_arr = np.asarray(target, dtype=np.float32).ravel()
 
         if len(X_arr) != len(T_arr):
             raise ValueError("X and T must have identical number of samples.")
@@ -79,8 +91,12 @@ class PropensityModel:
         probs = 1.0 / (1.0 + np.exp(-np.clip(logits, -30.0, 30.0)))
         return np.clip(probs, eps, 1.0 - eps)
 
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict binary treatment assignment based on threshold 0.5."""
+        return (self.predict_proba(X) >= 0.5).astype(np.int32)
 
-class PropensityScoreMatching:
+
+class PropensityScoreMatching(ChokkhuModel):
     r"""Propensity Score Matching (PSM) for ATE & ATT Estimation.
 
         Matches treated units to control units based on propensity score logits:
@@ -104,12 +120,14 @@ class PropensityScoreMatching:
         caliper: Optional[float] = 0.2,
         replace: bool = False,
         seed: Optional[int] = 42,
+        **kwargs: Any,
     ) -> None:
+        super().__init__()
         self.caliper = caliper
         self.replace = replace
         self.seed = seed
 
-        self.propensity_model = PropensityModel(seed=seed)
+        self.propensity_model = PropensityModel(seed=seed, **kwargs)
         self.matched_pairs: List[Tuple[int, int]] = []
         self.ate_: Optional[float] = None
         self.att_: Optional[float] = None
@@ -198,8 +216,12 @@ class PropensityScoreMatching:
             raise RuntimeError("Model must be fitted before calling estimate_ate.")
         return self.ate_
 
+    def predict(self, X: Any = None) -> float:
+        """Predict Average Treatment Effect (ATE)."""
+        return self.estimate_ate()
 
-class InverseProbabilityWeighting:
+
+class InverseProbabilityWeighting(ChokkhuModel):
     r"""Inverse Probability Weighting (IPW) Estimator for ATE.
 
         Implements both standard Horvitz-Thompson and Hajek stabilized estimators:
@@ -233,12 +255,14 @@ class InverseProbabilityWeighting:
         stabilized: bool = True,
         clip_range: Tuple[float, float] = (0.01, 0.99),
         seed: Optional[int] = 42,
+        **kwargs: Any,
     ) -> None:
+        super().__init__()
         self.stabilized = stabilized
         self.clip_range = clip_range
         self.seed = seed
 
-        self.propensity_model = PropensityModel(seed=seed)
+        self.propensity_model = PropensityModel(seed=seed, **kwargs)
         self.ate_: Optional[float] = None
         self.std_err_: Optional[float] = None
         self.is_fitted: bool = False
@@ -288,6 +312,10 @@ class InverseProbabilityWeighting:
         if not self.is_fitted or self.ate_ is None:
             raise RuntimeError("Model must be fitted before calling estimate_ate.")
         return self.ate_
+
+    def predict(self, X: Any = None) -> float:
+        """Predict Average Treatment Effect (ATE)."""
+        return self.estimate_ate()
 
     def confidence_interval(self, alpha: float = 0.05) -> Tuple[float, float]:
         """Compute asymptotic 1-alpha confidence interval for ATE."""

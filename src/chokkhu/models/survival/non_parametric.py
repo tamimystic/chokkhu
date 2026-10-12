@@ -6,12 +6,17 @@ Pure NumPy implementations of:
 - logrank_test: Non-parametric hypothesis testing for comparing survival curves
 """
 
+from __future__ import annotations
+
 import math
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
+from ..base import ChokkhuModel
 
-class KaplanMeierFitter:
+
+class KaplanMeierFitter(ChokkhuModel):
     r"""Kaplan-Meier Non-Parametric Survival Curve Estimator.
 
         Estimates the survival function:
@@ -32,8 +37,9 @@ class KaplanMeierFitter:
             Significance level for confidence intervals (default 95% CI).
     """
 
-    def __init__(self, alpha: float = 0.05) -> None:
-        self.alpha = alpha
+    def __init__(self, alpha: float = 0.05, **kwargs: Any) -> None:
+        super().__init__()
+        self.alpha = float(alpha)
         self.timeline: Optional[np.ndarray] = None
         self.survival_probabilities: Optional[np.ndarray] = None
         self.standard_errors: Optional[np.ndarray] = None
@@ -44,9 +50,11 @@ class KaplanMeierFitter:
 
     def fit(
         self,
-        durations: np.ndarray,
-        event_observed: Optional[np.ndarray] = None,
-    ) -> "KaplanMeierFitter":
+        durations: Any,
+        event_observed: Optional[Any] = None,
+        y: Any = None,
+        **kwargs: Any,
+    ) -> KaplanMeierFitter:
         """Fit Kaplan-Meier survival curve.
 
         Parameters
@@ -57,7 +65,8 @@ class KaplanMeierFitter:
             Binary indicator (1 for observed event/death, 0 for censored).
             If None, all durations are assumed to be observed events.
         """
-        dur = np.asarray(durations, dtype=np.float64).ravel()
+        dur_raw = durations if y is None else durations
+        dur = np.asarray(dur_raw, dtype=np.float64).ravel()
         if event_observed is None:
             evt = np.ones_like(dur, dtype=np.int32)
         else:
@@ -191,7 +200,7 @@ class KaplanMeierFitter:
         return preds[0] if scalar_input else preds
 
 
-class NelsonAalenFitter:
+class NelsonAalenFitter(ChokkhuModel):
     r"""Nelson-Aalen Non-Parametric Cumulative Hazard Estimator.
 
     Estimates cumulative hazard:
@@ -205,8 +214,9 @@ class NelsonAalenFitter:
         Significance level for confidence intervals.
     """
 
-    def __init__(self, alpha: float = 0.05) -> None:
-        self.alpha = alpha
+    def __init__(self, alpha: float = 0.05, **kwargs: Any) -> None:
+        super().__init__()
+        self.alpha = float(alpha)
         self.timeline: Optional[np.ndarray] = None
         self.cumulative_hazard_: Optional[np.ndarray] = None
         self.standard_errors: Optional[np.ndarray] = None
@@ -215,11 +225,14 @@ class NelsonAalenFitter:
 
     def fit(
         self,
-        durations: np.ndarray,
-        event_observed: Optional[np.ndarray] = None,
-    ) -> "NelsonAalenFitter":
+        durations: Any,
+        event_observed: Optional[Any] = None,
+        y: Any = None,
+        **kwargs: Any,
+    ) -> NelsonAalenFitter:
         """Fit Nelson-Aalen cumulative hazard estimator."""
-        dur = np.asarray(durations, dtype=np.float64).ravel()
+        dur_raw = durations if y is None else durations
+        dur = np.asarray(dur_raw, dtype=np.float64).ravel()
         if event_observed is None:
             evt = np.ones_like(dur, dtype=np.int32)
         else:

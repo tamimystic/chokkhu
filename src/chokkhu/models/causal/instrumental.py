@@ -8,9 +8,11 @@ and Durbin-Wu-Hausman endogeneity testing.
 
 from __future__ import annotations
 
-import numpy as np
-from chokkhu.core.math import chi2, norm
 from typing import Dict, Optional, Union
+
+import numpy as np
+
+from chokkhu.core.math import chi2, norm
 
 
 class TwoStageLeastSquares:

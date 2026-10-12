@@ -10,16 +10,24 @@ Sovereign pure NumPy implementations of:
 - Double ML & Heterogeneous Effects: DoubleMLPLR, RLearner
 """
 
+from chokkhu.models.causal.discovery import (
+    NOTEARSCausalDiscovery,
+    PCAlgorithm,
+)
+from chokkhu.models.causal.double_ml import (
+    DoubleMLPLR,
+    RLearner,
+)
+from chokkhu.models.causal.doubly_robust import DoublyRobustLearner
+from chokkhu.models.causal.instrumental import (
+    InstrumentalGMM,
+    TwoStageLeastSquares,
+)
+from chokkhu.models.causal.meta_learners import SLearner, TLearner, XLearner
 from chokkhu.models.causal.potential_outcomes import (
     InverseProbabilityWeighting,
     PropensityModel,
     PropensityScoreMatching,
-)
-from chokkhu.models.causal.doubly_robust import DoublyRobustLearner
-from chokkhu.models.causal.meta_learners import SLearner, TLearner, XLearner
-from chokkhu.models.causal.discovery import (
-    NOTEARSCausalDiscovery,
-    PCAlgorithm,
 )
 from chokkhu.models.causal.uplift import (
     ClassTransformationUplift,
@@ -28,14 +36,6 @@ from chokkhu.models.causal.uplift import (
     qini_curve,
     qini_score,
     uplift_at_k,
-)
-from chokkhu.models.causal.instrumental import (
-    TwoStageLeastSquares,
-    InstrumentalGMM,
-)
-from chokkhu.models.causal.double_ml import (
-    DoubleMLPLR,
-    RLearner,
 )
 
 __all__ = [
