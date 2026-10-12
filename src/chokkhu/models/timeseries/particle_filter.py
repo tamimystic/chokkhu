@@ -8,8 +8,9 @@ Rao-Blackwellized Particle Filtering.
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Callable, Optional, Tuple
+
+import numpy as np
 
 
 def _default_f(x: np.ndarray, u: Optional[np.ndarray] = None) -> np.ndarray:

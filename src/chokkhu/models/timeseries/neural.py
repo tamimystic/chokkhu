@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from typing import Any, List, Tuple, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ..base import ChokkhuModel
-from ..dl.layers import Linear, Module
 from ..dl.activations import ReLU
+from ..dl.layers import Linear, Module
 
 
 class NBEATSBlock(Module):
