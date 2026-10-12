@@ -5,7 +5,8 @@ References:
     - Yao et al., "Tree of Thoughts: Deliberate Problem Solving with Large Language Models", NeurIPS 2023.
 """
 
-from typing import List, Dict, Optional, Callable, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
+
 import numpy as np
 
 

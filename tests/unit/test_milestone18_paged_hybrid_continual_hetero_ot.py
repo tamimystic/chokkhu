@@ -1,26 +1,25 @@
 import numpy as np
 
-from chokkhu.models.nlp.paged_attention import (
-    PagedKVCache,
-    PagedAttention,
-    ContinuousBatcher,
-)
-from chokkhu.models.nlp.mamba2 import Mamba2SSD, JambaHybridBlock
-from chokkhu.continual.ewc import ElasticWeightConsolidation, EWC
+from chokkhu.continual.ewc import EWC, ElasticWeightConsolidation
 from chokkhu.continual.replay import DarkExperienceReplay, DERPlusPlus
 from chokkhu.models.gnn.hetero import HeteroGCN, SpatioTemporalGCN
-from chokkhu.optimal_transport.sinkhorn import (
-    SinkhornOptimalTransport,
-    sinkhorn_distance,
+from chokkhu.models.nlp.mamba2 import JambaHybridBlock, Mamba2SSD
+from chokkhu.models.nlp.paged_attention import (
+    ContinuousBatcher,
+    PagedAttention,
+    PagedKVCache,
 )
 from chokkhu.optimal_transport.barycenter import (
     WassersteinBarycenter,
     wasserstein_barycenter,
 )
+from chokkhu.optimal_transport.sinkhorn import (
+    SinkhornOptimalTransport,
+    sinkhorn_distance,
+)
 from chokkhu.transformation.symbolic_features import (
     SymbolicFeatureSynthesizer,
 )
-
 
 # ==========================================
 # 1. PagedAttention & KV-Cache Serving Tests

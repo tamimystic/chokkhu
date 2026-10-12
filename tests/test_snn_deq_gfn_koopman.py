@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import numpy as np
-from chokkhu.models.dl.spiking import SpikingNeuralNetwork
+
 from chokkhu.models.dl.deq import DeepEquilibriumModel
+from chokkhu.models.dl.spiking import SpikingNeuralNetwork
 from chokkhu.models.generative.gflownet import TrajectoryBalanceGFlowNet
 from chokkhu.models.sciml.koopman import DynamicModeDecomposition, ExtendedDMD
 

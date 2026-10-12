@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from chokkhu.core.tensor import Tensor
-from ...dl.layers import Flatten, LayerNorm, Linear, Module
+
 from ...dl.activations import GELU
+from ...dl.layers import Flatten, LayerNorm, Linear, Module
 from ...dl.sequential import Sequential
 from ..conv_layers import Conv2D, GlobalAvgPool2D
 

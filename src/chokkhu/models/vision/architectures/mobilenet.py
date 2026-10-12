@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from chokkhu.core.tensor import Tensor
-from ...dl.layers import Flatten, Linear, Module
+
 from ...dl.activations import ReLU, SiLU
+from ...dl.layers import Flatten, Linear, Module
 from ...dl.sequential import Sequential
-from ..conv_layers import Conv2D, DepthwiseSeparableConv2D, GlobalAvgPool2D
-from ..batchnorm2d import BatchNorm2D
 from ..attention_blocks import SEBlock
+from ..batchnorm2d import BatchNorm2D
+from ..conv_layers import Conv2D, DepthwiseSeparableConv2D, GlobalAvgPool2D
 
 
 def MobileNetV1(num_classes: int = 10, in_channels: int = 3) -> Sequential:

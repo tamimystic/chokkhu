@@ -9,14 +9,14 @@ from .bandits import (
 from .decision_transformer import DecisionTransformer
 from .dqn import DQN, DoubleDQN, DuelingDQN, PrioritizedReplayBuffer, ReplayBuffer
 from .environments import GridWorld
-from .policy_gradient import ActorCritic, REINFORCE
+from .her import (
+    GoalConditionedDQN,
+    HindsightExperienceReplay,
+)
+from .policy_gradient import REINFORCE, ActorCritic
 from .ppo import PPO
 from .q_learning import QLearning
 from .sac import SAC
-from .her import (
-    HindsightExperienceReplay,
-    GoalConditionedDQN,
-)
 
 __all__ = [
     "GridWorld",

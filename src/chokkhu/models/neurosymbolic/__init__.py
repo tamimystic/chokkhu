@@ -5,7 +5,7 @@ from __future__ import annotations
 from .differentiable_logic import DifferentiableLogicEngine
 from .ilp import DifferentiableILP
 from .kg_embeddings import RotatE, TransE
-from .synthesizer import ProgramSynthesizer, DSLGrammar
+from .synthesizer import DSLGrammar, ProgramSynthesizer
 
 __all__ = [
     "DifferentiableLogicEngine",

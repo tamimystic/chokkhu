@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.evaluation.metrics import (
-    roc_auc_score,
-    pr_auc_score,
     log_loss,
+    pr_auc_score,
+    roc_auc_score,
     root_mean_squared_error,
 )
 

@@ -2,31 +2,31 @@
 
 import numpy as np
 
+from chokkhu.automl import DARTS
+from chokkhu.geospatial import (
+    GeographicallyWeightedRegression,
+    OrdinaryKriging,
+    SpatialAutoregression,
+    SpatialWeights,
+    local_morans_i,
+    morans_i,
+)
 from chokkhu.privacy import (
-    LaplaceMechanism,
-    GaussianMechanism,
     DP_SGD,
     FederatedClient,
     FederatedServer,
+    GaussianMechanism,
+    LaplaceMechanism,
 )
 from chokkhu.quantum import (
     QuantumCircuit,
-    VariationalQuantumClassifier,
     QuantumKernel,
+    VariationalQuantumClassifier,
 )
-from chokkhu.geospatial import (
-    SpatialWeights,
-    morans_i,
-    local_morans_i,
-    SpatialAutoregression,
-    GeographicallyWeightedRegression,
-    OrdinaryKriging,
-)
-from chokkhu.automl import DARTS
 from chokkhu.tda import (
-    VietorisRipsComplex,
     PersistenceDiagram,
     PersistenceLandscape,
+    VietorisRipsComplex,
     bottleneck_distance,
 )
 

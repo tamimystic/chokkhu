@@ -4,9 +4,11 @@ Formulated from first principles using deterministic pseudo-random hash partitio
 of vocabulary into green/red lists, logit bias injection, and z-score hypothesis testing.
 """
 
+from typing import Any, Dict
+
 import numpy as np
+
 from chokkhu.core.math import erfc
-from typing import Dict, Any
 
 
 class StatisticalTextWatermark:

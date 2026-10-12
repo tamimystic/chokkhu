@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from typing import Any, Optional, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
-from ...dl.layers import Dropout, LayerNorm, Linear, Module
 from ...dl.activations import SiLU
-from ..conv1d import BatchNorm1D, Conv1D, DepthwiseConv1D
+from ...dl.layers import Dropout, LayerNorm, Linear, Module
 from ...nlp.attention import MultiHeadAttention
+from ..conv1d import BatchNorm1D, Conv1D, DepthwiseConv1D
 
 
 class ConformerConvModule(Module):

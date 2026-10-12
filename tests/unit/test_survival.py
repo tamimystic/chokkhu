@@ -2,15 +2,16 @@
 
 import numpy as np
 import pytest
+
 from chokkhu.models.survival import (
-    KaplanMeierFitter,
-    NelsonAalenFitter,
-    logrank_test,
     CoxPHRegression,
     DeepSurv,
-    concordance_index,
+    KaplanMeierFitter,
+    NelsonAalenFitter,
     brier_score_loss,
+    concordance_index,
     integrated_brier_score,
+    logrank_test,
 )
 
 

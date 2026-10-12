@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from typing import Any, Optional, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
-from ...dl.layers import Dropout, LayerNorm, Linear, Module
 from ...dl.activations import GELU
+from ...dl.layers import Dropout, LayerNorm, Linear, Module
 from ..embeddings import LearnedPositionalEmbedding, TokenEmbedding
 from ..transformer_blocks import TransformerEncoderLayer
 

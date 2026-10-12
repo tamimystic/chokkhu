@@ -6,9 +6,9 @@ Pure Python / NumPy implementation of Yao et al. (2022) "ReAct: Synergizing Reas
 - Dynamic loop termination and error recovery
 """
 
-from typing import Any, Callable, Dict, List, Optional, Union
 import json
 import re
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from .tools import ToolRegistry
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ...dl.layers import Dropout, Flatten, Linear
 from ...dl.activations import ReLU
+from ...dl.layers import Dropout, Flatten, Linear
 from ...dl.sequential import Sequential
 from ..conv_layers import Conv2D, MaxPool2D
 

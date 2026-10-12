@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .ewc import EWC, ElasticWeightConsolidation
-from .replay import DERPlusPlus, DarkExperienceReplay
+from .replay import DarkExperienceReplay, DERPlusPlus
 
 __all__ = [
     "ElasticWeightConsolidation",

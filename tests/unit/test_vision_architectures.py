@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import numpy as np
+
 import chokkhu as ck
 from chokkhu.core.tensor import Tensor
 from chokkhu.models.vision import (
+    VGG11,
     AlexNet,
     LeNet5,
     MobileNetV1,
     ResNet18,
     UNet,
-    VGG11,
 )
 
 

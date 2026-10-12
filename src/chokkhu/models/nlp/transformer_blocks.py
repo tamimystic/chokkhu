@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from typing import Optional
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
-from ..dl.layers import Dropout, LayerNorm, Linear, Module, Parameter
+
 from ..dl.activations import GELU, SiLU
+from ..dl.layers import Dropout, LayerNorm, Linear, Module, Parameter
 from .attention import MultiHeadAttention
 
 

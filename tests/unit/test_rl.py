@@ -3,22 +3,22 @@ from __future__ import annotations
 import numpy as np
 
 from chokkhu.models.rl import (
-    GridWorld,
-    QLearning,
-    ReplayBuffer,
-    PrioritizedReplayBuffer,
     DQN,
+    PPO,
+    REINFORCE,
+    SAC,
+    ActorCritic,
+    DecisionTransformer,
     DoubleDQN,
     DuelingDQN,
-    REINFORCE,
-    ActorCritic,
-    PPO,
-    SAC,
     EpsilonGreedyBandit,
-    UCB1Bandit,
-    ThompsonSamplingBandit,
+    GridWorld,
     LinUCBBandit,
-    DecisionTransformer,
+    PrioritizedReplayBuffer,
+    QLearning,
+    ReplayBuffer,
+    ThompsonSamplingBandit,
+    UCB1Bandit,
 )
 
 

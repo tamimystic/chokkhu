@@ -5,9 +5,9 @@ from __future__ import annotations
 import numpy as np
 
 from chokkhu.models.dl.biological import (
-    DirectFeedbackAlignmentNetwork,
-    DifferenceTargetPropagationNetwork,
     DecoupledSyntheticGradientLayer,
+    DifferenceTargetPropagationNetwork,
+    DirectFeedbackAlignmentNetwork,
 )
 
 

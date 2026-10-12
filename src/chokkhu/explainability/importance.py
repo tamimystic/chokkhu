@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from typing import Any, List
+
 import numpy as np
-from chokkhu.models.base import ChokkhuModel
+
 from chokkhu.evaluation.metrics import accuracy_score, r2_score
+from chokkhu.models.base import ChokkhuModel
 
 
 def permutation_feature_importance(

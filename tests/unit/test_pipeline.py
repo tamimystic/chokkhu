@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
+
 import chokkhu as ck
 from chokkhu.pipeline import PipelineResult
 
@@ -150,9 +152,9 @@ def test_pipeline_summary_and_serialization(sample_classification_df, tmp_path):
 
 
 def test_chokkhu_pipeline_fluent_chaining(sample_classification_df):
+    from chokkhu.models.ml import RandomForest
     from chokkhu.preprocessing import StandardScaler
     from chokkhu.transformation import PCA
-    from chokkhu.models.ml import RandomForest
 
     X = sample_classification_df[["num_1", "num_2"]].to_numpy()
     y = sample_classification_df["target"].to_numpy()

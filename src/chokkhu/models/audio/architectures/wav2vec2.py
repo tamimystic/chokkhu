@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from typing import Any, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
-from ...dl.layers import Dropout, LayerNorm, Linear, Module
 from ...dl.activations import GELU
-from ..conv1d import Conv1D
+from ...dl.layers import Dropout, LayerNorm, Linear, Module
 from ...nlp.transformer_blocks import TransformerEncoderLayer
+from ..conv1d import Conv1D
 
 
 class Wav2Vec2(Module, ChokkhuModel):

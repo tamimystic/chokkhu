@@ -10,15 +10,14 @@ Covers:
 
 import numpy as np
 
-from chokkhu.models.sciml.fno import SpectralConv2d, FourierNeuralOperator2D
-from chokkhu.models.causal.instrumental import TwoStageLeastSquares, InstrumentalGMM
-from chokkhu.ranking.lambdamart import LambdaMART, ListNet, ndcg_at_k
+from chokkhu.models.causal.instrumental import InstrumentalGMM, TwoStageLeastSquares
 from chokkhu.models.energy.score_matching import (
-    ScoreMatchingEBM,
     AnnealedLangevinDynamics,
+    ScoreMatchingEBM,
 )
-from chokkhu.tda.vectorization import PersistenceLandscape, PersistenceImage
-
+from chokkhu.models.sciml.fno import FourierNeuralOperator2D, SpectralConv2d
+from chokkhu.ranking.lambdamart import LambdaMART, ListNet, ndcg_at_k
+from chokkhu.tda.vectorization import PersistenceImage, PersistenceLandscape
 
 # =====================================================================
 # 1. Fourier Neural Operator (FNO-2D) Tests

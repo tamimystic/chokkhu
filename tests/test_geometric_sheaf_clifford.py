@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import numpy as np
 
-from chokkhu.models.geometric.egnn import EnEquivariantGNN
 from chokkhu.geometry.sheaf import (
     CellularSheaf,
     SheafNeuralNetwork,
 )
 from chokkhu.models.geometric.clifford import (
-    CliffordMultivector,
     CliffordGANN,
+    CliffordMultivector,
     geometric_product,
 )
+from chokkhu.models.geometric.egnn import EnEquivariantGNN
 
 
 def test_egnn_rotation_translation_equivariance():

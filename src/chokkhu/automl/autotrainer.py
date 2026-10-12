@@ -6,6 +6,7 @@ import pickle
 import re
 import time
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import pandas as pd
 
@@ -13,7 +14,8 @@ from chokkhu.cleaning import clean as clean_data
 from chokkhu.core.logger import Logger
 from chokkhu.models.base import ChokkhuModel
 from chokkhu.models.engine import train
-from chokkhu.preprocessing import PreprocessorState, preprocess as preprocess_data
+from chokkhu.preprocessing import PreprocessorState
+from chokkhu.preprocessing import preprocess as preprocess_data
 
 
 class AutoMLResult:

@@ -3,16 +3,16 @@
 import pytest
 
 from chokkhu.models.nlp.agents import (
+    ChainOfThought,
+    GraphOfThoughts,
+    MultiAgentCoordinator,
+    ReActAgent,
+    ReflexionEngine,
+    SelfConsistency,
     Tool,
     ToolParameter,
     ToolRegistry,
-    ReActAgent,
-    ChainOfThought,
     TreeOfThoughts,
-    GraphOfThoughts,
-    MultiAgentCoordinator,
-    ReflexionEngine,
-    SelfConsistency,
 )
 
 

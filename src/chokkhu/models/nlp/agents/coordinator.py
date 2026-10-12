@@ -6,8 +6,8 @@ Pure Python / NumPy implementations of:
 - SelfConsistency: Majority voting and confidence aggregation across stochastic reasoning paths
 """
 
-from typing import Any, Callable, Dict, List, Tuple
 from collections import Counter
+from typing import Any, Callable, Dict, List, Tuple
 
 from .react import ReActAgent
 

@@ -4,8 +4,9 @@ Formulated from first principles using the Poincaré Ball model (Möbius additio
 exponential/logarithmic maps, Riemannian SGD) and the Lorentz Hyperboloid model in pure NumPy.
 """
 
-import numpy as np
 from typing import List, Tuple
+
+import numpy as np
 
 
 class PoincareBallEmbedding:

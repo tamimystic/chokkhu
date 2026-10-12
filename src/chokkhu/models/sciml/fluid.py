@@ -4,8 +4,9 @@ Formulated from first principles using cubic spline/Wendland smoothing kernels,
 Tait equation of state, Navier-Stokes pressure/viscosity forces, and symplectic integration.
 """
 
-import numpy as np
 from typing import Optional, Tuple
+
+import numpy as np
 
 
 class DifferentiableParticleFluid:

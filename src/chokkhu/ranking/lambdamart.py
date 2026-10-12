@@ -7,8 +7,9 @@ tree leaf updates, alongside Cao et al. (ICML 2007) ListNet top-1 listwise ranki
 
 from __future__ import annotations
 
-import numpy as np
 from typing import List, Optional, Tuple
+
+import numpy as np
 
 
 def _dcg_at_k(relevance: np.ndarray, k: int = 10) -> float:

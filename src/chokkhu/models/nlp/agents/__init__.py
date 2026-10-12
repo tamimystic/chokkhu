@@ -7,26 +7,26 @@ Pure Python / NumPy implementations of:
 - MultiAgentCoordinator, ReflexionEngine, SelfConsistency
 """
 
-from .tools import (
-    Tool,
-    ToolParameter,
-    ToolRegistry,
-)
-from .react import (
-    ReActAgent,
-    AgentAction,
-    AgentFinish,
-    AgentStep,
-)
-from .reasoning import (
-    ChainOfThought,
-    TreeOfThoughts,
-    GraphOfThoughts,
-)
 from .coordinator import (
     MultiAgentCoordinator,
     ReflexionEngine,
     SelfConsistency,
+)
+from .react import (
+    AgentAction,
+    AgentFinish,
+    AgentStep,
+    ReActAgent,
+)
+from .reasoning import (
+    ChainOfThought,
+    GraphOfThoughts,
+    TreeOfThoughts,
+)
+from .tools import (
+    Tool,
+    ToolParameter,
+    ToolRegistry,
 )
 
 __all__ = [

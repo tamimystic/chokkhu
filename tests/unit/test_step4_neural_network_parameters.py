@@ -2,18 +2,19 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from chokkhu.models.ml.neural_network import (
-    NeuralNetwork,
-    MLPClassifier,
-    MLPRegressor,
-)
+
+from chokkhu.models.dl.layers import Parameter
 from chokkhu.models.dl.optimizers import Adagrad
 from chokkhu.models.dl.schedulers import (
     ExponentialLR,
     InverseScalingLR,
     LinearLR,
 )
-from chokkhu.models.dl.layers import Parameter
+from chokkhu.models.ml.neural_network import (
+    MLPClassifier,
+    MLPRegressor,
+    NeuralNetwork,
+)
 
 
 def test_neural_network_base_class():

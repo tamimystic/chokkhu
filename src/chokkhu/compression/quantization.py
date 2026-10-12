@@ -7,6 +7,7 @@ Pure NumPy implementations of:
 """
 
 from typing import Optional
+
 import numpy as np
 
 

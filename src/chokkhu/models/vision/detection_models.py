@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from typing import Any, List, Tuple
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor, concat
+
 from ..dl.layers import Module
 from .conv_layers import Conv2D
 

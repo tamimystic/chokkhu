@@ -8,19 +8,19 @@ Pure NumPy implementations of:
 - SparseGaussianProcessRegression, VariationalSparseGP: Inducing point sparse GPs
 """
 
+from .fluid import DifferentiableParticleFluid
+from .fno import FourierNeuralOperator2D, SpectralConv2d
+from .koopman import DynamicModeDecomposition, ExtendedDMD
+from .neural_ode import NeuralODE
 from .pinn import (
     PINN,
     BurgersPINN,
+    HarmonicOscillatorPINN,
     HeatPINN,
     WavePINN,
-    HarmonicOscillatorPINN,
 )
-from .symbolic_regression import SymbolicRegressor
-from .neural_ode import NeuralODE
-from .fluid import DifferentiableParticleFluid
-from .fno import SpectralConv2d, FourierNeuralOperator2D
 from .sparse_gp import SparseGaussianProcessRegression, VariationalSparseGP
-from .koopman import DynamicModeDecomposition, ExtendedDMD
+from .symbolic_regression import SymbolicRegressor
 
 __all__ = [
     "PINN",

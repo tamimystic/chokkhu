@@ -4,8 +4,9 @@ Formulated from first principles for linear probe estimation, orthogonal subspac
 ablation, and directional activation steering in pure NumPy.
 """
 
-import numpy as np
 from typing import Optional
+
+import numpy as np
 
 
 class RefusalDirectionProbe:

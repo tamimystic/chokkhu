@@ -71,22 +71,34 @@ class CoxPHRegression(ChokkhuModel):
 
     def fit(
         self,
-        X: np.ndarray,
-        durations: Any = None,
-        events: Optional[np.ndarray] = None,
+        X: Any,
         y: Any = None,
+        durations: Any = None,
+        events: Optional[Any] = None,
+        *args: Any,
         **kwargs: Any,
     ) -> CoxPHRegression:
         """Fit Cox PH model to covariate matrix X, durations T, and event indicators E."""
-        dur_raw = durations if durations is not None else y
-        if dur_raw is None:
+        if durations is not None and events is not None:
+            dur_raw = durations
+            evt_raw = events
+        elif durations is not None and events is None:
+            dur_raw = y
+            evt_raw = durations
+        elif "durations" in kwargs:
+            dur_raw = kwargs["durations"]
+            evt_raw = kwargs.get("events", events)
+        elif y is not None:
+            dur_raw = y
+            evt_raw = events if events is not None else (args[0] if args else None)
+        else:
             raise ValueError("Durations must be provided.")
         X_arr = np.asarray(X, dtype=np.float64)
         T_arr = np.asarray(dur_raw, dtype=np.float64).ravel()
-        if events is None:
+        if evt_raw is None:
             E_arr = np.ones_like(T_arr, dtype=np.int32)
         else:
-            E_arr = np.asarray(events, dtype=np.int32).ravel()
+            E_arr = np.asarray(evt_raw, dtype=np.int32).ravel()
 
         if len(X_arr) != len(T_arr) or len(T_arr) != len(E_arr):
             raise ValueError(

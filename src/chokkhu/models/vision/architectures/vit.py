@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from typing import Any
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor, concat
+
 from ...base import ChokkhuModel
-from ...dl.layers import LayerNorm, Linear, Module, Parameter
 from ...dl.activations import GELU
+from ...dl.layers import LayerNorm, Linear, Module, Parameter
 
 
 class PatchEmbedding(Module):

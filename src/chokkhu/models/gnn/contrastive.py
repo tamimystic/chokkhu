@@ -7,8 +7,9 @@ and Zhu et al. (WWW 2020) Deep Graph Contrastive Representation Learning (GRACE)
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Tuple
+
+import numpy as np
 
 
 def _normalize_adjacency(adj: np.ndarray) -> np.ndarray:

@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import inspect
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
+
 import numpy as np
 
 from chokkhu.core.exceptions import NotFittedError

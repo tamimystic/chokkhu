@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from .hypervector import HyperdimensionalVector
 from .classifier import HDCClassifier
+from .hypervector import HyperdimensionalVector
 
 __all__ = [
     "HyperdimensionalVector",

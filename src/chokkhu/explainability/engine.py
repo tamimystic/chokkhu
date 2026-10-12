@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
 
 from chokkhu.core.logger import Logger
 from chokkhu.models.base import ChokkhuModel
+
 from .importance import permutation_feature_importance
-from .shap import kernel_shap
+from .neural import DeepLIFT, IntegratedGradients, SmoothGrad
 from .pdp import partial_dependence
-from .neural import IntegratedGradients, SmoothGrad, DeepLIFT
+from .shap import kernel_shap
 
 
 class ExplanationResult:

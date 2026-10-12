@@ -7,6 +7,7 @@ Pure NumPy implementation of Mildenhall et al. (2020) "NeRF: Representing Scenes
 """
 
 from typing import Optional, Tuple
+
 import numpy as np
 
 

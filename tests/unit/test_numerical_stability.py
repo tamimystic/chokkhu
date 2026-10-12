@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
 from chokkhu.models.dl.layers import BatchNorm1d, LayerNorm, Parameter
 from chokkhu.models.dl.losses import (
@@ -16,8 +17,8 @@ from chokkhu.models.dl.optimizers import SGD, Adam, AdamW, RMSProp
 from chokkhu.models.nlp.transformer_blocks import RMSNorm
 from chokkhu.models.vision.losses import (
     CIoULoss,
-    DIoULoss,
     DiceLoss,
+    DIoULoss,
     FocalLoss,
     GIoULoss,
     TverskyLoss,

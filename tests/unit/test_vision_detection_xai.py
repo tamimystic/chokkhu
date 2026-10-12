@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.models.vision import (
-    LeNet5,
     GradCAM,
+    LeNet5,
     compute_iou,
     non_maximum_suppression,
 )

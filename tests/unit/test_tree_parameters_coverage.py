@@ -6,12 +6,12 @@ from chokkhu.models.ml.decision_tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
 )
+from chokkhu.models.ml.isolation_forest import IsolationForest
 from chokkhu.models.ml.random_forest import (
     RandomForest,
     RandomForestClassifier,
     RandomForestRegressor,
 )
-from chokkhu.models.ml.isolation_forest import IsolationForest
 
 
 @pytest.fixture

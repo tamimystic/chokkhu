@@ -29,7 +29,8 @@ from chokkhu.evaluation.metrics import (
 )
 from chokkhu.io.loader import load as load_fn
 from chokkhu.models.engine import train as train_fn
-from chokkhu.preprocessing import PreprocessorState, preprocess as preprocess_fn
+from chokkhu.preprocessing import PreprocessorState
+from chokkhu.preprocessing import preprocess as preprocess_fn
 from chokkhu.splitting.splitter import train_test_split
 from chokkhu.uncertainty.cqr import ConformalizedQuantileRegression
 

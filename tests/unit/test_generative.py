@@ -1,9 +1,11 @@
 """Unit tests for Generative AI Universe (VAE, VQ-VAE, DDPM, DCGAN, WGAN-GP)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+from chokkhu.models import train
 from chokkhu.models.generative import (
     DCGAN,
     DDPM,
@@ -11,7 +13,6 @@ from chokkhu.models.generative import (
     VQVAE,
     WGANGP,
 )
-from chokkhu.models import train
 
 
 def test_vae_forward_reparameterize_and_sample() -> None:

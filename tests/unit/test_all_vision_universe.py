@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import numpy as np
+
 import chokkhu as ck
 from chokkhu.core.tensor import Tensor
 from chokkhu.models.vision import (
     CBAM,
+    VGG13,
+    VGG19,
     ChannelShuffle,
     ConvNeXtTiny,
     DenseNet121,
@@ -24,8 +27,6 @@ from chokkhu.models.vision import (
     SEBlock,
     ShuffleNetV2,
     SqueezeNet,
-    VGG13,
-    VGG19,
     VisionTransformer,
     ZFNet,
 )

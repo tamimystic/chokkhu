@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from typing import Optional, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ..dl.layers import Module, Parameter
 from .utils import normalize_adjacency
 

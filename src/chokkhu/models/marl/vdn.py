@@ -2,7 +2,6 @@ r"""Value-Decomposition Networks (VDN) for Multi-Agent RL in pure NumPy."""
 
 from __future__ import annotations
 
-
 import numpy as np
 
 

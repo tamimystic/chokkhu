@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from typing import List, Optional, Tuple, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
 from ...dl.layers import Linear, Module
-from ..embeddings import RoPE, TokenEmbedding
 from ..attention import GroupedQueryAttention
+from ..embeddings import RoPE, TokenEmbedding
 from ..transformer_blocks import RMSNorm, SwiGLU
 
 

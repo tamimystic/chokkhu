@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from chokkhu.evaluation.drift import (
-    MaximumMeanDiscrepancyTest,
-    PopulationStabilityIndex,
-)
 from chokkhu.data.valuation import (
     DataShapleyValuation,
     FacilityLocationCoresetSelector,
+)
+from chokkhu.evaluation.drift import (
+    MaximumMeanDiscrepancyTest,
+    PopulationStabilityIndex,
 )
 
 

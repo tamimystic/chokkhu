@@ -2,7 +2,7 @@
 
 from .mcts import MCTSNode, MonteCarloTreeSearchReasoning
 from .prm import ProcessRewardModel
-from .star import STaR, ReflexionLoop
+from .star import ReflexionLoop, STaR
 
 __all__ = [
     "MCTSNode",

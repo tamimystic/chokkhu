@@ -2,14 +2,15 @@
 
 import numpy as np
 import pytest
+
 from chokkhu.models.sciml import (
     PINN,
     BurgersPINN,
-    HeatPINN,
-    WavePINN,
     HarmonicOscillatorPINN,
-    SymbolicRegressor,
+    HeatPINN,
     NeuralODE,
+    SymbolicRegressor,
+    WavePINN,
 )
 
 

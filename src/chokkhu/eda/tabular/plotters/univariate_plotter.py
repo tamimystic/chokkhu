@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from chokkhu.core import math as sp_stats
 import seaborn as sns
 
+from chokkhu.core import math as sp_stats
 from chokkhu.core.visualizer import PlotVisualizer
 
 from .base_plotter import BasePlotter

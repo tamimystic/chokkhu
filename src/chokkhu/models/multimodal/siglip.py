@@ -7,8 +7,10 @@ Pure NumPy implementation of Google SigLIP (Zhai et al., 2023):
 """
 
 from typing import Optional, Tuple
+
 import numpy as np
-from .clip import CLIPVisionEncoder, CLIPTextEncoder
+
+from .clip import CLIPTextEncoder, CLIPVisionEncoder
 
 
 class SigLIP:

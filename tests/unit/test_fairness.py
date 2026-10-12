@@ -4,16 +4,16 @@ import numpy as np
 import pytest
 
 from chokkhu.fairness import (
-    ReweighingTransformer,
     DisparateImpactRemover,
+    ReweighingTransformer,
     ThresholdOptimizer,
     demographic_parity_difference,
     demographic_parity_ratio,
+    disparate_impact_ratio,
     equal_opportunity_difference,
     equalized_odds_difference,
-    disparate_impact_ratio,
-    theil_index,
     fairness_report,
+    theil_index,
 )
 
 

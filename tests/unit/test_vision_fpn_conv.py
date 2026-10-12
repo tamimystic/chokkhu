@@ -1,6 +1,7 @@
 """Unit tests for Feature Pyramid Networks (FPN, PANet) and Dilated Convolution."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor

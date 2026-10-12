@@ -7,8 +7,9 @@ Denoising Score Matching (DSM), and Annealed Langevin MCMC sampling.
 
 from __future__ import annotations
 
-import numpy as np
 from typing import List, Optional, Tuple
+
+import numpy as np
 
 
 def _swish(x: np.ndarray) -> np.ndarray:

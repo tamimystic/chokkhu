@@ -4,8 +4,9 @@ Pure NumPy implementation of HNSW for high-dimensional approximate nearest
 neighbor (ANN) vector retrieval with logarithmic search complexity.
 """
 
-from typing import Dict, List, Optional, Tuple, Union
 import heapq
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
 

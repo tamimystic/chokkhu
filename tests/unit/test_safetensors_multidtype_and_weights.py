@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import os
 import tempfile
+
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
 from chokkhu.io.safetensors import (
     load_quantized_safetensors,

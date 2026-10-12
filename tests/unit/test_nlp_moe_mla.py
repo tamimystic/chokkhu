@@ -1,17 +1,18 @@
 """Unit tests for Mixture of Experts (MoE), Multi-Head Latent Attention (DeepSeek MLA), and Sliding Window Attention (SWA)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
 from chokkhu.models.nlp import (
+    DeepSeekMLA,
     Expert,
-    TopKRouter,
     MixtureOfExperts,
     MoE,
     MultiHeadLatentAttention,
-    DeepSeekMLA,
     SlidingWindowAttention,
+    TopKRouter,
 )
 
 

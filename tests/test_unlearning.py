@@ -3,10 +3,10 @@
 import numpy as np
 
 from chokkhu.privacy.unlearning import (
-    SISARetraining,
-    FisherScrubbing,
     SCRUB,
+    FisherScrubbing,
     NullspaceConceptScrubbing,
+    SISARetraining,
 )
 
 

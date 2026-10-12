@@ -6,6 +6,7 @@ Pure NumPy implementations of:
 """
 
 from typing import Dict, Optional, Tuple
+
 import numpy as np
 
 

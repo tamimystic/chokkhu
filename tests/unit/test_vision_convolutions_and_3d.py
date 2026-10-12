@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
 from chokkhu.models.vision.conv_layers import (
     AvgPool2D,

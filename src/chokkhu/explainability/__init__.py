@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from .counterfactuals import WachterCounterfactualExplainer
 from .circuits import ActivationPatchingEngine
+from .counterfactuals import WachterCounterfactualExplainer
 from .engine import ExplanationResult, explain
 from .importance import permutation_feature_importance
 from .mechanistic import (
+    ActivationPatching,
     AttentionRollout,
     DirectLogitAttribution,
-    TopKSAE,
     JumpReLU,
-    ActivationPatching,
+    TopKSAE,
 )
 from .neural import DeepLIFT, IntegratedGradients, SmoothGrad
 from .pdp import partial_dependence

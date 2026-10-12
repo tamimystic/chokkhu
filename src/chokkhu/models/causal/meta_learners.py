@@ -8,7 +8,7 @@ Pure NumPy implementations of:
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 import numpy as np
 
@@ -47,6 +47,30 @@ class _LinearRegressionSolver:
         return np.dot(X_arr, self.coef) + self.intercept
 
 
+def _resolve_t_y(
+    y: Any, T: Any, Y: Any, args: Tuple[Any, ...], kwargs: Any
+) -> Tuple[Any, Any]:
+    if "T" in kwargs:
+        t_data = kwargs["T"]
+        y_data = Y if Y is not None else kwargs.get("Y", y)
+    elif "Y" in kwargs:
+        y_data = kwargs["Y"]
+        t_data = T if T is not None else y
+    elif Y is not None:
+        t_data = T if T is not None else y
+        y_data = Y
+    elif T is not None:
+        t_data = y
+        y_data = T
+    elif args:
+        t_data = y
+        y_data = args[0]
+    else:
+        t_data = y
+        y_data = None
+    return t_data, y_data
+
+
 class SLearner(ChokkhuModel):
     r"""S-Learner (Single Model Meta-Learner).
 
@@ -68,11 +92,16 @@ class SLearner(ChokkhuModel):
         self.is_fitted: bool = False
 
     def fit(
-        self, X: np.ndarray, T: Any = None, Y: Any = None, y: Any = None, **kwargs: Any
+        self,
+        X: Any,
+        y: Any = None,
+        T: Any = None,
+        Y: Any = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> SLearner:
         """Fit joint model on concatenated features [X, T]."""
-        treatment = T
-        outcome = Y if Y is not None else y
+        treatment, outcome = _resolve_t_y(y, T, Y, args, kwargs)
         if treatment is None or outcome is None:
             raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
@@ -129,11 +158,16 @@ class TLearner(ChokkhuModel):
         self.is_fitted: bool = False
 
     def fit(
-        self, X: np.ndarray, T: Any = None, Y: Any = None, y: Any = None, **kwargs: Any
+        self,
+        X: Any,
+        y: Any = None,
+        T: Any = None,
+        Y: Any = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> TLearner:
         """Fit independent models on treated (T=1) and control (T=0) cohorts."""
-        treatment = T
-        outcome = Y if Y is not None else y
+        treatment, outcome = _resolve_t_y(y, T, Y, args, kwargs)
         if treatment is None or outcome is None:
             raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
@@ -206,11 +240,16 @@ class XLearner(ChokkhuModel):
         self.is_fitted: bool = False
 
     def fit(
-        self, X: np.ndarray, T: Any = None, Y: Any = None, y: Any = None, **kwargs: Any
+        self,
+        X: Any,
+        y: Any = None,
+        T: Any = None,
+        Y: Any = None,
+        *args: Any,
+        **kwargs: Any,
     ) -> XLearner:
         """Fit X-Learner through two-stage counterfactual imputation and weighting."""
-        treatment = T
-        outcome = Y if Y is not None else y
+        treatment, outcome = _resolve_t_y(y, T, Y, args, kwargs)
         if treatment is None or outcome is None:
             raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)

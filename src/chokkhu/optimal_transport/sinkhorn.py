@@ -3,6 +3,7 @@ r"""Entropic Regularized Optimal Transport and Sinkhorn Algorithm in pure NumPy.
 from __future__ import annotations
 
 from typing import Optional
+
 import numpy as np
 
 

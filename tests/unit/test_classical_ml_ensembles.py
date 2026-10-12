@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.models.ml.adaboost import AdaBoostClassifier, AdaBoostRegressor
 from chokkhu.models.ml.extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
 from chokkhu.models.ml.kmedoids import KMedoids

@@ -1,17 +1,18 @@
 """Unit tests for Sovereign AutoML Subsystem (GP Surrogate, Bayesian Optimization, Hyperband, AutoTrainer)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.automl import (
+    AutoMLResult,
+    AutoTrainer,
+    BayesianOptimization,
     GaussianProcessSurrogate,
+    Hyperband,
+    auto_train,
     expected_improvement,
     upper_confidence_bound,
-    BayesianOptimization,
-    Hyperband,
-    AutoTrainer,
-    AutoMLResult,
-    auto_train,
 )
 
 

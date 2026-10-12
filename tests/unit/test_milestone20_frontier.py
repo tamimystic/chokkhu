@@ -15,15 +15,15 @@ Tests covering:
 import numpy as np
 
 from chokkhu import (
-    DiscreteTextDiffusion,
-    RobotArmKinematics,
     DifferentiableParticleFluid,
-    StatisticalTextWatermark,
-    RefusalDirectionProbe,
+    DiscreteTextDiffusion,
+    LorentzManifold,
     NOTEARSCausalDiscovery,
     PCAlgorithm,
     PoincareBallEmbedding,
-    LorentzManifold,
+    RefusalDirectionProbe,
+    RobotArmKinematics,
+    StatisticalTextWatermark,
 )
 
 

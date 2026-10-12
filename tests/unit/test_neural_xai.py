@@ -1,18 +1,19 @@
 """Unit tests for Sovereign Neural Explainable AI (Integrated Gradients, SmoothGrad, DeepLIFT)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
 from chokkhu.explainability import (
+    DeepLIFT,
+    ExplanationResult,
     IntegratedGradients,
     SmoothGrad,
-    DeepLIFT,
     explain,
-    ExplanationResult,
 )
-from chokkhu.models.dl.layers import Linear, Module
 from chokkhu.models.dl.activations import ReLU
+from chokkhu.models.dl.layers import Linear, Module
 
 
 class SimpleNet(Module):

@@ -9,8 +9,8 @@ References:
 from __future__ import annotations
 
 from typing import List, Tuple, Union
-import numpy as np
 
+import numpy as np
 
 # 8x8 Cayley Multiplication Table for Cl(3, 0, 0)
 # Basis blades: 0: 1, 1: e1, 2: e2, 3: e3, 4: e12, 5: e23, 6: e31, 7: e123

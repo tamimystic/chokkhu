@@ -1,30 +1,29 @@
 import numpy as np
 
-from chokkhu.models.robotics import (
-    DiffusionPolicy,
-    RecurrentWorldModel,
-    MPPITrajectoryOptimizer,
+from chokkhu.hdc import (
+    HDCClassifier,
+    HyperdimensionalVector,
+)
+from chokkhu.models.bio import (
+    GenomicBERT,
+    GenomicTokenizer,
+    ProteinContactMap,
 )
 from chokkhu.models.marl import (
     QMIX,
     VDN,
     NashEquilibriumSolver,
 )
-from chokkhu.models.bio import (
-    GenomicTokenizer,
-    GenomicBERT,
-    ProteinContactMap,
-)
 from chokkhu.models.neurosymbolic import (
     DifferentiableLogicEngine,
     RotatE,
     TransE,
 )
-from chokkhu.hdc import (
-    HyperdimensionalVector,
-    HDCClassifier,
+from chokkhu.models.robotics import (
+    DiffusionPolicy,
+    MPPITrajectoryOptimizer,
+    RecurrentWorldModel,
 )
-
 
 # ==========================================
 # 1. Robotics & World Models Tests

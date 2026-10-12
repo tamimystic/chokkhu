@@ -1,6 +1,7 @@
 """Unit tests for Frontier 4.20: Consistency Models, Optimal Transport Flow Matching & Reflow."""
 
 import numpy as np
+
 from chokkhu.models.generative.consistency import (
     ConsistencyModel,
     OptimalTransportFlowMatching,

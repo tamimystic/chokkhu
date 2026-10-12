@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
-from ...dl.layers import Dropout, Flatten, Linear, Module
+
 from ...dl.activations import ReLU
+from ...dl.layers import Dropout, Flatten, Linear, Module
 from ...dl.sequential import Sequential
 from ..conv_layers import Conv2D, GlobalAvgPool2D, MaxPool2D
 

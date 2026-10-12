@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from typing import Any, List
+
 import numpy as np
+
 from chokkhu.models.base import ChokkhuModel
 
 

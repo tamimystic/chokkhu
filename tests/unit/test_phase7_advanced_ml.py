@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import numpy as np
-from chokkhu.models.ml.isolation_forest import IsolationForest
+
 from chokkhu.models.ml.hist_gradient_boosting import (
     HistGradientBoostingClassifier,
     HistGradientBoostingRegressor,
 )
-from chokkhu.models.ml.svm_kernels import SVC, SVR, OneClassSVM, LinearSVC
+from chokkhu.models.ml.isolation_forest import IsolationForest
 from chokkhu.models.ml.nearest_neighbors import (
     NearestCentroid,
     RadiusNeighborsClassifier,
     RadiusNeighborsRegressor,
 )
+from chokkhu.models.ml.svm_kernels import SVC, SVR, LinearSVC, OneClassSVM
 
 
 def test_isolation_forest():

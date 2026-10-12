@@ -1,20 +1,17 @@
 """Graph Neural Networks (GNNs) Subsystem from First Principles."""
 
 from __future__ import annotations
-from .utils import (
-    normalize_adjacency,
-    dense_to_edge_index,
-    edge_index_to_dense,
-    global_pool,
-)
+
 from .architectures import (
     GAT,
     GCN,
     GIN,
     GraphSAGE,
 )
+from .contrastive import GRACE, GraphCL
 from .equivariant import EGNN, EGNNLayer
 from .graph_transformer import Graphormer, GraphormerLayer, LaplacianPositionalEncoding
+from .hetero import HeteroGCN, SpatioTemporalGCN
 from .hypergraph import HGNN, HypergraphConvolution
 from .layers import (
     GATLayer,
@@ -24,8 +21,12 @@ from .layers import (
 )
 from .relational import RGCNClassifier, RGCNLayer
 from .temporal import TemporalGraphNetwork
-from .hetero import HeteroGCN, SpatioTemporalGCN
-from .contrastive import GraphCL, GRACE
+from .utils import (
+    dense_to_edge_index,
+    edge_index_to_dense,
+    global_pool,
+    normalize_adjacency,
+)
 
 __all__ = [
     "normalize_adjacency",

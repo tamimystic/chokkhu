@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from typing import List
+
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
-from ...dl.layers import Flatten, Linear, Module
+
 from ...dl.activations import ReLU
+from ...dl.layers import Flatten, Linear, Module
 from ...dl.sequential import Sequential
-from ..conv_layers import AvgPool2D, Conv2D, GlobalAvgPool2D, MaxPool2D
 from ..batchnorm2d import BatchNorm2D
+from ..conv_layers import AvgPool2D, Conv2D, GlobalAvgPool2D, MaxPool2D
 
 
 class DenseLayer(Module):

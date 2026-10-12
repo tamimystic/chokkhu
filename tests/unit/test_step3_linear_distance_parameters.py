@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
+from chokkhu.models.ml.kmeans import KMeans
+from chokkhu.models.ml.knn import KNN
 from chokkhu.models.ml.linear_regression import LinearRegression
 from chokkhu.models.ml.logistic_regression import LogisticRegression
-from chokkhu.models.ml.knn import KNN
-from chokkhu.models.ml.kmeans import KMeans
 from chokkhu.models.ml.svm import SVM
 
 

@@ -50,27 +50,25 @@ class KaplanMeierFitter(ChokkhuModel):
 
     def fit(
         self,
-        durations: Any,
-        event_observed: Optional[Any] = None,
+        X: Any = None,
         y: Any = None,
+        durations: Any = None,
+        event_observed: Optional[Any] = None,
+        *args: Any,
         **kwargs: Any,
     ) -> KaplanMeierFitter:
-        """Fit Kaplan-Meier survival curve.
-
-        Parameters
-        ----------
-        durations : array-like of shape (n_samples,)
-            Observed time-to-event or censoring durations.
-        event_observed : array-like of shape (n_samples,), optional
-            Binary indicator (1 for observed event/death, 0 for censored).
-            If None, all durations are assumed to be observed events.
-        """
-        dur_raw = durations if y is None else durations
+        """Fit Kaplan-Meier survival curve."""
+        dur_raw = durations if durations is not None else X
+        evt_raw = (
+            event_observed if event_observed is not None else (args[0] if args else y)
+        )
+        if dur_raw is None:
+            raise ValueError("Durations must be provided.")
         dur = np.asarray(dur_raw, dtype=np.float64).ravel()
-        if event_observed is None:
+        if evt_raw is None:
             evt = np.ones_like(dur, dtype=np.int32)
         else:
-            evt = np.asarray(event_observed, dtype=np.int32).ravel()
+            evt = np.asarray(evt_raw, dtype=np.int32).ravel()
 
         if len(dur) != len(evt):
             raise ValueError("durations and event_observed must have identical length.")
@@ -225,18 +223,25 @@ class NelsonAalenFitter(ChokkhuModel):
 
     def fit(
         self,
-        durations: Any,
-        event_observed: Optional[Any] = None,
+        X: Any = None,
         y: Any = None,
+        durations: Any = None,
+        event_observed: Optional[Any] = None,
+        *args: Any,
         **kwargs: Any,
     ) -> NelsonAalenFitter:
         """Fit Nelson-Aalen cumulative hazard estimator."""
-        dur_raw = durations if y is None else durations
+        dur_raw = durations if durations is not None else X
+        evt_raw = (
+            event_observed if event_observed is not None else (args[0] if args else y)
+        )
+        if dur_raw is None:
+            raise ValueError("Durations must be provided.")
         dur = np.asarray(dur_raw, dtype=np.float64).ravel()
-        if event_observed is None:
+        if evt_raw is None:
             evt = np.ones_like(dur, dtype=np.int32)
         else:
-            evt = np.asarray(event_observed, dtype=np.int32).ravel()
+            evt = np.asarray(evt_raw, dtype=np.int32).ravel()
 
         if len(dur) != len(evt):
             raise ValueError("durations and event_observed must have identical length.")

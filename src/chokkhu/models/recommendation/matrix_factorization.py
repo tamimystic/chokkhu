@@ -8,6 +8,7 @@ Pure NumPy implementations of:
 """
 
 from typing import Dict, List, Optional, Set, Tuple, Union
+
 import numpy as np
 
 

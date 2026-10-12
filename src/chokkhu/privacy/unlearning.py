@@ -7,7 +7,8 @@ References:
     - Ravfogel et al., "Null It Out: Guarding Protected Attributes by Iterative Nullspace Projection", ACL 2020.
 """
 
-from typing import Dict, List, Union, Any, Optional, Callable, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
 

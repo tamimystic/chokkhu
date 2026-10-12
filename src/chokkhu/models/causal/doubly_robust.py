@@ -46,6 +46,30 @@ class _LinearRegressionSolver:
         return np.dot(X_arr, self.coef) + self.intercept
 
 
+def _resolve_t_y(
+    y: Any, T: Any, Y: Any, args: Tuple[Any, ...], kwargs: Any
+) -> Tuple[Any, Any]:
+    if "T" in kwargs:
+        t_data = kwargs["T"]
+        y_data = Y if Y is not None else kwargs.get("Y", y)
+    elif "Y" in kwargs:
+        y_data = kwargs["Y"]
+        t_data = T if T is not None else y
+    elif Y is not None:
+        t_data = T if T is not None else y
+        y_data = Y
+    elif T is not None:
+        t_data = y
+        y_data = T
+    elif args:
+        t_data = y
+        y_data = args[0]
+    else:
+        t_data = y
+        y_data = None
+    return t_data, y_data
+
+
 class DoublyRobustLearner(ChokkhuModel):
     r"""Doubly Robust Estimator for ATE and CATE :math:`	au(X)`.
 
@@ -115,15 +139,15 @@ class DoublyRobustLearner(ChokkhuModel):
 
     def fit(
         self,
-        X: np.ndarray,
+        X: Any,
+        y: Any = None,
         T: Any = None,
         Y: Any = None,
-        y: Any = None,
+        *args: Any,
         **kwargs: Any,
     ) -> DoublyRobustLearner:
         """Fit doubly robust model on covariates X, treatment T, and outcome Y."""
-        treatment = T
-        outcome = Y if Y is not None else y
+        treatment, outcome = _resolve_t_y(y, T, Y, args, kwargs)
         if treatment is None or outcome is None:
             raise ValueError("Both treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)

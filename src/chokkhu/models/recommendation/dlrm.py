@@ -6,6 +6,7 @@ explicit dot-product feature interaction, and top MLP for click-through rate pre
 """
 
 from typing import List, Optional
+
 import numpy as np
 
 

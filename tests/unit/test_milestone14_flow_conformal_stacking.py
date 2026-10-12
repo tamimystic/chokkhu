@@ -2,32 +2,32 @@
 
 import numpy as np
 
-from chokkhu.models.generative import (
-    FlowMatching,
-    RectifiedFlow,
-    VelocityMLP,
-    RealNVP,
-    AffineCouplingLayer,
-    LoRALinear,
-    LoRAAdapter,
-)
-from chokkhu.models.timeseries import (
-    ConformalPredictor,
-    conformal_interval,
-    MatrixProfile,
-    find_motifs,
-    find_discords,
-)
 from chokkhu.automl import (
     BOHB,
-    SuperLearner,
     StackingEnsemble,
+    SuperLearner,
+)
+from chokkhu.models.generative import (
+    AffineCouplingLayer,
+    FlowMatching,
+    LoRAAdapter,
+    LoRALinear,
+    RealNVP,
+    RectifiedFlow,
+    VelocityMLP,
 )
 from chokkhu.models.ml import (
+    KNN,
     LinearRegression,
     LogisticRegression,
     RandomForest,
-    KNN,
+)
+from chokkhu.models.timeseries import (
+    ConformalPredictor,
+    MatrixProfile,
+    conformal_interval,
+    find_discords,
+    find_motifs,
 )
 
 

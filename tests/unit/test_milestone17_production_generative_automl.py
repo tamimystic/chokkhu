@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from typing import List
+
 import numpy as np
 
 from chokkhu import (
+    UMAP,
     ControlNet,
     CycleGAN,
     DynamicEnsembleSelection,
@@ -13,7 +15,6 @@ from chokkhu import (
     ResidualVectorQuantizer,
     SpeculativeDecoder,
     StructuredJSONDecoder,
-    UMAP,
     VoiceActivityDetector,
     ZeroConv2D,
 )

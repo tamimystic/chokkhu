@@ -1,6 +1,7 @@
 """Unit tests for Classical NLP and Information Retrieval (TF-IDF, BM25, Porter Stemmer)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.models.nlp import BM25Retriever, PorterStemmer, TfidfVectorizer

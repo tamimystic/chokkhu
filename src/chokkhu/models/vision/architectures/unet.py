@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
-from ...dl.layers import Module
 from ...dl.activations import ReLU
+from ...dl.layers import Module
 from ..conv_layers import Conv2D, ConvTranspose2D, MaxPool2D
 
 

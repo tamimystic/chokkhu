@@ -8,8 +8,9 @@ and analytical ELBO posterior inference.
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Tuple, Union
+
+import numpy as np
 
 
 class _RBFKernel:

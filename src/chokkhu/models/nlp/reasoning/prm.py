@@ -4,7 +4,8 @@ Reference:
     Lightman et al., "Let's Verify Step by Step", OpenAI 2023 (PRM800K).
 """
 
-from typing import List, Optional, Callable
+from typing import Callable, List, Optional
+
 import numpy as np
 
 

@@ -9,6 +9,7 @@ Pure NumPy implementation of OpenAI CLIP dual-encoder architecture:
 
 import math
 from typing import Optional, Tuple
+
 import numpy as np
 
 

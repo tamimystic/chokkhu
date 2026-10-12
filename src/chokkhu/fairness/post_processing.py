@@ -8,6 +8,7 @@ Pure NumPy implementation of Hardt et al. (2016) Equality of Opportunity in Supe
 """
 
 from typing import Dict
+
 import numpy as np
 
 

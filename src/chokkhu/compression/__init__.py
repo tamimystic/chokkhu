@@ -6,18 +6,18 @@ Pure NumPy implementations of:
 - KnowledgeDistiller, FeatureDistiller
 """
 
-from .quantization import (
-    UniformQuantizer,
-    PostTrainingQuantizer,
-    QuantizedLinear,
+from .distillation import (
+    FeatureDistiller,
+    KnowledgeDistiller,
 )
 from .pruning import (
-    MagnitudePruner,
     GlobalMagnitudePruner,
+    MagnitudePruner,
 )
-from .distillation import (
-    KnowledgeDistiller,
-    FeatureDistiller,
+from .quantization import (
+    PostTrainingQuantizer,
+    QuantizedLinear,
+    UniformQuantizer,
 )
 
 __all__ = [

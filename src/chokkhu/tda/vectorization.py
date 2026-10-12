@@ -7,8 +7,9 @@ Adams et al. (JMLR 2017) Persistence Images for machine learning pipelines.
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Any, List, Optional, Tuple, Union
+
+import numpy as np
 
 
 class PersistenceLandscape:

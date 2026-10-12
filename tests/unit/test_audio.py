@@ -1,9 +1,11 @@
 """Unit tests for Audio Processing Universe (STFT, ISTFT, MelSpectrogram, MFCC, Conformer, AST, Wav2Vec2)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+from chokkhu.models import train
 from chokkhu.models.audio import (
     AST,
     Conformer,
@@ -17,7 +19,6 @@ from chokkhu.models.audio import (
     mfcc,
     stft,
 )
-from chokkhu.models import train
 
 
 def test_stft_and_istft_reconstruction() -> None:

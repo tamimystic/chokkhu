@@ -1,8 +1,8 @@
 """Sovereign Differentiable Sorting, Continuous Permutations & Learning-to-Rank."""
 
 from chokkhu.ranking.diff_sort import (
-    NeuralSort,
     DifferentiableRankingLoss,
+    NeuralSort,
 )
 from chokkhu.ranking.lambdamart import (
     LambdaMART,

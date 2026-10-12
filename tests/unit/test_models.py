@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-
 from chokkhu import train
 from chokkhu.models.base import ChokkhuModel
 

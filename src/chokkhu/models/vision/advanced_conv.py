@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ..dl.layers import Module, Parameter
 
 

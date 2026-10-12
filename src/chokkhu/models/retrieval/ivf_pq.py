@@ -5,6 +5,7 @@ approximate nearest neighbor search with Asymmetric Distance Computation (ADC).
 """
 
 from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
 

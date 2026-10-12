@@ -3,32 +3,33 @@
 from __future__ import annotations
 
 import numpy as np
+
+from chokkhu.models.ml.clustering_advanced import (
+    GaussianMixture,
+    MiniBatchKMeans,
+    SpectralClustering,
+)
 from chokkhu.models.ml.glm import (
-    RidgeRegression,
-    LassoRegression,
+    ARDRegression,
+    BayesianRidge,
     ElasticNet,
     HuberRegressor,
-    BayesianRidge,
-    ARDRegression,
+    LassoRegression,
     PassiveAggressiveClassifier,
     PassiveAggressiveRegressor,
-)
-from chokkhu.models.ml.naive_bayes_extended import (
-    GaussianNB,
-    MultinomialNB,
-    BernoulliNB,
-    ComplementNB,
-    LinearDiscriminantAnalysis,
-    QuadraticDiscriminantAnalysis,
-)
-from chokkhu.models.ml.clustering_advanced import (
-    MiniBatchKMeans,
-    GaussianMixture,
-    SpectralClustering,
+    RidgeRegression,
 )
 from chokkhu.models.ml.knn_spatial import (
     KNNClassifier,
     KNNRegressor,
+)
+from chokkhu.models.ml.naive_bayes_extended import (
+    BernoulliNB,
+    ComplementNB,
+    GaussianNB,
+    LinearDiscriminantAnalysis,
+    MultinomialNB,
+    QuadraticDiscriminantAnalysis,
 )
 
 

@@ -1,31 +1,32 @@
 """Unit tests for Graph Neural Networks (GNN) Universe (GCN, GAT, GraphSAGE, GIN)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+from chokkhu.models import train
 from chokkhu.models.gnn import (
-    GCN,
+    EGNN,
     GAT,
-    GraphSAGE,
+    GCN,
     GIN,
+    HGNN,
+    EGNNLayer,
     GATLayer,
-    normalize_adjacency,
+    Graphormer,
+    GraphormerLayer,
+    GraphSAGE,
+    HypergraphConvolution,
+    LaplacianPositionalEncoding,
+    RGCNClassifier,
+    RGCNLayer,
+    TemporalGraphNetwork,
     dense_to_edge_index,
     edge_index_to_dense,
     global_pool,
-    LaplacianPositionalEncoding,
-    GraphormerLayer,
-    Graphormer,
-    RGCNLayer,
-    RGCNClassifier,
-    EGNNLayer,
-    EGNN,
-    TemporalGraphNetwork,
-    HypergraphConvolution,
-    HGNN,
+    normalize_adjacency,
 )
-from chokkhu.models import train
 
 
 def test_normalize_adjacency_and_conversions() -> None:

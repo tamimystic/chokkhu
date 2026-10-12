@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+
 import chokkhu as ck
-from chokkhu.preprocessing.scaling import PowerScaler, QuantileScaler
 from chokkhu.preprocessing.feature_selection import RFESelector
+from chokkhu.preprocessing.scaling import PowerScaler, QuantileScaler
 
 
 def test_power_scaler():

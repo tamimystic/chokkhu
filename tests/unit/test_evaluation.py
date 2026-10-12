@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import numpy as np
+
+from chokkhu.evaluation.engine import evaluate
 from chokkhu.evaluation.metrics import (
     accuracy_score,
     confusion_matrix,
-    precision_recall_f1,
-    mean_squared_error,
     mean_absolute_error,
+    mean_squared_error,
+    precision_recall_f1,
     r2_score,
 )
-from chokkhu.evaluation.engine import evaluate
 
 
 class DummyClassifier:

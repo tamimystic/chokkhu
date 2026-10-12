@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from typing import Any, Tuple, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ..base import ChokkhuModel
-from ..dl.layers import Linear, Module, Parameter
 from ..dl.activations import ReLU, Sigmoid
+from ..dl.layers import Linear, Module, Parameter
 
 
 class VAE(Module, ChokkhuModel):

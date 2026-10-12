@@ -4,8 +4,9 @@ Formulated from first principles using discrete Markov transitions, absorbing
 mask states, and bidirectional transformer denoising networks in pure NumPy.
 """
 
+from typing import Dict, Optional
+
 import numpy as np
-from typing import Optional, Dict
 
 
 class DiscreteTextDiffusion:

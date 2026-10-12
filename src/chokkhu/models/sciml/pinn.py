@@ -10,6 +10,7 @@ Pure NumPy implementations of Physics-Informed Neural Networks for solving PDEs:
 
 import math
 from typing import List, Optional, Tuple
+
 import numpy as np
 
 

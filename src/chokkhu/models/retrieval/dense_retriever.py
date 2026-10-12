@@ -5,6 +5,7 @@ and Reciprocal Rank Fusion (RRF) for hybrid sparse-dense information retrieval.
 """
 
 from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 
 from chokkhu.models.retrieval.hnsw import HNSWIndex

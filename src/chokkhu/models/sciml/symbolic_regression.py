@@ -7,6 +7,7 @@ Pure NumPy implementation of Sparse Identification of Non-linear Dynamics:
 """
 
 from typing import List, Optional, Tuple
+
 import numpy as np
 
 

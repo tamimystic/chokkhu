@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import tempfile
+
 import numpy as np
 import pandas as pd
-from chokkhu.automl import auto_train, automl, AutoMLResult
+
+from chokkhu.automl import AutoMLResult, auto_train, automl
 
 
 def test_automl_raw_dataframe_with_nans_and_categories():

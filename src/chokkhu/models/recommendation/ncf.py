@@ -5,6 +5,7 @@ and Multi-Layer Perceptron (MLP) for implicit feedback recommendation.
 """
 
 from typing import Dict, List, Optional, Set, Tuple, Union
+
 import numpy as np
 
 

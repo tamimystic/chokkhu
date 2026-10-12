@@ -4,7 +4,8 @@ Reference:
     Yadav et al., "Resolving Interference When Merging Models", NeurIPS 2023.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 
 

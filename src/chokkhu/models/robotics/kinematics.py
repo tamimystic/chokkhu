@@ -4,8 +4,9 @@ Formulated from first principles using Denavit-Hartenberg (DH) parameterization,
 geometric & analytical Jacobians, and Damped Least Squares (DLS) Inverse Kinematics.
 """
 
+from typing import List, Optional, Tuple
+
 import numpy as np
-from typing import Optional, Tuple, List
 
 
 class RobotArmKinematics:

@@ -10,26 +10,25 @@ Covers:
 
 import numpy as np
 
-from chokkhu.models.timeseries.particle_filter import (
-    ParticleFilter,
-    RaoBlackwellizedParticleFilter,
-)
 from chokkhu.models.causal.double_ml import (
     DoubleMLPLR,
     RLearner,
+)
+from chokkhu.models.gnn.contrastive import (
+    GRACE,
+    GraphCL,
+)
+from chokkhu.models.neurosymbolic.synthesizer import (
+    ProgramSynthesizer,
 )
 from chokkhu.models.sciml.sparse_gp import (
     SparseGaussianProcessRegression,
     VariationalSparseGP,
 )
-from chokkhu.models.gnn.contrastive import (
-    GraphCL,
-    GRACE,
+from chokkhu.models.timeseries.particle_filter import (
+    ParticleFilter,
+    RaoBlackwellizedParticleFilter,
 )
-from chokkhu.models.neurosymbolic.synthesizer import (
-    ProgramSynthesizer,
-)
-
 
 # =====================================================================
 # 1. Sequential Monte Carlo & Particle Filtering Tests

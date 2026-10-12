@@ -5,7 +5,7 @@ References:
     - Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning", NeurIPS 2023.
 """
 
-from typing import List, Dict, Any, Optional, Callable, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 class STaR:

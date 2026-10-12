@@ -2,14 +2,15 @@
 
 import numpy as np
 import pytest
+
 from chokkhu.models.multimodal import (
     CLIP,
-    CLIPVisionEncoder,
     CLIPTextEncoder,
-    SigLIP,
+    CLIPVisionEncoder,
     LLaVALinearProjector,
     LLaVAMLPProjector,
     PerceiverResampler,
+    SigLIP,
 )
 
 

@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from typing import Any, List, Optional, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ..base import ChokkhuModel
-from ..dl.layers import Linear, Module
 from ..dl.activations import ReLU
-from .layers import GCNLayer, GATLayer, GraphSAGELayer, GINLayer
+from ..dl.layers import Linear, Module
+from .layers import GATLayer, GCNLayer, GINLayer, GraphSAGELayer
 from .utils import global_pool
 
 

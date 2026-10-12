@@ -11,10 +11,10 @@ import json
 import struct
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
-
 
 _DTYPE_TO_STR: Dict[np.dtype, str] = {
     np.dtype("float64"): "F64",

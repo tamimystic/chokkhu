@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from typing import Any, Optional, Tuple, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Function, Tensor, concat
+
 from ..dl.layers import Module, Parameter
 
 

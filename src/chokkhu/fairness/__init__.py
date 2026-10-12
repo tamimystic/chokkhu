@@ -9,14 +9,14 @@ Pure NumPy implementations of:
 from .metrics import (
     demographic_parity_difference,
     demographic_parity_ratio,
+    disparate_impact_ratio,
     equal_opportunity_difference,
     equalized_odds_difference,
-    disparate_impact_ratio,
-    theil_index,
     fairness_report,
+    theil_index,
 )
-from .pre_processing import ReweighingTransformer, DisparateImpactRemover
 from .post_processing import ThresholdOptimizer
+from .pre_processing import DisparateImpactRemover, ReweighingTransformer
 
 __all__ = [
     "demographic_parity_difference",

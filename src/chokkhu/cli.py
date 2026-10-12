@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import argparse
 import sys
+
 import chokkhu as ck
-from chokkhu.io import load, save
+from chokkhu.automl.autotrainer import auto_train, train
 from chokkhu.cleaning import clean
 from chokkhu.eda.tabular.engine import tabular as eda_tabular
+from chokkhu.io import load, save
 from chokkhu.pipeline.engine import pipeline
-from chokkhu.automl.autotrainer import train, auto_train
 
 
 def main(args: list[str] | None = None) -> int:

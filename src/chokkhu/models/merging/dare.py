@@ -6,7 +6,9 @@ Reference:
 """
 
 from typing import Dict, List, Optional
+
 import numpy as np
+
 from .ties import TIESMerging
 
 

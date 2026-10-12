@@ -5,7 +5,7 @@ from .diagrams import (
     bottleneck_distance,
 )
 from .rips import VietorisRipsComplex
-from .vectorization import PersistenceLandscape, PersistenceImage
+from .vectorization import PersistenceImage, PersistenceLandscape
 
 __all__ = [
     "VietorisRipsComplex",

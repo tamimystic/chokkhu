@@ -1,8 +1,8 @@
 """Sovereign Non-Euclidean Hyperbolic Geometry and Manifold Operations."""
 
 from chokkhu.geometry.hyperbolic import (
-    PoincareBallEmbedding,
     LorentzManifold,
+    PoincareBallEmbedding,
 )
 from chokkhu.geometry.sheaf import (
     CellularSheaf,

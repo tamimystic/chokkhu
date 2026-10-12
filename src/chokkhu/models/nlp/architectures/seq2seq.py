@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from typing import Optional, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
 from ...dl.layers import Dropout, Linear, Module
 from ..embeddings import SinusoidalPositionalEncoding, TokenEmbedding

@@ -14,7 +14,8 @@ from chokkhu.evaluation.metrics import accuracy_score, r2_score
 from chokkhu.io.loader import load as load_fn
 from chokkhu.models.base import ChokkhuModel
 from chokkhu.models.engine import train as train_fn
-from chokkhu.preprocessing import PreprocessorState, preprocess as preprocess_fn
+from chokkhu.preprocessing import PreprocessorState
+from chokkhu.preprocessing import preprocess as preprocess_fn
 from chokkhu.splitting.splitter import train_test_split
 from chokkhu.transformation.features import PolynomialFeatures
 from chokkhu.transformation.lda import LinearDiscriminantAnalysis

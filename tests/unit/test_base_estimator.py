@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+
 from chokkhu.core.exceptions import NotFittedError
 from chokkhu.models.base import check_is_fitted, clone
 from chokkhu.models.ml.glm import RidgeRegression

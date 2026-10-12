@@ -7,8 +7,9 @@ spectral convolutions, complex frequency mode truncation, lifting and projection
 
 from __future__ import annotations
 
-import numpy as np
 from typing import Tuple
+
+import numpy as np
 
 
 def _gelu(x: np.ndarray) -> np.ndarray:

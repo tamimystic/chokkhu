@@ -2,7 +2,6 @@ r"""QMIX Multi-Agent Value Factorization Architecture in pure NumPy."""
 
 from __future__ import annotations
 
-
 import numpy as np
 
 

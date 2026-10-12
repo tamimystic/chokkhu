@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from .economy import CombinatorialAuction, ReplicatorDynamics
+from .game_theory import NashEquilibriumSolver
 from .qmix import QMIX
 from .vdn import VDN
-from .game_theory import NashEquilibriumSolver
-from .economy import ReplicatorDynamics, CombinatorialAuction
 
 __all__ = [
     "QMIX",

@@ -1,21 +1,22 @@
 """Unit tests for Time Series & Forecasting Universe (ARIMA, Exponential Smoothing, N-BEATS, N-HiTS, PatchTST)."""
 
 from __future__ import annotations
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+from chokkhu.models import train
 from chokkhu.models.timeseries import (
-    decompose_series,
-    create_lag_matrix,
-    difference,
-    inverse_difference,
     ARIMA,
-    ExponentialSmoothing,
     NBEATS,
     NHITS,
+    ExponentialSmoothing,
     PatchTST,
+    create_lag_matrix,
+    decompose_series,
+    difference,
+    inverse_difference,
 )
-from chokkhu.models import train
 
 
 def test_decomposition_additive_and_multiplicative() -> None:

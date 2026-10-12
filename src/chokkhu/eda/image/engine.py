@@ -65,7 +65,7 @@ class ImageEDA:
 
             # Display inline if inside a Jupyter Notebook
             try:
-                from IPython.display import display, HTML
+                from IPython.display import HTML, display
 
                 with open(html_path, "r", encoding="utf-8") as f:
                     display(HTML(f.read()))

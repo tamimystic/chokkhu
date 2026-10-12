@@ -7,6 +7,7 @@ Pure NumPy implementation of continuous-depth neural networks:
 """
 
 from typing import List, Optional
+
 import numpy as np
 
 

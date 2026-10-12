@@ -49,7 +49,7 @@ class PropensityModel(ChokkhuModel):
         self.is_fitted: bool = False
 
     def fit(
-        self, X: np.ndarray, T: Any = None, y: Any = None, **kwargs: Any
+        self, X: Any, y: Any = None, T: Any = None, **kwargs: Any
     ) -> PropensityModel:
         """Fit propensity model predicting treatment assignment T from covariates X."""
         target = T if T is not None else y
@@ -96,6 +96,30 @@ class PropensityModel(ChokkhuModel):
         return (self.predict_proba(X) >= 0.5).astype(np.int32)
 
 
+def _resolve_t_y(
+    y: Any, T: Any, Y: Any, args: Tuple[Any, ...], kwargs: Any
+) -> Tuple[Any, Any]:
+    if "T" in kwargs:
+        t_data = kwargs["T"]
+        y_data = Y if Y is not None else kwargs.get("Y", y)
+    elif "Y" in kwargs:
+        y_data = kwargs["Y"]
+        t_data = T if T is not None else y
+    elif Y is not None:
+        t_data = T if T is not None else y
+        y_data = Y
+    elif T is not None:
+        t_data = y
+        y_data = T
+    elif args:
+        t_data = y
+        y_data = args[0]
+    else:
+        t_data = y
+        y_data = None
+    return t_data, y_data
+
+
 class PropensityScoreMatching(ChokkhuModel):
     r"""Propensity Score Matching (PSM) for ATE & ATT Estimation.
 
@@ -135,14 +159,20 @@ class PropensityScoreMatching(ChokkhuModel):
 
     def fit(
         self,
-        X: np.ndarray,
-        T: np.ndarray,
-        Y: np.ndarray,
-    ) -> "PropensityScoreMatching":
+        X: Any,
+        y: Any = None,
+        T: Any = None,
+        Y: Any = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> PropensityScoreMatching:
         """Fit propensity scores, match treated and control samples, and estimate treatment effects."""
+        t_data, y_data = _resolve_t_y(y, T, Y, args, kwargs)
+        if t_data is None or y_data is None:
+            raise ValueError("Treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.int32).ravel()
-        Y_arr = np.asarray(Y, dtype=np.float32).ravel()
+        T_arr = np.asarray(t_data, dtype=np.int32).ravel()
+        Y_arr = np.asarray(y_data, dtype=np.float32).ravel()
 
         if len(X_arr) != len(T_arr) or len(X_arr) != len(Y_arr):
             raise ValueError("X, T, and Y must have matching dimensions.")
@@ -269,14 +299,20 @@ class InverseProbabilityWeighting(ChokkhuModel):
 
     def fit(
         self,
-        X: np.ndarray,
-        T: np.ndarray,
-        Y: np.ndarray,
-    ) -> "InverseProbabilityWeighting":
+        X: Any,
+        y: Any = None,
+        T: Any = None,
+        Y: Any = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> InverseProbabilityWeighting:
         """Fit propensity scores and calculate IPW ATE estimate."""
+        t_data, y_data = _resolve_t_y(y, T, Y, args, kwargs)
+        if t_data is None or y_data is None:
+            raise ValueError("Treatment T and outcome Y must be provided.")
         X_arr = np.asarray(X, dtype=np.float32)
-        T_arr = np.asarray(T, dtype=np.float32).ravel()
-        Y_arr = np.asarray(Y, dtype=np.float32).ravel()
+        T_arr = np.asarray(t_data, dtype=np.float32).ravel()
+        Y_arr = np.asarray(y_data, dtype=np.float32).ravel()
         n_samples = len(X_arr)
 
         self.propensity_model.fit(X_arr, T_arr)

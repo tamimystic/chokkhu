@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from typing import Dict, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ..dl.losses import Loss
 
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
-import numpy as np
+
 from chokkhu.explainability import (
-    explain,
     ExplanationResult,
+    explain,
 )
 from chokkhu.models.ml.random_forest import RandomForest
 

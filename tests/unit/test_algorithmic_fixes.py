@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from chokkhu.transformation.features import LogTransformer
+
 from chokkhu.cleaning.outliers import handle_outliers
-from chokkhu.models.ml.gradient_boosting import GradientBoosting
-from chokkhu.eda.tabular.univariate import UnivariateAnalyzer
 from chokkhu.eda.tabular.multivariate import MultivariateAnalyzer
+from chokkhu.eda.tabular.univariate import UnivariateAnalyzer
+from chokkhu.models.ml.gradient_boosting import GradientBoosting
+from chokkhu.transformation.features import LogTransformer
 
 
 def test_log_transformer_no_double_shift():

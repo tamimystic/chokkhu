@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import numpy as np
+
 from chokkhu.core.tensor import Tensor
 from chokkhu.models.vision import (
-    Conv2D,
-    MaxPool2D,
     AvgPool2D,
-    GlobalAvgPool2D,
     BatchNorm2D,
-    DepthwiseSeparableConv2D,
+    Conv2D,
     ConvTranspose2D,
+    DepthwiseSeparableConv2D,
+    GlobalAvgPool2D,
+    MaxPool2D,
 )
 
 

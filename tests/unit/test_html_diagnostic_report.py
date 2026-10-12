@@ -1,6 +1,7 @@
 """Unit tests for standalone Dark-Mode HTML diagnostic report builder."""
 
 import os
+
 import numpy as np
 import pandas as pd
 

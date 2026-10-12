@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+
 import chokkhu as ck
 from chokkhu.models.ml.neural_network import NeuralNetwork
 

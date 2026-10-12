@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 
 from chokkhu.compression import (
-    UniformQuantizer,
-    PostTrainingQuantizer,
-    QuantizedLinear,
-    MagnitudePruner,
+    FeatureDistiller,
     GlobalMagnitudePruner,
     KnowledgeDistiller,
-    FeatureDistiller,
+    MagnitudePruner,
+    PostTrainingQuantizer,
+    QuantizedLinear,
+    UniformQuantizer,
 )
 
 

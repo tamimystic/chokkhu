@@ -1,28 +1,29 @@
 import math
+
 import numpy as np
 
 from chokkhu.core.math import (
     cdist,
+    chi2,
+    chi2_contingency,
+    digamma,
     erf,
     erfc,
-    gamma,
-    lgamma,
-    digamma,
-    norm,
-    chi2,
-    skew,
-    kurtosis,
-    zscore,
-    f_oneway,
-    ttest_ind,
-    kruskal,
-    chi2_contingency,
-    shapiro,
-    kstest,
-    probplot,
     expm,
-    minimize,
+    f_oneway,
+    gamma,
+    kruskal,
+    kstest,
+    kurtosis,
+    lgamma,
     linear_sum_assignment,
+    minimize,
+    norm,
+    probplot,
+    shapiro,
+    skew,
+    ttest_ind,
+    zscore,
 )
 
 

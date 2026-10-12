@@ -1,29 +1,30 @@
 """Zero-Dependency Automated Machine Learning (AutoML) Subsystem."""
 
 from __future__ import annotations
-from .surrogate import (
-    GaussianProcessSurrogate,
-    expected_improvement,
-    upper_confidence_bound,
+
+from .autotrainer import (
+    AutoMLResult,
+    AutoTrainer,
+    auto_train,
+    automl,
 )
 from .bayesian import BayesianOptimization
-from .hyperband import Hyperband
 from .bohb import BOHB
-from .stacking import (
-    SuperLearner,
-    StackingEnsemble,
-)
-from .nas import DARTS
+from .dynamic_selection import DynamicEnsembleSelection
 from .genetic_pipeline import (
     GeneticPipelineSearch,
     PipelineIndividual,
 )
-from .dynamic_selection import DynamicEnsembleSelection
-from .autotrainer import (
-    AutoTrainer,
-    AutoMLResult,
-    auto_train,
-    automl,
+from .hyperband import Hyperband
+from .nas import DARTS
+from .stacking import (
+    StackingEnsemble,
+    SuperLearner,
+)
+from .surrogate import (
+    GaussianProcessSurrogate,
+    expected_improvement,
+    upper_confidence_bound,
 )
 
 __all__ = [

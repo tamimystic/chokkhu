@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
 import re
+from collections import Counter, defaultdict
 from typing import Any, Dict, List, Set, Tuple
+
 from .base import BaseTokenizer
 
 

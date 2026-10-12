@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from typing import Any, Union
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
+
 from ...base import ChokkhuModel
 from ...dl.layers import Dropout, LayerNorm, Linear, Module, Parameter
-from ...vision.conv_layers import Conv2D
 from ...nlp.transformer_blocks import TransformerEncoderLayer
+from ...vision.conv_layers import Conv2D
 
 
 class AST(Module, ChokkhuModel):

@@ -6,12 +6,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from chokkhu.optimization.differentiable_qp import OptNet
-from chokkhu.optimal_transport.divergence import SinkhornDivergence
-from chokkhu.models.anomaly.svdd import SupportVectorDataDescription
 from chokkhu.clustering.spectral import SpectralGraphClusterer
+from chokkhu.models.anomaly.svdd import SupportVectorDataDescription
 from chokkhu.models.neurosymbolic.ilp import DifferentiableILP
-
+from chokkhu.optimal_transport.divergence import SinkhornDivergence
+from chokkhu.optimization.differentiable_qp import OptNet
 
 # =====================================================================
 # 1. OptNet: Primal-Dual Interior Point QP & Implicit Differentiation

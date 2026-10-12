@@ -12,6 +12,7 @@ Tests covering:
 """
 
 from typing import Dict, Optional, Tuple
+
 import numpy as np
 
 from chokkhu import (

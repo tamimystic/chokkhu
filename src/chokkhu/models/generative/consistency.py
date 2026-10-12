@@ -9,7 +9,9 @@ References:
 from __future__ import annotations
 
 from typing import Any, List, Optional, Tuple, Union
+
 import numpy as np
+
 from chokkhu.core.math import linear_sum_assignment
 
 

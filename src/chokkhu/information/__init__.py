@@ -1,5 +1,5 @@
-from .entropy import KraskovMutualInformation, MultivariateKDE
 from .bottleneck import DeepVariationalInformationBottleneck
+from .entropy import KraskovMutualInformation, MultivariateKDE
 
 __all__ = [
     "KraskovMutualInformation",

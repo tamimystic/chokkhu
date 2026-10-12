@@ -7,6 +7,7 @@ Pure NumPy implementation of Kerbl et al. (2023) "3D Gaussian Splatting for Real
 """
 
 from typing import Tuple
+
 import numpy as np
 
 

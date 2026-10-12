@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+
 import numpy as np
 import pandas as pd
+
 import chokkhu as ck
 from chokkhu.pipeline import PipelineResult
 

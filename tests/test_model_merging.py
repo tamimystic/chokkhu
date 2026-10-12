@@ -3,11 +3,11 @@
 import numpy as np
 
 from chokkhu.models.merging import (
-    TIESMerging,
     DARE,
     SLERP,
-    RegMean,
     FrankWolfeEnsemble,
+    RegMean,
+    TIESMerging,
 )
 
 

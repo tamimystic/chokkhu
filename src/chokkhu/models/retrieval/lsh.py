@@ -5,6 +5,7 @@ and MinHash LSH (for Jaccard set similarity).
 """
 
 from typing import Dict, List, Optional, Set, Tuple, Union
+
 import numpy as np
 
 

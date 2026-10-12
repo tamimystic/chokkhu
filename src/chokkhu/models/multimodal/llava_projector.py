@@ -8,6 +8,7 @@ Pure NumPy implementations of vision-to-language projection adapters:
 
 import math
 from typing import Optional
+
 import numpy as np
 
 

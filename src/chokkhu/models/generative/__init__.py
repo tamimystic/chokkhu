@@ -7,6 +7,12 @@ from .autoencoders import (
     VQVAE,
     VectorQuantizer,
 )
+from .consistency import (
+    ConsistencyMLP,
+    ConsistencyModel,
+    OptimalTransportFlowMatching,
+    ReflowMatching,
+)
 from .controlnet import (
     ControlNet,
     ControlNetBlock,
@@ -17,15 +23,18 @@ from .cyclegan import (
     CycleGANGenerator,
     PatchGANDiscriminator,
 )
-from .dit import (
-    DiffusionTransformer,
-    DiTBlock,
-    AdaLNZero,
-)
 from .diffusion import (
     DDPM,
     DenoisingMLP,
     SinusoidalTimeEmbedding,
+)
+from .discrete_diffusion import (
+    DiscreteTextDiffusion,
+)
+from .dit import (
+    AdaLNZero,
+    DiffusionTransformer,
+    DiTBlock,
 )
 from .flow_matching import (
     FlowMatching,
@@ -37,6 +46,11 @@ from .gan import (
     WGANGP,
     Discriminator,
     Generator,
+)
+from .gflownet import TrajectoryBalanceGFlowNet
+from .guidance import (
+    ClassifierFreeGuidance,
+    DiffusionInpainter,
 )
 from .latent_diffusion import (
     LatentCrossAttentionBlock,
@@ -50,20 +64,6 @@ from .normalizing_flows import (
     AffineCouplingLayer,
     RealNVP,
 )
-from .discrete_diffusion import (
-    DiscreteTextDiffusion,
-)
-from .guidance import (
-    ClassifierFreeGuidance,
-    DiffusionInpainter,
-)
-from .consistency import (
-    ConsistencyModel,
-    ConsistencyMLP,
-    OptimalTransportFlowMatching,
-    ReflowMatching,
-)
-from .gflownet import TrajectoryBalanceGFlowNet
 
 __all__ = [
     # Autoencoders

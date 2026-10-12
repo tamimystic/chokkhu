@@ -18,13 +18,13 @@ Tests:
 import numpy as np
 
 from chokkhu.models.recommendation import (
+    DLRM,
     BayesianPersonalizedRanking,
     DeepFM,
-    DLRM,
     GRU4Rec,
     ImplicitALS,
-    NMFRecommender,
     NeuralCollaborativeFiltering,
+    NMFRecommender,
     SASRec,
     SVDPlusPlus,
     SVDRecommender,

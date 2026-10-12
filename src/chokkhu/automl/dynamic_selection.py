@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any, Optional, Sequence
+
 import numpy as np
 
 

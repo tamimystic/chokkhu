@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from typing import List, Optional, Tuple
+
 import numpy as np
 
 from chokkhu.core.tensor import Tensor
-from ..dl.layers import Linear, Module
+
 from ..dl.activations import GELU
+from ..dl.layers import Linear, Module
 from .transformer_blocks import SwiGLU
 
 
