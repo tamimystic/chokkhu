@@ -15,10 +15,12 @@ class GenerationConfig:
     """Configuration dataclass for autoregressive text generation."""
 
     max_new_tokens: int = 50
+    min_new_tokens: int = 0
     temperature: float = 1.0
     top_k: int = 50
     top_p: float = 0.9
     repetition_penalty: float = 1.0
+    no_repeat_ngram_size: int = 0
     eos_token_id: Optional[int] = 3
     pad_token_id: Optional[int] = 0
     do_sample: bool = True
@@ -39,6 +41,30 @@ def sample_next_token(
                 logits[tid] *= config.repetition_penalty
             else:
                 logits[tid] /= config.repetition_penalty
+
+    # No-repeat n-gram penalty
+    if (
+        config.no_repeat_ngram_size > 0
+        and len(generated_tokens) >= config.no_repeat_ngram_size - 1
+    ):
+        n = config.no_repeat_ngram_size
+        prefix = tuple(generated_tokens[-(n - 1) :])
+        banned = set()
+        for i in range(len(generated_tokens) - n + 1):
+            if tuple(generated_tokens[i : i + n - 1]) == prefix:
+                banned.add(generated_tokens[i + n - 1])
+        for tid in banned:
+            if tid < len(logits):
+                logits[tid] = -1e9
+
+    # Min new tokens: prevent premature EOS
+    if (
+        config.min_new_tokens > 0
+        and len(generated_tokens) < config.min_new_tokens
+        and config.eos_token_id is not None
+        and config.eos_token_id < len(logits)
+    ):
+        logits[config.eos_token_id] = -1e9
 
     # Greedy search
     if not config.do_sample or config.temperature <= 0.0:
@@ -97,6 +123,7 @@ class TextGenerator:
 
         input_ids = self.tokenizer.encode(prompt, bos=True)
         generated = list(input_ids)
+        num_generated = 0
 
         for _ in range(config.max_new_tokens):
             curr_input = np.array([generated], dtype=np.int64)
@@ -109,8 +136,13 @@ class TextGenerator:
 
             next_token = sample_next_token(last_logits, generated, config)
             generated.append(next_token)
+            num_generated += 1
 
-            if config.eos_token_id is not None and next_token == config.eos_token_id:
+            if (
+                config.eos_token_id is not None
+                and next_token == config.eos_token_id
+                and num_generated >= config.min_new_tokens
+            ):
                 break
 
         return self.tokenizer.decode(generated, skip_special_tokens=True)

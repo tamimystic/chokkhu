@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -142,8 +142,9 @@ class BaseTokenizer(ABC):
         padding: bool = True,
         truncation: bool = True,
         add_special_tokens: bool = False,
-    ) -> np.ndarray:
-        """Encode a batch of texts into a 2D NumPy integer array."""
+        return_attention_mask: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+        """Encode a batch of texts into a 2D NumPy integer array with optional attention mask."""
         encoded_list = [
             self.encode(text, add_special_tokens=add_special_tokens) for text in texts
         ]
@@ -158,7 +159,11 @@ class BaseTokenizer(ABC):
                 ids = ids + [self.pad_token_id] * (max_length - len(ids))
             batch_ids.append(ids)
 
-        return np.asarray(batch_ids, dtype=np.int64)
+        arr = np.asarray(batch_ids, dtype=np.int64)
+        if return_attention_mask:
+            mask = (arr != self.pad_token_id).astype(np.int64)
+            return arr, mask
+        return arr
 
     def save(self, filepath: str) -> None:
         """Save tokenizer configuration and vocabulary to JSON file."""
