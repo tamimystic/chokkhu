@@ -26,13 +26,17 @@ class GCN(Module, ChokkhuModel):
         num_layers: int = 2,
         task: str = "node",
         pool_mode: str = "mean",
+        dropout: float = 0.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.in_features = in_features
         self.hidden_dim = hidden_dim
         self.out_features = out_features
+        self.num_layers = num_layers
         self.task = task.lower()
         self.pool_mode = pool_mode
+        self.dropout = dropout
 
         self.conv_layers: List[GCNLayer] = []
         if num_layers == 1:
@@ -60,6 +64,11 @@ class GCN(Module, ChokkhuModel):
             h = conv(h, adj)
             if i < num_layers - 1:
                 h = self.act(h)
+                if self.dropout > 0.0 and self.training:
+                    mask = (np.random.rand(*h.shape) >= self.dropout) / (
+                        1.0 - self.dropout
+                    )
+                    h = Tensor(h.data * mask, requires_grad=h.requires_grad)
 
         if self.task == "graph":
             h = global_pool(h, batch=batch, mode=self.pool_mode)
@@ -80,7 +89,7 @@ class GCN(Module, ChokkhuModel):
         X_arr = np.asarray(X, dtype=np.float64)
         N = X_arr.shape[0]
         if adj is None:
-            adj = np.eye(N, dtype=np.float64)
+            adj = kwargs.get("A", np.eye(N, dtype=np.float64))
 
         for _ in range(epochs):
             xt = Tensor(X_arr, requires_grad=True)
@@ -113,13 +122,18 @@ class GAT(Module, ChokkhuModel):
         num_layers: int = 2,
         task: str = "node",
         pool_mode: str = "mean",
+        dropout: float = 0.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.in_features = in_features
         self.hidden_dim = hidden_dim
         self.out_features = out_features
+        self.num_heads = num_heads
+        self.num_layers = num_layers
         self.task = task.lower()
         self.pool_mode = pool_mode
+        self.dropout = dropout
 
         self.gat_layers: List[GATLayer] = []
         if num_layers == 1:
@@ -165,6 +179,11 @@ class GAT(Module, ChokkhuModel):
             h = gat(h, adj)
             if i < num_layers - 1:
                 h = self.act(h)
+                if self.dropout > 0.0 and self.training:
+                    mask = (np.random.rand(*h.shape) >= self.dropout) / (
+                        1.0 - self.dropout
+                    )
+                    h = Tensor(h.data * mask, requires_grad=h.requires_grad)
 
         if self.task == "graph":
             h = global_pool(h, batch=batch, mode=self.pool_mode)
@@ -182,7 +201,7 @@ class GAT(Module, ChokkhuModel):
         X_arr = np.asarray(X, dtype=np.float64)
         N = X_arr.shape[0]
         if adj is None:
-            adj = np.eye(N, dtype=np.float64)
+            adj = kwargs.get("A", np.eye(N, dtype=np.float64))
 
         for _ in range(epochs):
             xt = Tensor(X_arr, requires_grad=True)
@@ -215,13 +234,18 @@ class GraphSAGE(Module, ChokkhuModel):
         aggregator: str = "mean",
         task: str = "node",
         pool_mode: str = "mean",
+        dropout: float = 0.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.in_features = in_features
         self.hidden_dim = hidden_dim
         self.out_features = out_features
+        self.num_layers = num_layers
+        self.aggregator = aggregator.lower()
         self.task = task.lower()
         self.pool_mode = pool_mode
+        self.dropout = dropout
 
         self.sage_layers: List[GraphSAGELayer] = []
         if num_layers == 1:
@@ -259,6 +283,11 @@ class GraphSAGE(Module, ChokkhuModel):
             h = layer(h, adj)
             if i < num_layers - 1:
                 h = self.act(h)
+                if self.dropout > 0.0 and self.training:
+                    mask = (np.random.rand(*h.shape) >= self.dropout) / (
+                        1.0 - self.dropout
+                    )
+                    h = Tensor(h.data * mask, requires_grad=h.requires_grad)
 
         if self.task == "graph":
             h = global_pool(h, batch=batch, mode=self.pool_mode)
@@ -276,7 +305,7 @@ class GraphSAGE(Module, ChokkhuModel):
         X_arr = np.asarray(X, dtype=np.float64)
         N = X_arr.shape[0]
         if adj is None:
-            adj = np.eye(N, dtype=np.float64)
+            adj = kwargs.get("A", np.eye(N, dtype=np.float64))
 
         for _ in range(epochs):
             xt = Tensor(X_arr, requires_grad=True)
@@ -309,13 +338,18 @@ class GIN(Module, ChokkhuModel):
         eps: float = 0.0,
         task: str = "graph",
         pool_mode: str = "sum",
+        dropout: float = 0.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.in_features = in_features
         self.hidden_dim = hidden_dim
         self.out_features = out_features
+        self.num_layers = num_layers
+        self.eps = eps
         self.task = task.lower()
         self.pool_mode = pool_mode
+        self.dropout = dropout
 
         self.gin_layers: List[GINLayer] = []
         self.gin_layers.append(GINLayer(in_features, hidden_dim, eps=eps))
@@ -334,8 +368,11 @@ class GIN(Module, ChokkhuModel):
         batch: Optional[np.ndarray] = None,
     ) -> Tensor:
         h = x if isinstance(x, Tensor) else Tensor(x, requires_grad=True)
-        for layer in self.gin_layers:
+        for i, layer in enumerate(self.gin_layers):
             h = layer(h, adj)
+            if i < len(self.gin_layers) - 1 and self.dropout > 0.0 and self.training:
+                mask = (np.random.rand(*h.shape) >= self.dropout) / (1.0 - self.dropout)
+                h = Tensor(h.data * mask, requires_grad=h.requires_grad)
 
         if self.task == "graph":
             h = global_pool(h, batch=batch, mode=self.pool_mode)
@@ -353,7 +390,7 @@ class GIN(Module, ChokkhuModel):
         X_arr = np.asarray(X, dtype=np.float64)
         N = X_arr.shape[0]
         if adj is None:
-            adj = np.eye(N, dtype=np.float64)
+            adj = kwargs.get("A", np.eye(N, dtype=np.float64))
 
         for _ in range(epochs):
             xt = Tensor(X_arr, requires_grad=True)
