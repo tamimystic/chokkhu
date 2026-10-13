@@ -53,7 +53,7 @@ class DenoisingMLP(Module):
 
 
 class DDPM(Module, ChokkhuModel):
-    """Denoising Diffusion Probabilistic Model (Ho et al., 2020)."""
+    """Denoising Diffusion Probabilistic Model (Ho et al., 2020) and DDIM (Song et al., 2020)."""
 
     def __init__(
         self,
@@ -62,14 +62,30 @@ class DDPM(Module, ChokkhuModel):
         beta_start: float = 0.0001,
         beta_end: float = 0.02,
         hidden_dim: int = 128,
+        schedule: str = "linear",
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.data_dim = data_dim
         self.timesteps = timesteps
+        self.beta_start = beta_start
+        self.beta_end = beta_end
+        self.hidden_dim = hidden_dim
+        self.schedule = schedule
 
-        self.betas: np.ndarray = np.linspace(
-            beta_start, beta_end, timesteps, dtype=np.float64
-        )
+        if schedule == "cosine":
+            steps = timesteps + 1
+            s = 0.008
+            grid = np.linspace(0, timesteps, steps, dtype=np.float64)
+            alphas_cumprod = (
+                np.cos(((grid / timesteps) + s) / (1.0 + s) * np.pi * 0.5) ** 2
+            )
+            alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
+            betas = 1.0 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
+            self.betas = np.clip(betas, 1e-4, 0.999)
+        else:
+            self.betas = np.linspace(beta_start, beta_end, timesteps, dtype=np.float64)
+
         self.alphas: np.ndarray = 1.0 - self.betas
         self.alphas_bar: np.ndarray = np.cumprod(self.alphas, axis=0)
 
@@ -105,31 +121,64 @@ class DDPM(Module, ChokkhuModel):
         return pred_noise, noise
 
     def sample(
-        self, num_samples: int = 16, num_steps: Optional[int] = None
+        self,
+        num_samples: int = 16,
+        num_steps: Optional[int] = None,
+        method: str = "auto",
+        eta: float = 0.0,
     ) -> np.ndarray:
-        """Reverse diffusion generation: sample x_0 ~ p(x_0) from Gaussian prior."""
+        """Reverse diffusion generation: sample x_0 via DDPM or DDIM (Song et al., 2020)."""
         steps = num_steps if num_steps is not None else min(self.timesteps, 50)
         step_indices = np.linspace(self.timesteps - 1, 0, steps, dtype=int)
-
         x = np.random.randn(num_samples, self.data_dim)
+        use_ddim = method == "ddim" or (
+            method == "auto" and num_steps is not None and num_steps < self.timesteps
+        )
 
-        for i, t_idx in enumerate(step_indices):
-            t_batch: np.ndarray = np.full((num_samples,), t_idx, dtype=int)
-            pred_noise = self.model(Tensor(x, requires_grad=False), t_batch).data
+        if use_ddim:
+            for i in range(len(step_indices)):
+                t_idx = step_indices[i]
+                t_prev = step_indices[i + 1] if i + 1 < len(step_indices) else -1
+                t_batch: np.ndarray = np.full((num_samples,), t_idx, dtype=int)
+                pred_noise = self.model(Tensor(x, requires_grad=False), t_batch).data
 
-            beta = self.betas[t_idx]
-            alpha = self.alphas[t_idx]
-            alpha_bar = self.alphas_bar[t_idx]
+                alpha_bar_t = self.alphas_bar[t_idx]
+                alpha_bar_prev = self.alphas_bar[t_prev] if t_prev >= 0 else 1.0
 
-            mean = (1.0 / np.sqrt(alpha)) * (
-                x - (beta / np.sqrt(1.0 - alpha_bar)) * pred_noise
-            )
-            if t_idx > 0:
-                z = np.random.randn(*x.shape)
-                sigma = np.sqrt(beta)
-                x = mean + sigma * z
-            else:
-                x = mean
+                pred_x0 = (x - np.sqrt(1.0 - alpha_bar_t) * pred_noise) / np.sqrt(
+                    alpha_bar_t
+                )
+                if t_prev >= 0 and eta > 0.0:
+                    sigma = eta * np.sqrt(
+                        (1.0 - alpha_bar_prev)
+                        / (1.0 - alpha_bar_t)
+                        * (1.0 - alpha_bar_t / alpha_bar_prev)
+                    )
+                else:
+                    sigma = 0.0
+
+                dir_xt = (
+                    np.sqrt(np.maximum(0.0, 1.0 - alpha_bar_prev - sigma**2))
+                    * pred_noise
+                )
+                x = np.sqrt(alpha_bar_prev) * pred_x0 + dir_xt
+                if sigma > 0.0:
+                    x = x + sigma * np.random.randn(*x.shape)
+        else:
+            for i, t_idx in enumerate(step_indices):
+                t_batch = np.full((num_samples,), t_idx, dtype=int)
+                pred_noise = self.model(Tensor(x, requires_grad=False), t_batch).data
+                beta = self.betas[t_idx]
+                alpha = self.alphas[t_idx]
+                alpha_bar = self.alphas_bar[t_idx]
+                mean = (1.0 / np.sqrt(alpha)) * (
+                    x - (beta / np.sqrt(1.0 - alpha_bar)) * pred_noise
+                )
+                if t_idx > 0:
+                    z = np.random.randn(*x.shape)
+                    x = mean + np.sqrt(beta) * z
+                else:
+                    x = mean
 
         return x
 

@@ -21,11 +21,16 @@ class VAE(Module, ChokkhuModel):
         in_features: int = 784,
         hidden_dim: int = 256,
         latent_dim: int = 32,
+        beta: float = 1.0,
+        free_bits: float = 0.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.in_features = in_features
         self.hidden_dim = hidden_dim
         self.latent_dim = latent_dim
+        self.beta = beta
+        self.free_bits = free_bits
 
         # Encoder
         self.enc_dense = Linear(in_features, hidden_dim)
@@ -74,9 +79,12 @@ class VAE(Module, ChokkhuModel):
         z = self.reparameterize(mu, logvar)
         recon = self.decode(z)
 
-        # Compute KL Divergence loss: -0.5 * sum(1 + logvar - mu^2 - exp(logvar))
-        kl = -0.5 * np.sum(1.0 + logvar.data - mu.data**2 - np.exp(logvar.data)) / N
-        self.last_kl_loss = float(kl)
+        # Compute KL Divergence loss with optional beta scaling and free bits
+        kl_per_dim = -0.5 * (1.0 + logvar.data - mu.data**2 - np.exp(logvar.data))
+        if self.free_bits > 0.0:
+            kl_per_dim = np.maximum(kl_per_dim, self.free_bits)
+        kl = np.sum(kl_per_dim) / N
+        self.last_kl_loss = float(self.beta * kl)
 
         return recon.reshape(x.shape), mu, logvar
 
@@ -168,11 +176,14 @@ class VQVAE(Module, ChokkhuModel):
         embedding_dim: int = 64,
         num_embeddings: int = 256,
         commitment_cost: float = 0.25,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.in_features = in_features
         self.hidden_dim = hidden_dim
         self.embedding_dim = embedding_dim
+        self.num_embeddings = num_embeddings
+        self.commitment_cost = commitment_cost
 
         # Encoder
         self.encoder = Linear(in_features, embedding_dim)

@@ -60,11 +60,18 @@ class DCGAN(Module, ChokkhuModel):
     """Deep Convolutional Generative Adversarial Network (DCGAN / Standard GAN)."""
 
     def __init__(
-        self, latent_dim: int = 100, hidden_dim: int = 256, out_dim: int = 784
+        self,
+        latent_dim: int = 100,
+        hidden_dim: int = 256,
+        out_dim: int = 784,
+        label_smoothing: float = 0.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.latent_dim = latent_dim
+        self.hidden_dim = hidden_dim
         self.out_dim = out_dim
+        self.label_smoothing = label_smoothing
         self.generator = Generator(
             latent_dim=latent_dim, hidden_dim=hidden_dim, out_dim=out_dim
         )
@@ -103,9 +110,11 @@ class WGANGP(Module, ChokkhuModel):
         hidden_dim: int = 256,
         out_dim: int = 784,
         gp_lambda: float = 10.0,
+        **kwargs: Any,
     ) -> None:
         super().__init__()
         self.latent_dim = latent_dim
+        self.hidden_dim = hidden_dim
         self.out_dim = out_dim
         self.gp_lambda = gp_lambda
         self.generator = Generator(
