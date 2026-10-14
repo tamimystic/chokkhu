@@ -141,8 +141,3 @@ class HDCClassifier(ChokkhuModel):
         max_s = np.max(scaled_sims, axis=1, keepdims=True)
         exp_s = np.exp(scaled_sims - max_s)
         return exp_s / np.sum(exp_s, axis=1, keepdims=True)
-
-    def score(self, X: Any, y: Any) -> float:
-        """Computes classification accuracy score."""
-        preds = self.predict(X)
-        return float(np.mean(preds == np.asarray(y, dtype=int).flatten()))
