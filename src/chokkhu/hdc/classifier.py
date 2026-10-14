@@ -2,31 +2,32 @@
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import numpy as np
+
+from chokkhu.models.base import ChokkhuModel
 
 from .hypervector import HyperdimensionalVector
 
 
-class HDCClassifier:
+class HDCClassifier(ChokkhuModel):
     """Hyperdimensional Computing (HDC) Associative Memory Classifier in pure NumPy.
 
     Encodes continuous features into hyperdimensional space via Level and Item hypervectors,
     building robust class associative prototype memories with zero-gradient one-shot learning.
-
-    Parameters
-    ----------
-    dim : int, default=5000
-        Dimensionality of hypervector space.
-    num_levels : int, default=32
-        Number of quantized continuous level hypervectors.
-    seed : int, default=42
     """
 
-    def __init__(self, dim: int = 5000, num_levels: int = 32, seed: int = 42) -> None:
+    def __init__(
+        self,
+        dim: int = 5000,
+        num_levels: int = 32,
+        seed: int = 42,
+        **kwargs: Any,
+    ) -> None:
         self.dim = int(dim)
         self.num_levels = int(num_levels)
+        self.seed = int(seed)
         self.rng = np.random.default_rng(seed)
 
         self.item_vectors: List[HyperdimensionalVector] = []
@@ -44,7 +45,6 @@ class HDCClassifier:
             for _ in range(n_features)
         ]
 
-        # Continuous level vectors: interpolate flips gradually from base level
         base = HyperdimensionalVector.random_bipolar(
             dim=self.dim, seed=int(self.rng.integers(0, 100000))
         ).values.copy()
@@ -63,27 +63,26 @@ class HDCClassifier:
         x_arr = np.asarray(x, dtype=np.float32)
         n_features = len(x_arr)
 
-        # Normalize features to level indices [0, num_levels - 1]
         denom = np.maximum(1e-6, self.feature_max_ - self.feature_min_)
         norm_x = np.clip((x_arr - self.feature_min_) / denom, 0.0, 1.0)
         level_indices = np.clip(
             (norm_x * (self.num_levels - 1)).astype(int), 0, self.num_levels - 1
         )
 
-        # Bind Item_j with Level(x_j)
         bound_pairs: List[HyperdimensionalVector] = []
         for j in range(n_features):
             item_hv = self.item_vectors[j]
             level_hv = self.level_vectors[level_indices[j]]
             bound_pairs.append(item_hv.bind(level_hv))
 
-        # Bundle across all features
         return HyperdimensionalVector.bundle(bound_pairs, binarize=True)
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> HDCClassifier:
+    def fit(self, X: Any, y: Any = None) -> HDCClassifier:
         """Learns class prototype associative memory vectors from training data."""
+        if y is None:
+            raise ValueError("Target y must be provided for HDCClassifier.fit")
         X_arr = np.asarray(X, dtype=np.float32)
-        y_arr = np.asarray(y, dtype=int)
+        y_arr = np.asarray(y, dtype=int).flatten()
         n_samples, n_features = X_arr.shape
 
         self.feature_min_ = np.min(X_arr, axis=0)
@@ -104,7 +103,7 @@ class HDCClassifier:
 
         return self
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
+    def predict(self, X: Any) -> np.ndarray:
         """Predicts class labels via maximum cosine similarity with class associative memories."""
         X_arr = np.asarray(X, dtype=np.float32)
         predictions: List[int] = []
@@ -124,7 +123,26 @@ class HDCClassifier:
 
         return np.array(predictions, dtype=int)
 
-    def score(self, X: np.ndarray, y: np.ndarray) -> float:
+    def predict_proba(self, X: Any, temperature: float = 1.0) -> np.ndarray:
+        """Predict class probabilities via softmax-scaled hyperdimensional cosine similarities."""
+        X_arr = np.asarray(X, dtype=np.float32)
+        classes = sorted(self.class_prototypes.keys())
+        n_samples = len(X_arr)
+        n_classes = len(classes)
+        sims: np.ndarray = np.zeros((n_samples, n_classes), dtype=np.float64)
+
+        for i, x in enumerate(X_arr):
+            x_hv = self.encode_sample(x)
+            for j, c in enumerate(classes):
+                sims[i, j] = x_hv.similarity(self.class_prototypes[c])
+
+        temp = max(1e-5, float(temperature))
+        scaled_sims = sims / temp
+        max_s = np.max(scaled_sims, axis=1, keepdims=True)
+        exp_s = np.exp(scaled_sims - max_s)
+        return exp_s / np.sum(exp_s, axis=1, keepdims=True)
+
+    def score(self, X: Any, y: Any) -> float:
         """Computes classification accuracy score."""
         preds = self.predict(X)
-        return float(np.mean(preds == np.asarray(y, dtype=int)))
+        return float(np.mean(preds == np.asarray(y, dtype=int).flatten()))

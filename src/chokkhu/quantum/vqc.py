@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import math
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
+
+from chokkhu.models.base import ChokkhuModel
 
 from .circuit import QuantumCircuit
 
 
-class VariationalQuantumClassifier:
+class VariationalQuantumClassifier(ChokkhuModel):
     """Variational Quantum Classifier (VQC / Quantum Neural Network).
 
     Features:
@@ -18,17 +20,6 @@ class VariationalQuantumClassifier:
     - Parameterized Hardware-Efficient Ansatz (Ry/Rz rotations + entangling CNOT layers).
     - Analytical exact gradients via the Parameter Shift Rule:
       d<Z>/d(theta) = [<Z>(theta + pi/2) - <Z>(theta - pi/2)] / 2
-
-    Parameters
-    ----------
-    n_qubits : int
-        Number of qubits (matches feature dimension or compressed features).
-    n_layers : int
-        Number of variational ansatz layers.
-    lr : float
-        Learning rate for gradient descent.
-    random_state : Optional[int]
-        Random seed.
     """
 
     def __init__(
@@ -37,13 +28,14 @@ class VariationalQuantumClassifier:
         n_layers: int = 2,
         lr: float = 0.05,
         random_state: Optional[int] = None,
+        **kwargs: Any,
     ) -> None:
         self.n_qubits = int(n_qubits)
         self.n_layers = int(n_layers)
         self.lr = float(lr)
+        self.random_state = random_state
         self.rng = np.random.default_rng(random_state)
 
-        # Number of parameters: n_layers * n_qubits * 2 (Ry and Rz per qubit per layer)
         self.num_params = self.n_layers * self.n_qubits * 2
         self.weights = self.rng.uniform(-np.pi, np.pi, size=self.num_params)
         self.bias = 0.0
@@ -52,27 +44,22 @@ class VariationalQuantumClassifier:
         """Run circuit for a single input vector x with given weights."""
         qc = QuantumCircuit(n_qubits=self.n_qubits)
 
-        # 1. Feature encoding via Angle Embedding (Ry)
         for i in range(min(self.n_qubits, len(x))):
             qc.ry(float(x[i]), i)
 
-        # 2. Variational layers
         p_idx = 0
         for _ in range(self.n_layers):
-            # Rotations
             for q in range(self.n_qubits):
                 qc.ry(float(params[p_idx]), q)
                 p_idx += 1
                 qc.rz(float(params[p_idx]), q)
                 p_idx += 1
 
-            # Entanglement (ring of CNOTs)
             if self.n_qubits > 1:
                 for q in range(self.n_qubits):
                     next_q = (q + 1) % self.n_qubits
                     qc.cnot(q, next_q)
 
-        # 3. Measure expectation value of Pauli-Z on qubit 0
         return qc.expectation_z(0)
 
     def forward_single(self, x: np.ndarray) -> float:
@@ -80,35 +67,38 @@ class VariationalQuantumClassifier:
         exp_z = self._execute_circuit(x, self.weights)
         return exp_z + self.bias
 
-    def forward(self, X: np.ndarray) -> np.ndarray:
+    def forward(self, X: Any) -> np.ndarray:
         """Predict logits for a batch of samples."""
         X_arr = np.asarray(X, dtype=np.float64)
         return np.array([self.forward_single(x) for x in X_arr])
 
-    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+    def predict_proba(self, X: Any) -> np.ndarray:
         """Predict class probabilities [P(y=0), P(y=1)]."""
         logits = self.forward(X)
         p1 = 1.0 / (1.0 + np.exp(-np.clip(logits, -20.0, 20.0)))
         p0 = 1.0 - p1
         return np.column_stack([p0, p1])
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
+    def predict(self, X: Any) -> np.ndarray:
         """Predict binary class labels {0, 1}."""
         logits = self.forward(X)
         return (logits >= 0.0).astype(int)
 
     def fit(
         self,
-        X: np.ndarray,
-        y: np.ndarray,
+        X: Any,
+        y: Any = None,
         epochs: int = 20,
         batch_size: int = 16,
+        **kwargs: Any,
     ) -> VariationalQuantumClassifier:
         """Train variational parameters using Parameter Shift Rule gradients."""
+        if y is None:
+            raise ValueError(
+                "Target y must be provided for VariationalQuantumClassifier.fit"
+            )
         X_arr = np.asarray(X, dtype=np.float64)
         y_arr = np.asarray(y, dtype=np.float64).flatten()
-        # Ensure binary labels in {-1, +1} or {0, 1}
-        # Standardize target to {0, 1}
         unique_y = np.unique(y_arr)
         if set(unique_y).issubset({-1.0, 1.0}):
             y_target = (y_arr + 1.0) / 2.0
@@ -136,14 +126,11 @@ class VariationalQuantumClassifier:
                     )
                     error = pred_prob - float(y_sample)
 
-                    # Parameter Shift Rule for each parameter
                     for p in range(self.num_params):
-                        # Theta + pi/2
                         w_plus = self.weights.copy()
                         w_plus[p] += shift
                         f_plus = self._execute_circuit(x_sample, w_plus)
 
-                        # Theta - pi/2
                         w_minus = self.weights.copy()
                         w_minus[p] -= shift
                         f_minus = self._execute_circuit(x_sample, w_minus)
@@ -153,7 +140,6 @@ class VariationalQuantumClassifier:
 
                     grad_bias += error
 
-                # Gradient descent step
                 b_len = float(len(X_b))
                 self.weights -= self.lr * (grad_weights / b_len)
                 self.bias -= self.lr * (grad_bias / b_len)
@@ -161,18 +147,10 @@ class VariationalQuantumClassifier:
         return self
 
 
-class QuantumKernel:
-    """Quantum Kernel Matrix Estimator for Quantum SVM / Kernel Ridge.
+class QuantumKernel(ChokkhuModel):
+    """Quantum Kernel Matrix Estimator for Quantum SVM / Kernel Ridge."""
 
-    Computes transition probability fidelity K(x, x') = |<psi(x)|psi(x')>|^2.
-
-    Parameters
-    ----------
-    n_qubits : int
-        Number of qubits used for state embedding.
-    """
-
-    def __init__(self, n_qubits: int = 2) -> None:
+    def __init__(self, n_qubits: int = 2, **kwargs: Any) -> None:
         self.n_qubits = int(n_qubits)
 
     def _state(self, x: np.ndarray) -> np.ndarray:
@@ -187,13 +165,10 @@ class QuantumKernel:
         """Compute scalar quantum kernel similarity between two vectors."""
         psi1 = self._state(x1)
         psi2 = self._state(x2)
-        # Inner product fidelity |<psi1|psi2>|^2
         inner_prod = np.vdot(psi1, psi2)
         return float(np.abs(inner_prod) ** 2)
 
-    def compute_matrix(
-        self, X1: np.ndarray, X2: Optional[np.ndarray] = None
-    ) -> np.ndarray:
+    def compute_matrix(self, X1: Any, X2: Optional[Any] = None) -> np.ndarray:
         """Compute full quantum Gram matrix K(X1, X2)."""
         X1_arr = np.asarray(X1, dtype=np.float64)
         if X2 is None:
