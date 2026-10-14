@@ -1,6 +1,6 @@
 r"""Conformalized Quantile Regression (CQR) for Distribution-Free Uncertainty Quantification.
 
-Formulated from first principles in pure NumPy and SciPy following Romano, Patterson & Candès (NeurIPS 2019).
+Formulated from first principles in pure NumPy following Romano, Patterson & Candès (NeurIPS 2019).
 Combines pinball loss quantile regression with split conformal calibration scores to provide
 exact finite-sample distribution-free prediction intervals with mathematically guaranteed coverage:
 P(Y \in \hat{C}(X)) \ge 1 - \alpha.
