@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -12,15 +12,6 @@ class LaplaceMechanism:
     """Laplace Mechanism for epsilon-differential privacy query perturbation.
 
     Adds calibrated noise from Laplace(0, sensitivity / epsilon).
-
-    Parameters
-    ----------
-    epsilon : float
-        Privacy budget parameter epsilon > 0.
-    sensitivity : float
-        L1 global sensitivity of the numeric query.
-    random_state : Optional[int]
-        Random seed for reproducibility.
     """
 
     def __init__(
@@ -58,17 +49,6 @@ class GaussianMechanism:
     """Gaussian Mechanism for (epsilon, delta)-differential privacy.
 
     Adds calibrated Gaussian noise N(0, sigma^2) with sigma = sensitivity * sqrt(2 * ln(1.25 / delta)) / epsilon.
-
-    Parameters
-    ----------
-    epsilon : float
-        Privacy budget parameter epsilon > 0.
-    delta : float
-        Privacy relaxation parameter delta in (0, 1).
-    sensitivity : float
-        L2 global sensitivity of the query function.
-    random_state : Optional[int]
-        Random seed for reproducibility.
     """
 
     def __init__(
@@ -106,21 +86,51 @@ class GaussianMechanism:
         return (self.epsilon, self.delta)
 
 
+class ExponentialMechanism:
+    """Exponential Mechanism for epsilon-differential privacy selection (McSherry & Talwar, 2007)."""
+
+    def __init__(
+        self,
+        epsilon: float = 1.0,
+        sensitivity: float = 1.0,
+        random_state: Optional[int] = None,
+    ) -> None:
+        if epsilon <= 0.0:
+            raise ValueError(f"Epsilon must be positive, got {epsilon}")
+        if sensitivity <= 0.0:
+            raise ValueError(f"Sensitivity must be positive, got {sensitivity}")
+        self.epsilon = float(epsilon)
+        self.sensitivity = float(sensitivity)
+        self.rng = np.random.default_rng(random_state)
+
+    def select(
+        self, candidates: List[Any], utilities: Union[List[float], np.ndarray]
+    ) -> Any:
+        """Select an item from candidates with probability proportional to exp(eps * u / (2 * Delta))."""
+        u = np.asarray(utilities, dtype=np.float64)
+        if len(candidates) != len(u):
+            raise ValueError("Number of candidates must match length of utilities")
+        if len(candidates) == 0:
+            raise ValueError("Candidates list cannot be empty")
+
+        scaled = (self.epsilon * u) / (2.0 * self.sensitivity)
+        max_scaled: float = float(np.max(scaled))
+        weights = np.exp(scaled - max_scaled)
+        sum_weights: float = float(np.sum(weights))
+        probs = weights / (sum_weights if sum_weights > 0 else 1.0)
+
+        idx = int(self.rng.choice(len(candidates), p=probs))
+        return candidates[idx]
+
+    def get_privacy_budget(self) -> Tuple[float, float]:
+        """Return (epsilon, delta) pair."""
+        return (self.epsilon, 0.0)
+
+
 class DP_SGD:
     """Differentially Private Stochastic Gradient Descent (DP-SGD) optimizer.
 
     Implements Abadi et al. (2016) per-sample gradient clipping and calibrated Gaussian noise injection.
-
-    Parameters
-    ----------
-    lr : float
-        Learning rate.
-    l2_norm_clip : float
-        Maximum L2 norm bound C for per-sample gradient clipping.
-    noise_multiplier : float
-        Ratio of noise standard deviation to clipping bound: sigma = noise_multiplier * C.
-    random_state : Optional[int]
-        Random seed.
     """
 
     def __init__(
@@ -151,7 +161,6 @@ class DP_SGD:
 
         # 1. Per-sample gradient clipping
         for sample_grad in per_sample_grads:
-            # Compute total L2 norm across all parameters for this sample
             total_norm_sq = sum(np.sum(sample_grad[k] ** 2) for k in param_keys)
             sample_norm = math.sqrt(float(total_norm_sq))
             clip_coef = min(1.0, self.l2_norm_clip / (sample_norm + 1e-12))
@@ -185,12 +194,48 @@ class DP_SGD:
         self, total_samples: int, batch_size: int, target_delta: float = 1e-5
     ) -> Dict[str, float]:
         """Estimate privacy budget (epsilon, delta) via Moments Accountant approximation."""
-        q = float(batch_size) / float(total_samples)  # Sampling ratio
+        q = float(batch_size) / float(total_samples)
         t = self.steps
         sigma = self.noise_multiplier
         if sigma <= 0.0 or t == 0:
             return {"epsilon": float("inf"), "delta": target_delta}
 
-        # Standard bounding: epsilon ~ q * sqrt(T) / sigma
         eps = (q * math.sqrt(t * 2.0 * math.log(1.0 / target_delta))) / (sigma + 1e-12)
         return {"epsilon": float(eps), "delta": float(target_delta), "steps": float(t)}
+
+
+class RenyiDPAccountant:
+    """Rényi Differential Privacy (RDP) Composition Accountant (Mironov, 2017)."""
+
+    def __init__(self, orders: Optional[List[float]] = None) -> None:
+        if orders is None:
+            orders = [1.5, 2.0, 3.0, 4.0, 5.0, 8.0, 16.0, 32.0, 64.0, 128.0]
+        self.orders = [float(o) for o in orders if o > 1.0]
+        self.rdp_total: np.ndarray = np.zeros(len(self.orders), dtype=np.float64)
+        self.steps = 0
+
+    def step_gaussian(
+        self, noise_multiplier: float, subsampling_ratio: float = 1.0
+    ) -> None:
+        """Compose one step of Gaussian mechanism under subsampling."""
+        if noise_multiplier <= 0.0:
+            raise ValueError("noise_multiplier must be positive")
+        sigma = float(noise_multiplier)
+        q = float(subsampling_ratio)
+        for idx, alpha in enumerate(self.orders):
+            rdp_step = (q**2 * alpha) / (2.0 * sigma**2)
+            self.rdp_total[idx] += rdp_step
+        self.steps += 1
+
+    def get_epsilon(self, target_delta: float = 1e-5) -> float:
+        """Convert composed RDP to standard (epsilon, delta)-DP via optimal order minimization."""
+        if target_delta <= 0.0 or target_delta >= 1.0:
+            raise ValueError(f"target_delta must be in (0, 1), got {target_delta}")
+        if self.steps == 0:
+            return 0.0
+        eps_candidates = []
+        for idx, alpha in enumerate(self.orders):
+            eps_candidates.append(
+                self.rdp_total[idx] + np.log(1.0 / target_delta) / (alpha - 1.0)
+            )
+        return float(np.min(eps_candidates))

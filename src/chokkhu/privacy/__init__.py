@@ -1,6 +1,12 @@
 """Privacy-preserving Machine Learning, Federated Learning & Machine Unlearning module."""
 
-from .dp import DP_SGD, GaussianMechanism, LaplaceMechanism
+from .dp import (
+    DP_SGD,
+    ExponentialMechanism,
+    GaussianMechanism,
+    LaplaceMechanism,
+    RenyiDPAccountant,
+)
 from .federated import FederatedClient, FederatedServer
 from .unlearning import (
     SCRUB,
@@ -10,13 +16,15 @@ from .unlearning import (
 )
 
 __all__ = [
-    "LaplaceMechanism",
-    "GaussianMechanism",
     "DP_SGD",
+    "ExponentialMechanism",
     "FederatedClient",
     "FederatedServer",
-    "SISARetraining",
     "FisherScrubbing",
-    "SCRUB",
+    "GaussianMechanism",
+    "LaplaceMechanism",
     "NullspaceConceptScrubbing",
+    "RenyiDPAccountant",
+    "SCRUB",
+    "SISARetraining",
 ]
